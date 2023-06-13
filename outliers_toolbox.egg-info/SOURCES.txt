@@ -1,0 +1,11 @@
+LICENSE
+README.md
+setup.py
+outliers_toolbox/__init__.py
+outliers_toolbox.egg-info/PKG-INFO
+outliers_toolbox.egg-info/SOURCES.txt
+outliers_toolbox.egg-info/dependency_links.txt
+outliers_toolbox.egg-info/not-zip-safe
+outliers_toolbox.egg-info/top_level.txt
+outliers_toolbox/src/__init__.py
+outliers_toolbox/src/outliers_toolbox.py

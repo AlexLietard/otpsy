@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: outliers-toolbox
+Version: 0.0.1
+Summary: Packages designed to detect outliers in Psychology
+Home-page: https://github.com/AlexLietard/outliers_toolbox
+Author: Alexandre LIETARD
+Author-email: alex.lietard77@gmail.com
+License: MIT
+License-File: LICENSE
+
+# outliers_toolbox

@@ -3,4 +3,4 @@ import pandas as pd
 
 df = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep = ";")
 
-outliers = outliers_toolbox.Outliers("df", "premiere_lettre_nombre")
+outliers = outliers_toolbox.Outliers(df, columns = ["bla", 'bla'])

@@ -1,4 +1,3 @@
-from outliers_toolbox import myClass
-
-a = myClass(1)
-a.add()
+import outliers_toolbox
+a = outliers_toolbox.myClass(1)
+print(a.add())

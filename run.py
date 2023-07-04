@@ -1,3 +1,6 @@
 import outliers_toolbox
-a = outliers_toolbox.myClass(1)
-print(a.add())
+import pandas as pd
+
+df = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep = ";")
+
+outliers = outliers_toolbox.Outliers("df", "premiere_lettre_nombre")

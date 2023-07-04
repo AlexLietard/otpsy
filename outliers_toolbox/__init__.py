@@ -1,1 +1,1 @@
-from .src.outliers_toolbox import myClass
+from .src.outliers_toolbox import Outliers

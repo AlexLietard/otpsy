@@ -6,20 +6,20 @@ class Outliers:
     Contains the information about the different outliers 
     for a certain column or list of columns
     :param dataframe: The dataframe used
-    :param column: The name of the column that the person wants to test
-    :param columns: The names of the columns that the person wants to test.
+    :param column: The name of the column that the person wants to test.
+    There is lot of possibilities to enter columns:
+    * Stri
     """
     def __init__ (
             self, 
-            dataframe: pd.DataFrame = None, 
-            column: str = "", 
-            columns: list = []
+            dataframe: pd.DataFrame, 
+            column: str|list|int|pd.Series, 
         ) -> None:
         
         self.dataframe = dataframe
         self.column = column
-        self.columns = columns
         self.check_data_type()
+        self.select_columns()
         
     def check_data_type(self):
         """
@@ -32,22 +32,31 @@ class Outliers:
             raise TypeError(f"You have to enter a pandas dataframe, you enter {type(self.dataframe)}")
 
         # Column
-        if not isinstance(self.column, str):
-            # Special case if it is a list, to allow people to know that there exist column and columnS.
-            if isinstance(self.column, list):
-                raise TypeError(f"You have enter a list while we expected string. You have to enter only one name of column if you use 'column', instead use 'columns'.")
-            elif isinstance(self.column, pd.Series):
-                raise TypeError(f"You have to enter the name of the column and not the panda")
-            else:
-                raise TypeError(f"Expected string, you enter {type(self.column)}")
+        if not isinstance(self.column, (str, pd.Series, list, int)):
+            raise TypeError(f"You have to specify. You enter {type(self.column)}")
+    
+    def select_columns(self):
+        """
+        This method is used to select the column that the participant wants to test. 
+        This information is stored in the attribute self.columns_to_test. We want
+        to obtain the name of each column.
+        """
+        # to select all columns
+        if self.column == 'all':
+            self.columns_to_test = list(df.columns)
         
-        # Columns
-        if not isinstance(self.columns, list):
-            raise TypeError(f"You have to enter multiple columns with a list of string, you enter {type(self.columns)}")
+        # if the participant enter the name of one column
+        elif isinstance(self.column, str) and self.column != "all":
+
+    
+            if self.column not in df.columns:
+                raise NameError("The column you enter is not in the dataframe")
+            self.columns_to_test = self.column
+
+        
 
 
 if __name__=="__main__":
     df = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep = ";")
-
-    outliers = Outliers("df", columns = ["bla", 'bla'])    
+    outliers = Outliers(df, column = True)    
     

@@ -1,6 +1,6 @@
-import outliers_toolbox
+import outliers_toolbox as ot
 import pandas as pd
 
 df = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep = ";")
 
-outliers = outliers_toolbox.Outliers(df, columns = ["bla", 'bla'])
+outliers = ot.Outliers("df", column = "all")

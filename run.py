@@ -3,6 +3,6 @@ import pandas as pd
 
 df = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep = ";")
 
-outliers = ot.Outliers(df, column = "all", reference= "CLI1")
+outliers = ot.Outliers(df, column = "all", participant_column= "CLI1")
 
 outliers.__check_data_type()

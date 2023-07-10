@@ -1,27 +1,29 @@
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 
 class Outliers:
     """
     Contains the information about the different outliers 
     for a certain column or list of columns
     :param dataframe: The dataframe used
-    :param column: The column that the person wants to test.
+    :param column: The column that the user wants to test.
     """
     def __init__(
             self, 
             dataframe: pd.DataFrame, 
             column: str|list|int|pd.Series,
-            reference : str|int|pd.Series
+            participant_column : str|int|pd.Series
         ) -> None:
         
         self.df = dataframe
         self.column = column
-        self.reference = reference
-        self.check_data_type()
+        self.participant_column = participant_column
+        self.__check_data_type()
         self.__select_columns_to_test()
         self.__define_participant_column()
+        self.__check_if_numeric()
     
-    def check_data_type(self):
+    def __check_data_type(self):
         """
         This method is used to check the type of the differents arguments pass in the 
         constructor.
@@ -36,11 +38,10 @@ class Outliers:
             raise TypeError(f"You have to specify the column. You enter {type(self.column)}")
         
         # Participant column
-        if not isinstance(self.reference, (str, pd.Series, int)):
-            raise TypeError(f"You have to specify the participant column. You enter {type(self.column)}")
+        if not isinstance(self.participant_column, (str, pd.Series, int)):
+            raise TypeError(f"You have to specify the participant column. You enter {type(self.participant_column)}")
      
-
-    def select_columns_to_test(self):
+    def __select_columns_to_test(self):
         """
         This method is not designed to be used by users.
         This method is used to select the column(s) that the user wants to test. 
@@ -93,21 +94,33 @@ class Outliers:
         # Avoid potential duplicates
         self.columns_to_test = list(set(self.columns_to_test))
 
-    def define_participant_column(self):
-        if isinstance(self.reference, pd.Series):
-            self.participant_column = self.reference.name
-        elif isinstance(self.reference, int):
-            self.participant_column = self.df.iloc[:, self.reference].name
-        elif isinstance(self.reference, str):
-            if self.reference not in self.df.columns:
+    def __define_participant_column(self):
+        if isinstance(self.participant_column, pd.Series):
+            self.participant_column = self.participant_column.name
+        elif isinstance(self.participant_column, int):
+            self.participant_column = self.df.iloc[:, self.participant_column].name
+        elif isinstance(self.participant_column, str):
+            if self.participant_column not in self.df.columns:
                 raise NameError("The column you enter is not in the dataframe")
             else:
-                self.participant_column = self.reference
+                self.participant_column = self.participant_column
+        
+        # avoid potential overlap between column to test and participant column
         if self.participant_column in self.columns_to_test:
             raise ValueError("The participant column can't be in the columns you want to test")
                 
-    
-    def calculate_mad(self):
+    def __check_if_numeric(self):
+        not_numeric = []
+        for column in self.columns_to_test:
+            if not is_numeric_dtype(column):
+                not_numeric.append(column)
+
+        if len(not_numeric) > 0:
+            raise TypeError(f"{not_numeric} is not numeric. Thus, the outlier detection wont be possible.")
+        
+        self.columns_to_test = list(set(self.columns_to_test) - set(not_numeric))
+
+    def calculate_iqr(self):
         pass
 
 
@@ -117,6 +130,6 @@ class Outliers:
 
 if __name__ == "__main__":
     df = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep = ";")
-    outliers = Outliers(df, [df["SOC1"], df["CLI1"]], "DIF1")
+    outliers = Outliers(df, ["premiere_lettre", df["CLI1"]], "DIF1")
     print(outliers.columns_to_test)
     

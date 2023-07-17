@@ -1,16 +1,23 @@
-import pandas as pd
-from pandas.api.types import is_numeric_dtype
-import numpy as np
 from inspect import getcallargs
+from warnings import warn
+
+import pandas as pd
+from pandas.api.types import is_numeric_dtype, is_float_dtype
+import numpy as np
+
+
 
 def check(function):
     """ Decorator to transform argument in the good format
 
-    For every parameters possible in the dataframe, there is
-    a check of the arguments passed. 
+    For every parameters possible in the package, there is
+    a check of the arguments passed.  
     """
-    def select_columns_to_test(*args, **kwargs):
+    def verify_arguments(*args, **kwargs):
         new_kwargs = {}
+
+        # to associate the argument from args to the 
+        # keyword to have only kwargs
         kwargs = getcallargs(function, *args, **kwargs)
         
         for key, value in kwargs.items():
@@ -22,6 +29,7 @@ def check(function):
                 else:
                     new_kwargs["df"] = value
 
+            # check column to test
             elif key == "column_to_test":
             # The name of column is stored in the attribute self.columns_to_test.
             # We want to obtain the name of each column in a list of column name.
@@ -78,10 +86,44 @@ def check(function):
 
                 # Avoid potential duplicates
                 column_to_test = list(set(column_to_test))
+
+                ### to convert column in a numeric format
+
+                # before and after modifying is to track
+                # the number of missing values. This information
+                # will be use to give a feedback to the user.
+                # CHECK IF IT WORKS
+                columns_modified = []
+                before_transforming = df.isna().sum().sum()
+                modified = False
+
+                # convert each column that is not a float
+                # or integer
+                for column in column_to_test:
+                    if not is_float_dtype(df[column]) or not \
+                      is_numeric_dtype(df[column]):
+                        df[column] = pd.to_numeric(
+                         df[column].astype(str).\
+                          str.replace(",", "."), errors='coerce')
+                    modified = True
+
+
                 new_kwargs["column_to_test"] = column_to_test
 
+                after_transforming = df.isna().sum().sum()
+                if modified and before_transforming < after_transforming:
+                    warn(f"Columns {columns_modified} has "
+                            "been modified because they were "
+                            "not numeric. When it was not "
+                            "convertible to numeric, it gave "
+                            "missing value. The number of missing "
+                           f"value went from {before_transforming} "
+                           f"to {after_transforming}")
+
+
+            # check participant column
             elif key == "participant_column":
-                
+
                 pre_participant_column = value
 
                 if isinstance(pre_participant_column, pd.Series):
@@ -99,13 +141,14 @@ def check(function):
                 else:
                     raise TypeError(f"The type of data {type(column)} "
                                 "is not supported to refer column.")
-                
+
                 # avoid potential overlap between column to test and participant column
                 if pre_participant_column in column_to_test:
                     raise ValueError("The participant column can't "
                                     "be in the columns you want to test")
                 new_kwargs["participant_column"] = participant_column
-            
+
+            # check distance
             elif key == "distance":
                 pre_distance = value
                 try:
@@ -114,14 +157,15 @@ def check(function):
                     raise ValueError("You need to enter a numeric "
                                      "(a float or an integer) distance.")
                 new_kwargs["distance"] = distance
-        
-        # to allow to pass self for class
-        if "self" in kwargs.keys():
+
+        # to pass self for class
+        if "self" in kwargs:
             func = function(kwargs["self"], **new_kwargs)
         else:
             func = function(**new_kwargs)
         return func
-    return select_columns_to_test
+
+    return verify_arguments
 
 class Outliers:
     """
@@ -141,25 +185,7 @@ class Outliers:
         self.df = df
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
-
-    def __check_if_numeric(self):
-        not_numeric = []
-        for column in self.columns_to_test:
-            # TODOOOOOOOOOOOOOOOOOOOOooooooo
-            try:
-                pass
-            except:
-                pass
-            if not is_numeric_dtype(column):
-                not_numeric.append(column)
-        print(not_numeric)
-        if len(not_numeric) > 0:
-            # raise TypeError(f"{not_numeric} is not numeric.
-            # Thus, the outlier detection wont be possible.")
-            pass
-
-        self.columns_to_test = list(set(self.columns_to_test)
-                                    - set(not_numeric))
+        print(df.dtypes)
 
     @staticmethod
     def convert_numeric():
@@ -199,15 +225,13 @@ def calculate_iqr(
     ------------
         df: pd.DataFrame
             The dataframe used
-        column: str
+        column: str | list | int | pd.Series
             The name of the colum of interest
-        distance: float
+        distance: float | int
     """
     # calculate the interquartile range and the median
     ret = {}
     for column in column_to_test:
-        print("*"*20, column, type(column))
-        print(df.head())
         q1, q3 = df[column].quantile([0.25, 0.75])
         iqr = q3-q1
 
@@ -227,6 +251,6 @@ def calculate_iqr(
 if __name__ == "__main__":
     df = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     print(df.columns)
-    #low_threshold, high_threshold = calculate_iqr(df, ["premiere_lettre_nombre"], 2)
-    outliers = Outliers(df=df, column_to_test="premiere_lettre_nombre", participant_column="LIB_NOM_PAT_IND_TPW_IND")
+    low, hig_threshold = calculate_iqr(df, ["CLI1"], 2)
+    outliers = Outliers(df, "premiere_lettre_nombre", "LIB_NOM_PAT_IND_TPW_IND")
     # print(outliers.columns_to_test)

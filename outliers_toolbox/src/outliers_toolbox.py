@@ -1,11 +1,62 @@
-from inspect import getcallargs
+from inspect import signature
 from warnings import warn
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype, is_float_dtype
 import numpy as np
 
+def process_column_to_test(df_func, pre_column):
+    """This function aim to process the keyword argument column to test"""
+    # The name of column is stored in the attribute self.columns_to_test.
+    # We want to obtain the name of each column in a list of column name.
+    column_to_test = []
 
+    # if the user enters the Series
+    if isinstance(pre_column, pd.Series):
+        column_to_test.append(pre_column.name)
+
+    # to select all columns
+    elif pre_column == 'all':
+        column_to_test.extend(list(df_func.columns))
+
+    # if the person enters the name of one column
+    elif isinstance(pre_column, str):
+        if pre_column not in df_func.columns:
+            raise NameError("The column you enter is not in the dataframe.")
+        column_to_test.append(pre_column)
+
+    # if the person enters the index of the column
+    elif isinstance(pre_column, int):
+        column_to_test.append(df_func.iloc[:, pre_column].name)
+
+    # if the person enters a list
+    elif isinstance(pre_column, list):
+
+        # There is three possibilities :
+        # * either it contains the name of the columns,
+        # * either it contains the pd.Series
+        # * either it contains a list of index
+
+        for col in pre_column:
+            # If it's column
+            if isinstance(col, pd.Series):
+                column_to_test.append(col.name)
+
+            # If it's name, check its presence in the dataframe
+            elif isinstance(col, str):
+                if col not in df_func.columns:
+                    raise NameError(f"The column \"{col}\" you enter "
+                                    "is not in the dataframe")
+                column_to_test.append(col)
+
+            # it is the index of column
+            elif isinstance(pre_column, int):
+                column_to_test.append(df_func.iloc[:, col].name)
+    # Avoid potential duplicates
+    else:
+        raise TypeError(f"The type of data {type(pre_column)} "
+                    "is not supported to refer column.")
+    return list(set(column_to_test))
 
 def check(function):
     """ Decorator to transform argument in the good format
@@ -16,76 +67,22 @@ def check(function):
     def verify_arguments(*args, **kwargs):
         new_kwargs = {}
 
-        # to associate the argument from args to the 
+        # to associate the argument from args to the
         # keyword to have only kwargs
-        kwargs = getcallargs(function, *args, **kwargs)
-        
+        kwargs = signature(function).bind(*args, **kwargs).arguments
+
         for key, value in kwargs.items():
             # check dataframe enter
             if key == "df":
                 if not isinstance(value, pd.DataFrame):
                     raise TypeError("The column enter "
                                     "is not a dataframe.")
-                else:
-                    new_kwargs["df"] = value
+                new_kwargs["df"] = value
 
             # check column to test
             elif key == "column_to_test":
-            # The name of column is stored in the attribute self.columns_to_test.
-            # We want to obtain the name of each column in a list of column name.
-                column_to_test = []
-                column = value
-
-                # if the user enters the Series
-                if isinstance(column, pd.Series):
-                    column_to_test.append(column.name)
-
-                # to select all columns
-                elif column == 'all':
-                    column_to_test.extend(list(df.columns))
-
-                # if the person enters the name of one column
-                elif isinstance(column, str):
-                    if column not in df.columns:
-                        raise NameError("The column you enter is not in the dataframe.")
-                    else:
-                        column_to_test.append(column)
-
-                # if the person enters the index of the column
-                elif isinstance(column, int):
-                    column_to_test.append(df.iloc[:, column].name)
-
-                # if the person enters a list
-                elif isinstance(column, list):
-
-                    # There is three possibilities :
-                    # * either it contains the name of the columns,
-                    # * either it contains the pd.Series
-                    # * either it contains a list of index
-
-                    for column in column:
-                        # If it's column
-                        if isinstance(column, pd.Series):
-                            column_to_test.append(column.name)
-
-                        # If it's name, check its presence in the dataframe
-                        elif isinstance(column, str):
-                            if column not in df.columns:
-                                raise NameError(f"The column \"{column}\" you enter "
-                                                "is not in the dataframe")
-                            else:
-                                column_to_test.append(column)
-
-                        # it is the index of column
-                        elif isinstance(column, int):
-                            column_to_test.append(df.iloc[:, column].name)
-
-                else:
-                    raise TypeError(f"The type of data {type(column)} "
-                                "is not supported to refer column.")
-
-                # Avoid potential duplicates
-                column_to_test = list(set(column_to_test))
+                pre_column = value
+                column_to_test = process_column_to_test(df, pre_column)
 
                 ### to convert column in a numeric format
 
@@ -106,6 +103,7 @@ def check(function):
                          df[column].astype(str).\
                           str.replace(",", "."), errors='coerce')
                     modified = True
+                    columns_modified.append(column)
 
 
                 new_kwargs["column_to_test"] = column_to_test
@@ -150,12 +148,13 @@ def check(function):
 
             # check distance
             elif key == "distance":
-                pre_distance = value
                 try:
                     distance = float(str(value).replace(r"\.", ","))
+                    print(distance)
                 except ValueError:
                     raise ValueError("You need to enter a numeric "
-                                     "(a float or an integer) distance.")
+                                     "(a float or an integer) distance.") \
+                                            from ValueError
                 new_kwargs["distance"] = distance
 
         # to pass self for class
@@ -185,7 +184,6 @@ class Outliers:
         self.df = df
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
-        print(df.dtypes)
 
     @staticmethod
     def convert_numeric():
@@ -235,8 +233,8 @@ def calculate_iqr(
         q1, q3 = df[column].quantile([0.25, 0.75])
         iqr = q3-q1
 
-        med = np.median(df[column])
-
+        med = np.nanmedian(df[column])
+        print(med)
         # threshold
         low_threshold = med - (distance * iqr)
         high_threshold = med + (distance * iqr)
@@ -250,7 +248,7 @@ def calculate_iqr(
 
 if __name__ == "__main__":
     df = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    print(df.columns)
-    low, hig_threshold = calculate_iqr(df, ["CLI1"], 2)
-    outliers = Outliers(df, "premiere_lettre_nombre", "LIB_NOM_PAT_IND_TPW_IND")
+    low, high = calculate_iqr(df, ["CLI1"], 2)
+    print(low, high)
+    # outliers = Outliers(df, "premiere_lettre_nombre", "LIB_NOM_PAT_IND_TPW_IND")
     # print(outliers.columns_to_test)

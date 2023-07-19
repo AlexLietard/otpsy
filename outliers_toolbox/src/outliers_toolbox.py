@@ -56,8 +56,9 @@ def _process_column_to_test(df_func, pre_column):
     # Avoid potential duplicates
     else:
         raise TypeError(f"The type of data {type(pre_column)} "
-                    "is not supported to refer column.")
+                        "is not supported to refer column.")
     return list(set(column_to_test))
+
 
 def _process_participant_column(df_func, pre_participant_column):
     """ Process the participant column to obtain the name
@@ -75,8 +76,9 @@ def _process_participant_column(df_func, pre_participant_column):
         participant_column = pre_participant_column
     else:
         raise TypeError(f"The type of data {type(pre_participant_column)} "
-                         "is not supported to refer column.")
+                        "is not supported to refer column.")
     return participant_column
+
 
 def _convert_column_to_numeric(df_func, column_to_test_func):
     """
@@ -92,30 +94,30 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
     # convert each column that is not a float
     # or integer
     for column in column_to_test_func:
-        if not is_float_dtype(df_func[column]) or not \
-            is_numeric_dtype(df_func[column]):
+        if not is_float_dtype(df_func[column]) or \
+           not is_numeric_dtype(df_func[column]):
             df_func[column] = pd.to_numeric(
-                df_func[column].astype(str).\
+                df_func[column].astype(str).
                 str.replace(",", "."), errors='coerce')
         columns_modified.append(column)
 
     after_transforming = df_func.isna().sum().sum()
 
-    if len(columns_modified)>0 and before_transforming < after_transforming:
+    if len(columns_modified) > 0 and before_transforming < after_transforming:
         warn(f"Columns {columns_modified} has "
-                "been modified because they were "
-                "not numeric. When it was not "
-                "convertible to numeric, it gave "
-                "missing value. The number of missing "
-                f"value went from {before_transforming} "
-                f"to {after_transforming}.")
+             "been modified because they were "
+             "not numeric. When it was not "
+             "convertible to numeric, it gave "
+             "missing value. The number of missing "
+             f"value went from {before_transforming} "
+             f"to {after_transforming}.")
 
 
 def check(function):
     """ Decorator to transform argument in the good format
 
     For every parameters possible in the package, there is
-    a check of the arguments passed.  
+    a check of the arguments passed.
     """
     def verify_arguments(*args, **kwargs):
         new_kwargs = {}
@@ -140,18 +142,17 @@ def check(function):
                 _convert_column_to_numeric(df, column_to_test)
                 new_kwargs["column_to_test"] = column_to_test
 
-
             # check participant column
             elif key == "participant_column":
-
                 pre_participant_column = value
-
                 participant_column = _process_participant_column(
                     df, pre_participant_column)
-                # avoid potential overlap between column to test and participant column
+
+                # avoid potential overlap between column
+                # to test and participant column
                 if participant_column in column_to_test:
                     raise ValueError("The participant column can't "
-                                    "be in the columns you want to test")
+                                     "be in the columns you want to test")
                 new_kwargs["participant_column"] = participant_column
 
             # check distance
@@ -174,6 +175,7 @@ def check(function):
 
     return verify_arguments
 
+
 class Outliers:
     """
     Contains the information about the different outliers
@@ -192,26 +194,27 @@ class Outliers:
         self.df = df
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
+    
+    def iqr_method(self, distance):
+        return IqrMethod(self.df, self.columns_to_test, self.participant_column, distance)
+    
+    def see(self):
+        return self.list_outliers
 
-    @staticmethod
-    def convert_numeric():
-        pass
 
-    @staticmethod
-    def outliers_iqr(self, distance):
-        distance, error = self.verify_distance(distance)
-
-        if error:
-            return (0)
-
+class IqrMethod(Outliers):
+    
+    self.calculate()
+    
+    def calculate(self):
         for column in self.columns_to_test:
             # Calculate threshold
             low_threshold, high_threshold = threshold_iqr(
-                self.df, column, distance
-                )
+                self.df, column, self.distance)
+            print(low_threshold, high_threshold)
             # list of outliers by column
-            list_outliers = self.df.index[
-                ((self.df[column] < low_threshold)
+            self.list_outliers = self.df.index[
+                ((self.df[column] < low_threshold) |
                  (self.df[column] > high_threshold))
                 ].tolist()
 
@@ -256,7 +259,7 @@ def threshold_iqr(
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    low, high = threshold_iqr(df_test, ["CLI1"], 2)
-    print(low, high)
-    # outliers = Outliers(df, "premiere_lettre_nombre", "LIB_NOM_PAT_IND_TPW_IND")
-    # print(outliers.columns_to_test)
+    outliers = Outliers(df_test, ["CLI1"], "LIB_NOM_PAT_IND_TPW_IND").iqr_method(2).see()
+    print(outliers)
+
+

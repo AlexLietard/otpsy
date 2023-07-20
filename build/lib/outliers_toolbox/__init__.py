@@ -1,1 +1,1 @@
-from .src.outliers_toolbox import Outliers
+from .src.outliers_toolbox import Sample

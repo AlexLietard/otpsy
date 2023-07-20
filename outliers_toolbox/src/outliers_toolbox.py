@@ -191,9 +191,10 @@ class Sample:
             participant_column: str | int | pd.Series,
             ) -> None:
 
-        self.df = df
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
+        self.df = df.set_index(self.participant_column)
+
 
     def iqr_method(self, distance):
         return IqrMethod(
@@ -231,7 +232,6 @@ class IqrMethod(Sample):
             # Calculate threshold
             low_threshold, high_threshold = threshold_iqr(
                 self.df, column, self.distance)
-            print(low_threshold, high_threshold)
             # list of outliers by column
             list_outliers = self.df.index[
                 ((self.df[column] < low_threshold) |
@@ -283,5 +283,5 @@ def threshold_iqr(
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    outliers = Sample(df_test,["PAT1", "CLI1", "DIF1"], "LIB_NOM_PAT_IND_TPW_IND").iqr_method(2.5)
+    outliers = Sample(df_test,["PAT1", "CLI1", "DIF1"], "LIB_NOM_PAT_IND_TPW_IND").iqr_method(2)
     print(outliers)

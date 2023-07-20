@@ -226,7 +226,7 @@ class IqrMethod(Sample):
         return str(self.outliers)
 
     def calculate(self):
-        self.dict = {}
+        self.outliers = {}
         for column in self.columns_to_test:
             # Calculate threshold
             low_threshold, high_threshold = threshold_iqr(
@@ -283,3 +283,5 @@ def threshold_iqr(
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
+    outliers = Sample(df_test,["PAT1", "CLI1", "DIF1"], "LIB_NOM_PAT_IND_TPW_IND").iqr_method(2.5)
+    print(outliers)

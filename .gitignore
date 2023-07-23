@@ -1,4 +1,7 @@
 .pylintrc
 outliers_toolbox/__pycache__/
 outliers_toolbox/src/__pycache__/
-outliers_toolbox.egg-information
+outliers_toolbox.egg-info/
+outliers_toolbox-0.0.1-py3-none-any.whl
+dist/
+build/

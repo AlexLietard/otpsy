@@ -1,3 +1,4 @@
 .pylintrc
-outliers_toolbox/__pycache__
+outliers_toolbox/__pycache__/
+outliers_toolbox/src/__pycache__/
 outliers_toolbox.egg-information

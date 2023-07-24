@@ -33,6 +33,7 @@ def threshold_iqr(
 
         med = np.nanmedian(df[column])
         print(med)
+
         # threshold
         low_threshold = med - (distance * iqr)
         high_threshold = med + (distance * iqr)
@@ -44,6 +45,7 @@ def threshold_iqr(
         return ret[column_to_test[0]][0], ret[column_to_test[0]][1]
     else:
         return ret
+
 
 @check
 def threshold_sd(
@@ -69,10 +71,10 @@ def threshold_sd(
     # calculate the interquartile range and the median
     ret = {}
     for column in column_to_test:
-        sd = np.std(df[column])
+        sd = np.nanstd(df[column])
 
         # Pareil que IQR
-        moy = np.mean(df[column])
+        moy = np.nanmean(df[column])
 
         # définition des bornes
         low_threshold = moy - distance * sd
@@ -85,19 +87,20 @@ def threshold_sd(
         return ret[column_to_test[0]][0], ret[column_to_test[0]][1]
     else:
         return ret
-    
+
+
 @check
-def threshold_mad( 
+def threshold_mad(
     df: pd.DataFrame,
     column_to_test: str,
     distance: float | int
 ) -> float:
     """ MAD detection method
-    
+
     This function allow the user to have the low threshold
-    and the high threshold with the "SD" outliers method
+    and the high threshold with the "MAD" outliers method
     with a specific distance.
-    
+
     Parameters
     ------------
         df: pd.DataFrame
@@ -109,16 +112,16 @@ def threshold_mad(
     """
     ret = {}
     for column in column_to_test:
-        med = np.median(df[column])
+        med = np.nanmedian(df[column])
         b = 1.4826
         mad = mathematics.compute_mad(df, column, med, b)
 
         # threshold
-        low_threshold= med-(distance*mad)
-        high_threshold= med+(distance*mad)
-        
-        ret[column] = (low_threshold, high_threshold)
+        low_threshold = med - (distance * mad)
+        high_threshold = med + (distance * mad)
 
+        ret[column] = (low_threshold, high_threshold)
+    print(ret)
     # avoid having a dictionnary for one column
     if len(column_to_test) == 1:
         return ret[column_to_test[0]][0], ret[column_to_test[0]][1]

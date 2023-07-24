@@ -23,7 +23,7 @@ class Sample:
         self.participant_column = participant_column
         self.df = df.set_index(self.participant_column)
 
-    def iqr_method(self, distance):
+    def method_iqr(self, distance):
         """fonction pour ken"""
         return IqrMethod(
             self.df,
@@ -32,8 +32,16 @@ class Sample:
             distance
         )
 
-    def sd_method(self, distance):
+    def method_sd(self, distance):
         return IqrMethod(
+            self.df,
+            self.columns_to_test,
+            self.participant_column,
+            distance
+        )
+
+    def method_mad(self, distance):
+        return MadMethod(
             self.df,
             self.columns_to_test,
             self.participant_column,
@@ -60,7 +68,7 @@ class Outliers:
         return str(self.outliers)
 
 
-class IqrMethod(Outliers):
+class MethodIqr(Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -76,7 +84,7 @@ class IqrMethod(Outliers):
         self.calculate("iqr")
 
 
-class SdMethod(Outliers):
+class MethodSd(Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -92,8 +100,24 @@ class SdMethod(Outliers):
         self.calculate("sd")
 
 
+class MethodMad(Outliers):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        column_to_test: str | list | int | pd.Series,
+        participant_column: str | int | pd.Series,
+        distance: int | float
+    ) -> None:
+
+        self.df = df
+        self.columns_to_test = column_to_test
+        self.participant_column = participant_column
+        self.distance = distance
+        self.calculate("mad")
+
+
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     outliers = Sample(df_test, ["PAT1", "CLI1", "DIF1"],
-                      "LIB_NOM_PAT_IND_TPW_IND").sd_method(2)
+                      "LIB_NOM_PAT_IND_TPW_IND").mad_method(2)
     print(outliers)

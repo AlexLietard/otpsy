@@ -3,6 +3,7 @@ from pandas.api.types import is_numeric_dtype, is_float_dtype
 from warnings import warn
 from inspect import signature
 
+
 def _process_column_to_test(df_func, pre_column):
     """This function aim to process the keyword argument column to test"""
 
@@ -105,7 +106,7 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
         warn(f"Columns {columns_modified} has "
              "been modified because they were "
              "not numeric. When it was not "
-             "convertible to numeric, it gave "
+             "convertible to numeric, it gave new"
              "missing value. The number of missing "
              f"value went from {before_transforming} "
              f"to {after_transforming}.")
@@ -157,7 +158,6 @@ def check(function):
             elif key == "distance":
                 try:
                     distance = float(str(value).replace(r"\.", ","))
-                    print(distance)
                 except ValueError:
                     raise ValueError("You need to enter a numeric "
                                      "(a float or an integer) distance.") \

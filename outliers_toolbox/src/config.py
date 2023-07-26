@@ -4,4 +4,5 @@ DICT_FUNCTION = {
     "iqr": threshold_iqr,
     "sd": threshold_sd,
     "mad": threshold_mad,
+    "tukey": threshold_tukey,
 }

@@ -25,7 +25,7 @@ class Sample:
 
     def method_iqr(self, distance):
         """fonction pour ken"""
-        return IqrMethod(
+        return MethodIqr(
             self.df,
             self.columns_to_test,
             self.participant_column,
@@ -33,7 +33,7 @@ class Sample:
         )
 
     def method_sd(self, distance):
-        return IqrMethod(
+        return MethodSd(
             self.df,
             self.columns_to_test,
             self.participant_column,
@@ -41,7 +41,15 @@ class Sample:
         )
 
     def method_mad(self, distance):
-        return MadMethod(
+        return MethodMad(
+            self.df,
+            self.columns_to_test,
+            self.participant_column,
+            distance
+        )
+
+    def method_tukey(self, distance):
+        return MethodTukey(
             self.df,
             self.columns_to_test,
             self.participant_column,
@@ -116,8 +124,24 @@ class MethodMad(Outliers):
         self.calculate("mad")
 
 
+class MethodTukey(Outliers):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        column_to_test: str | list | int | pd.Series,
+        participant_column: str | int | pd.Series,
+        distance: int | float
+    ) -> None:
+
+        self.df = df
+        self.columns_to_test = column_to_test
+        self.participant_column = participant_column
+        self.distance = distance
+        self.calculate("tukey")
+
+
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     outliers = Sample(df_test, ["PAT1", "CLI1", "DIF1"],
-                      "LIB_NOM_PAT_IND_TPW_IND").mad_method(2)
+                      "LIB_NOM_PAT_IND_TPW_IND").method_tukey(1.5)
     print(outliers)

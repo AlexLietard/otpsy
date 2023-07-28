@@ -32,7 +32,6 @@ def threshold_iqr(
         iqr = q3-q1
 
         med = np.nanmedian(df[column])
-        print(med)
 
         # threshold
         low_threshold = med - (distance * iqr)
@@ -156,10 +155,47 @@ def threshold_tukey(
 
         low_threshold = q1 - distance*iqr
         high_threshold = q3 + distance*iqr
-        return low_threshold, high_threshold
+        ret[column] = (low_threshold, high_threshold)
 
     # avoid having a dictionnary for one column
     if len(column_to_test) == 1:
         return ret[column_to_test[0]][0], ret[column_to_test[0]][1]
+    else:
+        return ret
+
+
+@check
+def threshold_Sn(
+    df: pd.DataFrame,
+    column_to_test: str,
+    distance: float | int
+) -> float:
+    """ Tukey detection method
+
+    This function allow the user to have the low threshold
+    and the high threshold with the "Tukey" outliers method
+    with a specific distance.
+
+    Parameters
+    ------------
+        df: pd.DataFrame
+            The dataframe used
+        column: str | list | int | pd.Series
+            The name of the colum of interest
+        distance: float | int
+            The distance used to calculate threshold
+    """
+    ret = {}
+    for column in column_to_test:
+        Sn, all_median = mathematics.S_n(df, column)
+
+        low_threshold = Sn * distance
+        high_threshold = Sn * distance
+
+        ret[column] = (low_threshold, high_threshold, all_median)
+
+    # avoid having a dictionnary for one column
+    if len(column_to_test) == 1:
+        return ret[column_to_test[0]][0], ret[column_to_test[0]][1], ret[column_to_test[0]][2]
     else:
         return ret

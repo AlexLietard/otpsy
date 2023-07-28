@@ -56,6 +56,14 @@ class Sample:
             distance
         )
 
+    def method_Sn(self, distance):
+        return MethodTukey(
+            self.df,
+            self.columns_to_test,
+            self.participant_column,
+            distance
+        )
+
 
 class Outliers:
     def calculate(self, method):
@@ -139,9 +147,40 @@ class MethodTukey(Outliers):
         self.distance = distance
         self.calculate("tukey")
 
+class MethodSn(Outliers):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        column_to_test: str | list | int | pd.Series,
+        participant_column: str | int | pd.Series,
+        distance: int | float
+    ) -> None:
+
+        self.df = df
+        self.columns_to_test = column_to_test
+        self.participant_column = participant_column
+        self.distance = distance
+        self.calculate("Sn")
+
+    def calculate(self, method):
+        self.outliers = {}
+        func = config.DICT_FUNCTION.get(method)
+        for column in self.columns_to_test:
+            # Calculate threshold
+            low_threshold, high_threshold, all_median = func(
+                self.df, column, self.distance)
+            # list of outliers by column
+            # Contrary to the parent calculate method
+            # the identification is realised on the all_median
+            # which contains every median distance to other point
+            list_outliers = all_median.index[
+                ((all_median[column] < low_threshold) |
+                 (all_median[column] > high_threshold))
+            ].tolist()
+            self.outliers[column] = list_outliers
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     outliers = Sample(df_test, ["PAT1", "CLI1", "DIF1"],
-                      "LIB_NOM_PAT_IND_TPW_IND").method_tukey(1.5)
+                      "LIB_NOM_PAT_IND_TPW_IND").method_Sn(1.5)
     print(outliers)

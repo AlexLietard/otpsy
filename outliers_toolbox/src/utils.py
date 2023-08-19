@@ -139,7 +139,7 @@ def check(function):
                 pre_column = value
                 column_to_test = _process_column_to_test(df, pre_column)
                 _convert_column_to_numeric(df, column_to_test)
-                new_kwargs["column_to_test"] = column_to_test
+                new_kwargs[key] = column_to_test
 
             # check participant column
             elif key == "participant_column":
@@ -149,9 +149,12 @@ def check(function):
 
                 # avoid potential overlap between column
                 # to test and participant column
-                if participant_column in column_to_test:
-                    raise ValueError("The participant column can't "
-                                     "be in the columns you want to test")
+                try:
+                    if participant_column in column_to_test:
+                        raise ValueError("The participant column can't "
+                                         "be in the columns you want to test")
+                except UnboundLocalError:
+                    pass
                 new_kwargs["participant_column"] = participant_column
 
             # check distance

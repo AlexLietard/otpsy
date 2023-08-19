@@ -1,8 +1,10 @@
-import pandas as pd
 import numpy as np
-
+import statsmodels.api as sm
+import pandas as pd
 
 # Median Absolute Distance
+
+
 def compute_mad(df, column, median, b) -> float:
     distance_to_median = abs(df[column]-median)
     mad = np.nanmedian(distance_to_median)
@@ -29,10 +31,8 @@ def S_n(df, column):
 
     # create a dataframe with index and median distance to other point
     all_median = df[[column]].apply(lambda x: np.nanmedian(
-        abs(x[column] - df.loc[df.index != x.name, column])), axis=1)
-    
+        abs(x[column] - df.loc[df.index != x.name, column]))
+        if not np.isnan(x[column]) else None, axis=1)
+
     Sn = np.nanmedian(all_median) * c
     return Sn, all_median
-
-
-

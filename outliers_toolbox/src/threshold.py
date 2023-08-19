@@ -165,7 +165,7 @@ def threshold_tukey(
 
 
 @check
-def threshold_Sn(
+def threshold_sn(
     df: pd.DataFrame,
     column_to_test: str,
     distance: float | int
@@ -173,7 +173,7 @@ def threshold_Sn(
     """ Tukey detection method
 
     This function allow the user to have the low threshold
-    and the high threshold with the "Tukey" outliers method
+    and the high threshold with the "Sn" outliers method
     with a specific distance.
 
     Parameters
@@ -189,13 +189,12 @@ def threshold_Sn(
     for column in column_to_test:
         Sn, all_median = mathematics.S_n(df, column)
 
-        low_threshold = Sn * distance
-        high_threshold = Sn * distance
+        threshold = Sn * distance
 
-        ret[column] = (low_threshold, high_threshold, all_median)
+        ret[column] = (threshold, all_median)
 
     # avoid having a dictionnary for one column
     if len(column_to_test) == 1:
-        return ret[column_to_test[0]][0], ret[column_to_test[0]][1], ret[column_to_test[0]][2]
+        return ret[column_to_test[0]][0], ret[column_to_test[0]][1]
     else:
         return ret

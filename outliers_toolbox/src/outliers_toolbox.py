@@ -77,6 +77,7 @@ class Sample:
 class Outliers:
     def calculate(self, method):
         self.outliers = {}
+        self.threshold = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
             # Calculate threshold
@@ -88,9 +89,46 @@ class Outliers:
                  (self.df[column] > high_threshold))
             ].tolist()
             self.outliers[column] = list_outliers
+            self.threshold[column] = (low_threshold, high_threshold)
 
     def __str__(self):
         return str(self.outliers)
+
+    def manage(self, method="delete", column=None):
+        """
+        You can manage your outliers using different methods:
+        * delete : delete the row if it contains 1 or more outliers
+        value
+        * na : replace all outliers value by missing one
+        * winsorise : replace outliers by threshold value of the method
+        """
+        if column is None:
+            column = self.column_to_test
+        # to allow modification of the dataframe without changing the
+        # attribute of the object, a new dataframe is created
+        new_df = self.df
+        column_to_keep = [col for col in self.column_to_test if col in column]
+        if method == "delete":
+            index_to_delete_clean = self._select_index_for_deletion(column)
+            final_df = new_df.drop(index_to_delete_clean)
+        elif method == "na":
+            for col in column_to_keep:
+                new_df.loc[self.outliers[col], col] = np.nan
+            final_df = new_df
+        elif method == "winsorise":
+            for col in column_to_keep:
+                low_threshold, high_threshold = self.threshold[col]
+                new_df.loc[new_df[col] < low_threshold, col] = low_threshold
+                new_df.loc[new_df[col] > high_threshold, col] = high_threshold
+            final_df = new_df
+        return final_df
+
+    def _select_index_for_deletion(self, column):
+        index_to_delete = [
+            index for key, value in self.outliers.items()
+            for index in value if key in column_to_keep
+        ]
+        return list(set(index_to_delete))
 
 
 class MethodIqr(Outliers):

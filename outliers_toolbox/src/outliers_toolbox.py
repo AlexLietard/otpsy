@@ -15,13 +15,16 @@ class Sample:
     def __init__(
             self,
             df: pd.DataFrame,
-            column_to_test: str | list | int | pd.Series = "",
+            column_to_test: str | list | int | pd.Series,
             participant_column: str | int | pd.Series = "",
     ) -> None:
 
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
-        self.df = df.set_index(self.participant_column)
+        if self.participant_column != "":
+            self.df = df.set_index(self.participant_column)
+        else:
+            self.df = df
 
     def method_IQR(self, distance):
         """fonction pour ken"""
@@ -96,15 +99,24 @@ class Outliers:
         output_text += "\n\n"
         output_text += f"Method used : {self.method}\n"
         output_text += f"Distance used : {self.distance}\n"
-        output_text += f"Column tested : {', '.join(self.columns_to_test)}\n"
+        output_text += f"Column tested : {', '.join(self.columns_to_test)}\n" \
+            + "-"*30 + "\n"
         for column in self.columns_to_test:
-            output_text += f"The column {column} has {self.outliers_nb[column]} outliers : "
+            output_text += f"The column {column} has " \
+                           f"{self.outliers_nb[column]} outliers : "
             if self.outliers_nb[column] > 0:
-                text_outliers = ", ".join(self.outliers[column])
-                output_text += text_outliers[0:20] + "."*5 + " "* 2 + text_outliers[-20:-1]
-                
-            output_text += "\n"
-        return output_text
+                output_text += str(self.outliers[column][0]) + ", " + \
+                    str(self.outliers[column][1]) \
+                    + "."*5 + ", " + \
+                    str(self.outliers[column][-1])
+            if self.method == "Sn":
+                output_text += "\nThe threshold median distance to other " \
+                    f"point is {round(self.threshold[column], 2)} \n\n"
+            else:
+                output_text += "\nThe low threshold is " \
+                    f"{round(self.threshold[column][0], 2)} and "\
+                    f"the high threshold is {round(self.threshold[column][1], 2)}\n\n"
+        return output_text[0:-2]
 
     def _calculate(self, method):
         self.outliers = {}
@@ -136,16 +148,16 @@ class Outliers:
         You can manage your outliers using different methods:
         * delete : delete the row if it contains 1 or more outliers
         value
-        * na : replace all outliers by missing one
+        * na : replace all outliers by missing value
         * winsorise : replace outliers by threshold value obtain through
         the outlier method used.
         """
         if column is None:
-            column = self.column_to_test
+            column = self.columns_to_test
         # to allow modification of the dataframe without changing the
         # attribute of the object, a new dataframe is created
         new_df = self.df
-        column_to_keep = [col for col in self.column_to_test if col in column]
+        column_to_keep = [col for col in self.columns_to_test if col in column]
 
         if method == "delete":
             index_to_delete_clean = self._select_index_for_deletion(
@@ -153,15 +165,20 @@ class Outliers:
             final_df = new_df.drop(index_to_delete_clean)
 
         elif method == "na":
-            for col in column_to_keep:
-                new_df.loc[self.outliers[col], col] = np.nan
+            for column in column_to_keep:
+                new_df.loc[self.outliers[column], column] = np.nan
             final_df = new_df
 
         elif method == "winsorise":
-            for col in column_to_keep:
-                low_threshold, high_threshold = self.threshold[col]
-                new_df.loc[new_df[col] < low_threshold, col] = low_threshold
-                new_df.loc[new_df[col] > high_threshold, col] = high_threshold
+            if self.method == "Sn":
+                raise ValueError("No winsorisation is "
+                                 "possible with the Sn method")
+            for column in column_to_keep:
+                low_threshold, high_threshold = self.threshold[column]
+                new_df.loc[new_df[column] <
+                           low_threshold, column] = low_threshold
+                new_df.loc[new_df[column] > high_threshold,
+                           column] = high_threshold
             final_df = new_df
 
         return final_df
@@ -303,6 +320,8 @@ class MethodSn(Outliers):
 
     def _calculate(self, method):
         self.outliers = {}
+        self.threshold = {}
+        self.outliers_nb = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
             # Calculate threshold
@@ -316,6 +335,8 @@ class MethodSn(Outliers):
                 all_distance > threshold
             ].tolist()
             self.outliers[column] = list_outliers
+            self.threshold[column] = threshold
+            self.outliers_nb[column] = len(list_outliers)
 
 
 class MethodPrctile(Outliers):
@@ -339,6 +360,5 @@ if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
-                      participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_SD(2.5)
+                      ).method_Sn(2.5)
     print(outliers)

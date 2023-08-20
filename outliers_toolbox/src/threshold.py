@@ -70,10 +70,12 @@ def threshold_sd(
     # calculate the interquartile range and the median
     ret = {}
     for column in column_to_test:
-
-        # threshold computation
-        low_threshold = np.percentile(df[column], distance)
-        high_threshold = np.percentile(df[column], 1 - distance)
+        sd = np.nanstd(df[column])
+        # Pareil que IQR
+        moy = np.nanmean(df[column])
+        # définition des bornes
+        low_threshold = moy - distance * sd
+        high_threshold = moy + distance * sd
 
         ret[column] = (low_threshold, high_threshold)
 
@@ -219,11 +221,11 @@ def threshold_prctile(
     """
     ret = {}
     for column in column_to_test:
-        Sn, all_median = mathematics.S_n(df, column)
-
-        threshold = Sn * distance
-
-        ret[column] = (threshold, all_median)
+        # threshold computation
+        low_threshold = np.percentile(df[column], distance)
+        high_threshold = np.percentile(df[column], 1 - distance)
+        
+        ret[column] = (low_threshold, high_threshold)
 
     # avoid having a dictionnary for one column
     if len(column_to_test) == 1:

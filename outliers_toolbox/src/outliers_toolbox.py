@@ -83,18 +83,33 @@ class Sample:
 
 
 class Outliers:
-    """ Parent class of all outliers class
+    """ Parent class of every outliers class
 
     The Outliers class contains all the common method of the child class
     associated to each outlier method.
     """
 
     def __str__(self):
-        return str(self.outliers)
+        output_text = "-"*30
+        output_text += "\nSummary of the outliers detection\n"
+        output_text += "-"*30
+        output_text += "\n\n"
+        output_text += f"Method used : {self.method}\n"
+        output_text += f"Distance used : {self.distance}\n"
+        output_text += f"Column tested : {', '.join(self.columns_to_test)}\n"
+        for column in self.columns_to_test:
+            output_text += f"The column {column} has {self.outliers_nb[column]} outliers : "
+            if self.outliers_nb[column] > 0:
+                text_outliers = ", ".join(self.outliers[column])
+                output_text += text_outliers[0:20] + "."*5 + " "* 2 + text_outliers[-20:-1]
+                
+            output_text += "\n"
+        return output_text
 
     def _calculate(self, method):
         self.outliers = {}
         self.threshold = {}
+        self.outliers_nb = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
             # Calculate threshold
@@ -107,6 +122,7 @@ class Outliers:
             ].tolist()
             self.outliers[column] = list_outliers
             self.threshold[column] = (low_threshold, high_threshold)
+            self.outliers_nb[column] = len(list_outliers)
 
     def _select_index_for_deletion(self, column_to_keep):
         index_to_delete = [
@@ -164,6 +180,7 @@ class MethodIqr(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.method = "Inter-quartile range"
         self._calculate("iqr")
 
 
@@ -180,6 +197,7 @@ class MethodSd(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.method = "Standard Deviation"
         self._calculate("sd")
 
 
@@ -190,14 +208,15 @@ class MethodRSd(Outliers):
         column_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float,
-        iteration: int,
+        max_iteration: int,
     ) -> None:
 
         self.df = df
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
-        self.iteration = iteration
+        self.max_iteration = max_iteration
+        self.method = "Recursive Standard Deviation"
         self._calculate("rsd")
 
     def _calculate(self, method):
@@ -207,11 +226,11 @@ class MethodRSd(Outliers):
 
             df_to_operate_n = pd.DataFrame()
             df_to_operate_n_plus_1 = self.df
-            n = 0
+            self.iteration = 0
 
             while len(df_to_operate_n.index) \
                 != len(df_to_operate_n_plus_1.index) \
-                    and n < self.iteration:
+                    and self.iteration < self.max_iteration:
 
                 df_to_operate_n = df_to_operate_n_plus_1
 
@@ -224,13 +243,12 @@ class MethodRSd(Outliers):
                      (self.df[column] > high_threshold))
                 ].tolist()
                 self.outliers[column] = list_outliers
-                print(df_to_operate_n.index)
                 df_to_operate_n_plus_1 = df_to_operate_n.drop(
                     labels=list_outliers,
                     axis=0,
                     errors="ignore"
                 )
-                n += 1
+                self.iteration += 1
 
 
 class MethodMad(Outliers):
@@ -246,6 +264,7 @@ class MethodMad(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.method = "Median Absolute Distance"
         self._calculate("mad")
 
 
@@ -262,6 +281,7 @@ class MethodTukey(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.method = "Tukey"
         self._calculate("tukey")
 
 
@@ -278,6 +298,7 @@ class MethodSn(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.method = "Sn"
         self._calculate("sn")
 
     def _calculate(self, method):
@@ -310,13 +331,14 @@ class MethodPrctile(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.method = "Percentile"
         self._calculate("prctile")
 
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     outliers = Sample(df_test,
-                      column_to_test=["CLI1"],
+                      column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_SD(3)
+                      ).method_SD(2.5)
     print(outliers)

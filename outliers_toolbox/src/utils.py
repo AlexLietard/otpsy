@@ -103,13 +103,13 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
     after_transforming = df_func.isna().sum().sum()
 
     if len(columns_modified) > 0 and before_transforming < after_transforming:
-        warn(f"Columns {columns_modified} has "
-             "been modified because they were "
-             "not numeric. When it was not "
-             "convertible to numeric, it gave new"
-             "missing value. The number of missing "
-             f"value went from {before_transforming} "
-             f"to {after_transforming}.")
+        print(f"UserWarning: Columns {columns_modified} has "
+            "been modified because they were "
+            "not numeric. When it was not "
+            "convertible to numeric, it gave new "
+            "missing value. The number of missing "
+            f"value went from {before_transforming} "
+            f"to {after_transforming}.")
 
 
 def check(function):

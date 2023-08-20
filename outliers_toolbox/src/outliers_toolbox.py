@@ -73,9 +73,26 @@ class Sample:
             distance
         )
 
+    def method_prctile(self, distance):
+        return MethodPrctile(
+            self.df,
+            self.columns_to_test,
+            self.participant_column,
+            distance
+        )
+
 
 class Outliers:
-    def calculate(self, method):
+    """ Parent class of all outliers class
+
+    The Outliers class contains all the common method of the child class
+    associated to each outlier method.
+    """
+
+    def __str__(self):
+        return str(self.outliers)
+
+    def _calculate(self, method):
         self.outliers = {}
         self.threshold = {}
         func = config.DICT_FUNCTION.get(method)
@@ -91,16 +108,21 @@ class Outliers:
             self.outliers[column] = list_outliers
             self.threshold[column] = (low_threshold, high_threshold)
 
-    def __str__(self):
-        return str(self.outliers)
+    def _select_index_for_deletion(self, column_to_keep):
+        index_to_delete = [
+            index for key, value in self.outliers.items()
+            for index in value if key in column_to_keep
+        ]
+        return list(set(index_to_delete))
 
     def manage(self, method="delete", column=None):
         """
         You can manage your outliers using different methods:
         * delete : delete the row if it contains 1 or more outliers
         value
-        * na : replace all outliers value by missing one
-        * winsorise : replace outliers by threshold value of the method
+        * na : replace all outliers by missing one
+        * winsorise : replace outliers by threshold value obtain through
+        the outlier method used.
         """
         if column is None:
             column = self.column_to_test
@@ -108,27 +130,25 @@ class Outliers:
         # attribute of the object, a new dataframe is created
         new_df = self.df
         column_to_keep = [col for col in self.column_to_test if col in column]
+
         if method == "delete":
-            index_to_delete_clean = self._select_index_for_deletion(column)
+            index_to_delete_clean = self._select_index_for_deletion(
+                column_to_keep)
             final_df = new_df.drop(index_to_delete_clean)
+
         elif method == "na":
             for col in column_to_keep:
                 new_df.loc[self.outliers[col], col] = np.nan
             final_df = new_df
+
         elif method == "winsorise":
             for col in column_to_keep:
                 low_threshold, high_threshold = self.threshold[col]
                 new_df.loc[new_df[col] < low_threshold, col] = low_threshold
                 new_df.loc[new_df[col] > high_threshold, col] = high_threshold
             final_df = new_df
-        return final_df
 
-    def _select_index_for_deletion(self, column):
-        index_to_delete = [
-            index for key, value in self.outliers.items()
-            for index in value if key in column_to_keep
-        ]
-        return list(set(index_to_delete))
+        return final_df
 
 
 class MethodIqr(Outliers):
@@ -144,7 +164,7 @@ class MethodIqr(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
-        self.calculate("iqr")
+        self._calculate("iqr")
 
 
 class MethodSd(Outliers):
@@ -160,7 +180,7 @@ class MethodSd(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
-        self.calculate("sd")
+        self._calculate("sd")
 
 
 class MethodRSd(Outliers):
@@ -178,9 +198,9 @@ class MethodRSd(Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.iteration = iteration
-        self.calculate("rsd")
+        self._calculate("rsd")
 
-    def calculate(self, method):
+    def _calculate(self, method):
         self.outliers = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
@@ -226,7 +246,7 @@ class MethodMad(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
-        self.calculate("mad")
+        self._calculate("mad")
 
 
 class MethodTukey(Outliers):
@@ -242,7 +262,7 @@ class MethodTukey(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
-        self.calculate("tukey")
+        self._calculate("tukey")
 
 
 class MethodSn(Outliers):
@@ -258,9 +278,9 @@ class MethodSn(Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
-        self.calculate("sn")
+        self._calculate("sn")
 
-    def calculate(self, method):
+    def _calculate(self, method):
         self.outliers = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
@@ -275,6 +295,22 @@ class MethodSn(Outliers):
                 all_distance > threshold
             ].tolist()
             self.outliers[column] = list_outliers
+
+
+class MethodPrctile(Outliers):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        column_to_test: str | list | int | pd.Series,
+        participant_column: str | int | pd.Series,
+        distance: int | float
+    ) -> None:
+
+        self.df = df
+        self.columns_to_test = column_to_test
+        self.participant_column = participant_column
+        self.distance = distance
+        self._calculate("prctile")
 
 
 if __name__ == "__main__":

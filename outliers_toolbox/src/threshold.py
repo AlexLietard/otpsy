@@ -70,14 +70,10 @@ def threshold_sd(
     # calculate the interquartile range and the median
     ret = {}
     for column in column_to_test:
-        sd = np.nanstd(df[column])
 
-        # Pareil que IQR
-        moy = np.nanmean(df[column])
-
-        # définition des bornes
-        low_threshold = moy - distance * sd
-        high_threshold = moy + distance * sd
+        # threshold computation
+        low_threshold = np.percentile(df[column], distance)
+        high_threshold = np.percentile(df[column], 1 - distance)
 
         ret[column] = (low_threshold, high_threshold)
 
@@ -170,10 +166,46 @@ def threshold_sn(
     column_to_test: str,
     distance: float | int
 ) -> float:
-    """ Tukey detection method
+    """ Sn detection method
 
     This function allow the user to have the low threshold
     and the high threshold with the "Sn" outliers method
+    with a specific distance.
+
+    Parameters
+    ------------
+        df: pd.DataFrame
+            The dataframe used
+        column: str | list | int | pd.Series
+            The name of the colum of interest
+        distance: float | int
+            The distance used to calculate threshold
+    """
+    ret = {}
+    for column in column_to_test:
+        Sn, all_median = mathematics.S_n(df, column)
+
+        threshold = Sn * distance
+
+        ret[column] = (threshold, all_median)
+
+    # avoid having a dictionnary for one column
+    if len(column_to_test) == 1:
+        return ret[column_to_test[0]][0], ret[column_to_test[0]][1]
+    else:
+        return ret
+
+
+@check
+def threshold_prctile(
+    df: pd.DataFrame,
+    column_to_test: str,
+    distance: float | int
+    ) -> float:
+    """ Percentile detection method
+
+    This function allow the user to have the low threshold
+    and the high threshold with the "Percentile" outliers method
     with a specific distance.
 
     Parameters

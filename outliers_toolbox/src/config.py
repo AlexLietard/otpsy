@@ -8,4 +8,5 @@ DICT_FUNCTION = {
     "tukey": threshold_tukey,
     "sn": threshold_sn,
     "rsd": threshold_sd,
+    "prctile": threshold_prctile,
 }

@@ -1,11 +1,16 @@
+"""Module used for computation"""
 import numpy as np
-import statsmodels.api as sm
-import pandas as pd
 
 # Median Absolute Distance
 
 
 def compute_mad(df, column, median, b) -> float:
+    """Compute Median absolute distance
+    
+    This function give the Median absolute distance.
+    For more information, read the documentation or 
+    search for the article Leys et al. (2013). 
+    """
     distance_to_median = abs(df[column]-median)
     mad = np.nanmedian(distance_to_median)
     return mad*b

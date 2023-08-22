@@ -1,7 +1,8 @@
+import utils
+import config
 import pandas as pd
 import numpy as np
-from . import utils
-from . import config
+
 
 
 class Sample:
@@ -91,6 +92,8 @@ class Outliers:
     The Outliers class contains all the common method of the child class
     associated to each outlier method.
     """
+    def __init__(self) -> None:
+        self.outliers_index = {}
 
     def __str__(self):
         output_text = "-"*30
@@ -115,7 +118,8 @@ class Outliers:
             else:
                 output_text += "\nLow threshold : " \
                     f"{round(self.threshold[column][0], 2)} / "\
-                    f"High threshold : {round(self.threshold[column][1], 2)}\n\n"
+                    f"High threshold : {round(self.threshold[column][1], 2)}"\
+                    "\n\n"
         return output_text[0:-2]
 
     def _calculate(self, method):
@@ -135,7 +139,7 @@ class Outliers:
             self.outliers[column] = list_outliers
             self.threshold[column] = (low_threshold, high_threshold)
             self.outliers_nb[column] = len(list_outliers)
-        self.outliers_index = utils._select_index(
+        self.outliers_index = utils.select_index(
             self.outliers.keys(), self.outliers)
 
     def manage(self, method="delete", column=None):
@@ -155,7 +159,7 @@ class Outliers:
         column_to_keep = [col for col in self.columns_to_test if col in column]
 
         if method == "delete":
-            index_to_delete_clean = utils._select_index(
+            index_to_delete_clean = utils.select_index(
                 column_to_keep, self.outliers)
             final_df = new_df.drop(index_to_delete_clean)
 
@@ -175,7 +179,7 @@ class Outliers:
                 new_df.loc[new_df[column] > high_threshold,
                            column] = high_threshold
             final_df = new_df
-    
+
         return final_df
 
     def inspect(
@@ -193,12 +197,12 @@ class Outliers:
         ---
         Parameters:
             * aberrant : str
-                * value (default value) : If an outlier value is detected, 
+                * value (default value) : If an outlier value is detected,
                 then the cell will contains the value of this one.
                 * bool : If an outlier value is detected, then the cell
                 will contains the boolean True
             * other_value : str
-                * bool (default value): If the value is not aberrant, 
+                * bool (default value): If the value is not aberrant,
                 then the cell will contains the boolean cell.
                 * value : If the value is not aberrant, then the cell
                 will contains the value associated
@@ -206,13 +210,13 @@ class Outliers:
                 * False (default) : Participants without aberrant value
                 is not present in the table.
                 * True : Participant without aberrant value is present
-            * all_columns: str 
-                * False (default value) : The table only contains columns 
+            * all_columns: str
+                * False (default value) : The table only contains columns
                 that has been chosen to test. Thus, if your initial dataframe
                 contains 20 columns and you choose to test 5 of them, the
                 final table will contains 5 columns
-                * True :  The table contains every columns in the initial 
-                dataframe. Thus, if your initial dataframe contains 20 
+                * True :  The table contains every columns in the initial
+                dataframe. Thus, if your initial dataframe contains 20
                 columns and you tested only 5 of them, the final table
                 will contains 20 columns.
         """
@@ -222,9 +226,9 @@ class Outliers:
         ini_table = pd.DataFrame(index=self.df.index)
 
         for column in self.df.columns:
-            if column in self.outliers.keys():
+            if column in self.outliers:
                 temporary_series = self.df[[column]].apply(
-                    utils._parameters_of_the_table,
+                    utils.parameters_of_the_table,
                     args=(aberrant, other_value, self.outliers, column),
                     axis=1)
                 df_to_append = pd.DataFrame(temporary_series, columns=[column])
@@ -232,7 +236,8 @@ class Outliers:
             else:
                 ini_table[column] = self.df[column]
         if not all_participants:
-            ini_table = ini_table.loc[ini_table.index.isin(self.outliers_index)]
+            ini_table = ini_table.loc[ini_table.index.isin(
+                self.outliers_index)]
         if not all_columns:
             ini_table = ini_table[self.outliers.keys()]
         return ini_table
@@ -382,8 +387,8 @@ class MethodSn(Outliers):
             threshold, all_distance = func(
                 self.df, column, self.distance)
             # list of outliers by column
-            # Contrary to the parent calculate method
-            # the identification is realised on the all_median
+            # Contrary to the parent calculate method,
+            # the identification is realised on the all_distance
             # which contains every median distance to other point
             list_outliers = all_distance.index[
                 all_distance > threshold
@@ -417,4 +422,3 @@ if __name__ == "__main__":
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
                       ).method_SD(2.5)
     inspection = outliers.inspect("bool", "bool", all_columns=True)"""
-

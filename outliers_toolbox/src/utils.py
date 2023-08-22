@@ -177,15 +177,21 @@ def check(function):
     return verify_arguments
 
 
-def _select_index(column_to_keep, outliers):
+def select_index(column_to_keep, outliers) -> list:
+    """Private method to take all value of the dictionnary
+    self.outliers and clean it
+    """
+    # remove list in the list
     index_to_delete = [
         index for key, value in outliers.items()
         for index in value if key in column_to_keep
     ]
+    # avoid duplicate
     return list(set(index_to_delete))
 
 
-def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
+def parameters_of_the_table(x, aberrant, other_value, outliers, column):
+    """Private method to manage the output of the table of obj.inspect()"""
     if x.name in outliers[column]:
         final = x[column] if aberrant == "value" else True
     else:

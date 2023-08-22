@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from utils import check
+import utils
 import config
 
 
@@ -11,7 +11,7 @@ class Sample:
     :param dataframe: The dataframe used
     :param column: The column that the user wants to test.
     """
-    @check
+    @utils.check
     def __init__(
             self,
             df: pd.DataFrame,
@@ -110,12 +110,12 @@ class Outliers:
                     + "."*5 + ", " + \
                     str(self.outliers[column][-1])
             if self.method == "Sn":
-                output_text += "\nThe threshold median distance to other " \
+                output_text += "\nThreshold median distance to other " \
                     f"point is {round(self.threshold[column], 2)} \n\n"
             else:
-                output_text += "\nThe low threshold is " \
-                    f"{round(self.threshold[column][0], 2)} and "\
-                    f"the high threshold is {round(self.threshold[column][1], 2)}\n\n"
+                output_text += "\nLow threshold : " \
+                    f"{round(self.threshold[column][0], 2)} / "\
+                    f"High threshold : {round(self.threshold[column][1], 2)}\n\n"
         return output_text[0:-2]
 
     def _calculate(self, method):
@@ -136,13 +136,6 @@ class Outliers:
             self.threshold[column] = (low_threshold, high_threshold)
             self.outliers_nb[column] = len(list_outliers)
 
-    def _select_index_for_deletion(self, column_to_keep):
-        index_to_delete = [
-            index for key, value in self.outliers.items()
-            for index in value if key in column_to_keep
-        ]
-        return list(set(index_to_delete))
-
     def manage(self, method="delete", column=None):
         """
         You can manage your outliers using different methods:
@@ -160,8 +153,8 @@ class Outliers:
         column_to_keep = [col for col in self.columns_to_test if col in column]
 
         if method == "delete":
-            index_to_delete_clean = self._select_index_for_deletion(
-                column_to_keep)
+            index_to_delete_clean = utils._select_index(
+                column_to_keep, self.outliers)
             final_df = new_df.drop(index_to_delete_clean)
 
         elif method == "na":
@@ -182,6 +175,69 @@ class Outliers:
             final_df = new_df
 
         return final_df
+
+    def inspect(
+            self,
+            all_columns: bool = False,
+            aberrant: str = "value",
+            other_value: str = "bool",
+            all_participants: bool = False,
+    ):
+        """ Inspect in more details your outlier
+
+        This method has the purpose to show some details about the outliers.
+        It renders a table containing all participant having at least one
+        aberrant value.
+        ---
+        Parameters:
+            * all_columns: str 
+                * False (default value) : The table only contains columns 
+                that has been chosen to test. Thus, if your initial dataframe
+                contains 20 columns and you choose to test 5 of them, the
+                final table will contains 5 columns
+                * True :  The table contains every columns in the initial 
+                dataframe. Thus, if your initial dataframe contains 20 
+                columns and you tested only 5 of them, the final table
+                will contains 20 columns.
+            * aberrant : str
+                * value (default value) : If an outlier value is detected, 
+                then the cell will contains the value of this one.
+                * boolean : If an outlier value is detected, then the cell
+                will contains the boolean True
+            * other_value : str
+                * boolean (default value): If the value is not aberrant, 
+                then the cell will contains the boolean cell.
+                * value : If the value is not aberrant, then the cell
+                will contains the value associated
+            * all_participants : bool
+                * False (default) : Participants without aberrant value
+                is not present in the table.
+                * True : Participant without aberrant value is present
+        """
+        # the iteration on df.columns and not on keys of self.outliers
+        # is present to conserve the order of columns in the initial
+        # dataframe
+        ini_table = pd.DataFrame(index=self.df.index)
+        outliers_index = utils._select_index(
+            self.outliers.keys(), self.outliers)
+        for column in self.df.columns:
+            if column in self.outliers.keys():
+                temporary_series = self.df[[column]].apply(
+                    utils._parameters_of_the_table,
+                    args=(aberrant, other_value, self.outliers, column),
+                    axis=1)
+                df_to_append = pd.DataFrame(temporary_series, columns=[column])
+                ini_table = ini_table.join(df_to_append)
+            else:
+                ini_table[column] = self.df[column]
+        if not all_participants:
+            ini_table = ini_table.loc[ini_table.index.isin(outliers_index)]
+        if not all_columns:
+            ini_table = ini_table[self.outliers.keys()]
+        return ini_table
+
+    def show_attributes(self):
+        pass
 
 
 class MethodIqr(Outliers):
@@ -360,5 +416,7 @@ if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
-                      ).method_Sn(2.5)
-    print(outliers)
+                      participant_column="LIB_NOM_PAT_IND_TPW_IND"
+                      ).method_SD(2.5)
+    inspection = outliers.inspect()
+    print(inspection)

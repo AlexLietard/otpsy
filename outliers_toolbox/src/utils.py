@@ -1,6 +1,5 @@
 import pandas as pd
 from pandas.api.types import is_numeric_dtype, is_float_dtype
-from warnings import warn
 from inspect import signature
 
 
@@ -71,7 +70,7 @@ def _process_participant_column(df_func, pre_participant_column):
 
     elif isinstance(pre_participant_column, str):
         if pre_participant_column not in df_func.columns \
-            and pre_participant_column != "":
+                and pre_participant_column != "":
             raise NameError("The column you enter is not in the dataframe")
         participant_column = pre_participant_column
     else:
@@ -105,19 +104,19 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
 
     if len(columns_modified) > 0 and before_transforming < after_transforming:
         print(f"UserWarning: Columns {columns_modified} has "
-            "been modified because they were "
-            "not numeric. When it was not "
-            "convertible to numeric, it gave new "
-            "missing value. The number of missing "
-            f"value went from {before_transforming} "
-            f"to {after_transforming}.")
+              "been modified because they were "
+              "not numeric. When it was not "
+              "convertible to numeric, it gave new "
+              "missing value. The number of missing "
+              f"value went from {before_transforming} "
+              f"to {after_transforming}.")
 
 
 def check(function):
     """ Decorator to transform argument in the good format
 
     For every parameters possible in the package, there is
-    a check of the arguments passed.
+    a checking of the arguments passed.
     """
     def verify_arguments(*args, **kwargs):
         new_kwargs = {}
@@ -176,3 +175,19 @@ def check(function):
         return func
 
     return verify_arguments
+
+
+def _select_index(column_to_keep, outliers):
+    index_to_delete = [
+        index for key, value in outliers.items()
+        for index in value if key in column_to_keep
+    ]
+    return list(set(index_to_delete))
+
+
+def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
+    if x.name in outliers[column]:
+        final = x[column] if aberrant == "value" else True
+    else:
+        final = False if other_value == "bool" else x[column]
+    return final

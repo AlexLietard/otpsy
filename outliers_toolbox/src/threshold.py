@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from utils import check
-import mathematics
+from .utils import check
+from . import mathematics
 
 
 @check

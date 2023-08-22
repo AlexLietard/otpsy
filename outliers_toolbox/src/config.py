@@ -1,12 +1,11 @@
-from threshold import *
-from mathematics import *
+from . import threshold as th
 
 DICT_FUNCTION = {
-    "iqr": threshold_iqr,
-    "sd": threshold_sd,
-    "mad": threshold_mad,
-    "tukey": threshold_tukey,
-    "sn": threshold_sn,
-    "rsd": threshold_sd,
-    "prctile": threshold_prctile,
+    "iqr": th.threshold_iqr,
+    "sd": th.threshold_sd,
+    "mad": th.threshold_mad,
+    "tukey": th.threshold_tukey,
+    "sn": th.threshold_sn,
+    "rsd": th.threshold_sd,
+    "prctile": th.threshold_prctile,
 }

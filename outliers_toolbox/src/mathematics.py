@@ -13,7 +13,11 @@ def compute_mad(df, column, median, b) -> float:
 # Sn
 
 
-def select_c(n):
+def _select_c(n):
+    """ Private function
+    
+    This function aim to select "c" for the Sn method. 
+    """
     if n < 10:
         c_depending_n = [0, 0.743, 1.851, 0.954,
                          1.351, 0.993, 1.198, 1.005, 1.131]
@@ -26,8 +30,13 @@ def select_c(n):
 
 
 def S_n(df, column):
+    """ Compute Sn on Python
+    
+    This function aim to compute the Sn value. This value is obtained
+    $ADD_FORMULA$
+    """
     n = len(df[column])
-    c = select_c(n)
+    c = _select_c(n)
 
     # create a dataframe with index and median distance to other point
     all_median = df[[column]].apply(lambda x: np.nanmedian(

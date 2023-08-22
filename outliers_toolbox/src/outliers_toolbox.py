@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-import utils
-import config
+from . import utils
+from . import config
 
 
 class Sample:
@@ -135,6 +135,8 @@ class Outliers:
             self.outliers[column] = list_outliers
             self.threshold[column] = (low_threshold, high_threshold)
             self.outliers_nb[column] = len(list_outliers)
+        self.outliers_index = utils._select_index(
+            self.outliers.keys(), self.outliers)
 
     def manage(self, method="delete", column=None):
         """
@@ -173,15 +175,15 @@ class Outliers:
                 new_df.loc[new_df[column] > high_threshold,
                            column] = high_threshold
             final_df = new_df
-
+    
         return final_df
 
     def inspect(
             self,
-            all_columns: bool = False,
             aberrant: str = "value",
             other_value: str = "bool",
             all_participants: bool = False,
+            all_columns: bool = False,
     ):
         """ Inspect in more details your outlier
 
@@ -190,6 +192,20 @@ class Outliers:
         aberrant value.
         ---
         Parameters:
+            * aberrant : str
+                * value (default value) : If an outlier value is detected, 
+                then the cell will contains the value of this one.
+                * bool : If an outlier value is detected, then the cell
+                will contains the boolean True
+            * other_value : str
+                * bool (default value): If the value is not aberrant, 
+                then the cell will contains the boolean cell.
+                * value : If the value is not aberrant, then the cell
+                will contains the value associated
+            * all_participants : bool
+                * False (default) : Participants without aberrant value
+                is not present in the table.
+                * True : Participant without aberrant value is present
             * all_columns: str 
                 * False (default value) : The table only contains columns 
                 that has been chosen to test. Thus, if your initial dataframe
@@ -199,27 +215,12 @@ class Outliers:
                 dataframe. Thus, if your initial dataframe contains 20 
                 columns and you tested only 5 of them, the final table
                 will contains 20 columns.
-            * aberrant : str
-                * value (default value) : If an outlier value is detected, 
-                then the cell will contains the value of this one.
-                * boolean : If an outlier value is detected, then the cell
-                will contains the boolean True
-            * other_value : str
-                * boolean (default value): If the value is not aberrant, 
-                then the cell will contains the boolean cell.
-                * value : If the value is not aberrant, then the cell
-                will contains the value associated
-            * all_participants : bool
-                * False (default) : Participants without aberrant value
-                is not present in the table.
-                * True : Participant without aberrant value is present
         """
         # the iteration on df.columns and not on keys of self.outliers
         # is present to conserve the order of columns in the initial
         # dataframe
         ini_table = pd.DataFrame(index=self.df.index)
-        outliers_index = utils._select_index(
-            self.outliers.keys(), self.outliers)
+
         for column in self.df.columns:
             if column in self.outliers.keys():
                 temporary_series = self.df[[column]].apply(
@@ -231,13 +232,10 @@ class Outliers:
             else:
                 ini_table[column] = self.df[column]
         if not all_participants:
-            ini_table = ini_table.loc[ini_table.index.isin(outliers_index)]
+            ini_table = ini_table.loc[ini_table.index.isin(self.outliers_index)]
         if not all_columns:
             ini_table = ini_table[self.outliers.keys()]
         return ini_table
-
-    def show_attributes(self):
-        pass
 
 
 class MethodIqr(Outliers):
@@ -414,9 +412,9 @@ class MethodPrctile(Outliers):
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    outliers = Sample(df_test,
+    """outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
                       ).method_SD(2.5)
-    inspection = outliers.inspect()
-    print(inspection)
+    inspection = outliers.inspect("bool", "bool", all_columns=True)"""
+

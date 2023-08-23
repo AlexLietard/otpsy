@@ -79,6 +79,22 @@ def _process_participant_column(df_func, pre_participant_column):
     return participant_column
 
 
+def _process_threshold_entered(value):
+    if isinstance(value, dict):
+        for key, val in value.items():
+            pass
+
+
+def _process_distance(value):
+    try:
+        distance = float(str(value).replace(r"\.", ","))
+    except ValueError:
+        raise ValueError("You need to enter a numeric "
+                         "(a float or an integer) distance.") \
+            from ValueError
+    return distance
+
+
 def _convert_column_to_numeric(df_func, column_to_test_func):
     """
     to convert column in a numeric format
@@ -159,13 +175,11 @@ def check(function):
 
             # check distance
             elif key == "distance":
-                try:
-                    distance = float(str(value).replace(r"\.", ","))
-                except ValueError:
-                    raise ValueError("You need to enter a numeric "
-                                     "(a float or an integer) distance.") \
-                        from ValueError
+                distance = _process_distance(value)
                 new_kwargs["distance"] = distance
+
+            elif key == "threshold":
+                new_kwargs["threshold"] = _process_threshold_entered(value)
 
         # to pass self when its decorating class
         if "self" in kwargs:

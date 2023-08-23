@@ -92,6 +92,13 @@ class Sample:
             self.participant_column,
             distance
         )
+    def method_cutoff(self, threshold):
+        return MethodCutOff(
+            self.df,
+            self.columns_to_test,
+            self.participant_column,
+            threshold
+        )
 
 
 class _Outliers:
@@ -223,7 +230,7 @@ class _Outliers:
                 * value : If the value is not aberrant, then the cell
                 will contains the value associated
             * all_participants (bool) : Keep all participant or not
-                * False (default) : Participants without aberrant value
+                * False (default value) : Participants without aberrant value
                 is not present in the table.
                 * True : Participant without aberrant value is present
             * all_columns (bool) : Keep all columns or not
@@ -430,11 +437,43 @@ class MethodPrctile(_Outliers):
         self._calculate("prctile")
 
 
+class MethodCutOff(_Outliers):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        column_to_test: str | list | int | pd.Series,
+        participant_column: str | int | pd.Series,
+        threshold: int | float
+    ) -> None:
+
+        self.df = df
+        self.columns_to_test = column_to_test
+        self.participant_column = participant_column
+        self.threshold = threshold
+        self.method = "Cut-Off"
+        self._calculate()
+    
+    def _calculate(self):
+        """ Private method used to calculate outliers """
+        self.outliers_index = {}
+        self.outliers = {}
+        self.outliers_nb = {}
+        # get the function for calculate threshold
+        for column in self.columns_to_test:
+            # list of outliers by column
+            list_outliers = self.df.index[
+                self.df[column] < self.threshold
+            ].tolist()
+            self.outliers[column] = list_outliers
+            self.outliers_nb[column] = len(list_outliers)
+        self.outliers_index = utils._select_index(
+            self.outliers.keys(), self.outliers)
+
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_SD(2.5)
-    inspection = outliers.inspect("bool", "bool", all_columns=True)
+                      ).method_cutoff(2.5)
+    inspection = outliers.inspect("value", "bool", all_columns=False)
     print(inspection)

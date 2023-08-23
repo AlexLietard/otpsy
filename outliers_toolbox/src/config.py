@@ -1,4 +1,4 @@
-from . import threshold as th
+import threshold as th
 
 DICT_FUNCTION = {
     "iqr": th.threshold_iqr,

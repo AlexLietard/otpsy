@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
-from .utils import check
-from . import mathematics
+from utils import check
+import mathematics
 
 
 @check
@@ -20,7 +20,7 @@ def threshold_iqr(
     ------------
         df: pd.DataFrame
             The dataframe used
-        column: str | list | int | pd.Series
+        column_to_test: str | list | int | pd.Series
             The name of the colum of interest
         distance: float | int
             The distance used to calculate threshold
@@ -62,7 +62,7 @@ def threshold_sd(
     ------------
         df: pd.DataFrame
             The dataframe used
-        column: str | list | int | pd.Series
+        column_to_test: str | list | int | pd.Series
             The name of the colum of interest
         distance: float | int
             The distance used to calculate threshold
@@ -102,7 +102,7 @@ def threshold_mad(
     ------------
         df: pd.DataFrame
             The dataframe used
-        column: str | list | int | pd.Series
+        column_to_test: str | list | int | pd.Series
             The name of the colum of interest
         distance: float | int
             The distance used to calculate threshold
@@ -141,7 +141,7 @@ def threshold_tukey(
     ------------
         df: pd.DataFrame
             The dataframe used
-        column: str | list | int | pd.Series
+        column_to_test: str | list | int | pd.Series
             The name of the colum of interest
         distance: float | int
             The distance used to calculate threshold
@@ -178,7 +178,7 @@ def threshold_sn(
     ------------
         df: pd.DataFrame
             The dataframe used
-        column: str | list | int | pd.Series
+        column_to_test: str | list | int | pd.Series
             The name of the colum of interest
         distance: float | int
             The distance used to calculate threshold
@@ -214,7 +214,7 @@ def threshold_prctile(
     ------------
         df: pd.DataFrame
             The dataframe used
-        column: str | list | int | pd.Series
+        column_to_test: str | list | int | pd.Series
             The name of the colum of interest
         distance: float | int
             The distance used to calculate threshold

@@ -4,13 +4,21 @@ import pandas as pd
 import numpy as np
 
 
-
 class Sample:
     """
-    Contains the information about the different outliers
-    for a certain column or list of columns
-    :param dataframe: The dataframe used
-    :param column: The column that the user wants to test.
+    Contains the data you want to pass in the detection
+    of outliers.
+    Parameters
+        * df (pd.Dataframe) :
+            * Enter the dataframe you want to test
+        * column_to_test (str | list | int | pd.Series) :
+            * Enter either the name, a list of name,
+            the index of column, or directly the column
+        * participant_column: str | int | pd.Series
+            * Enter the participant refering participant. 
+            If this column is directly your index, or you want
+            to see the line number of outliers, don't specify a
+            arguments. 
     """
     @utils.check
     def __init__(
@@ -86,14 +94,12 @@ class Sample:
         )
 
 
-class Outliers:
-    """ Parent class of every outliers class
+class _Outliers:
+    """ ! Private Parent class of every outliers class !
 
-    The Outliers class contains all the common method of the child class
-    associated to each outlier method.
+    The Outliers class contains all the common method of the child class.
+    Child class are all outliers class (SD, IQR,...). 
     """
-    def __init__(self) -> None:
-        self.outliers_index = {}
 
     def __str__(self):
         output_text = "-"*30
@@ -123,9 +129,12 @@ class Outliers:
         return output_text[0:-2]
 
     def _calculate(self, method):
+        """ Private method used to calculate outliers """
+        self.outliers_index = {}
         self.outliers = {}
         self.threshold = {}
         self.outliers_nb = {}
+        # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
             # Calculate threshold
@@ -139,17 +148,24 @@ class Outliers:
             self.outliers[column] = list_outliers
             self.threshold[column] = (low_threshold, high_threshold)
             self.outliers_nb[column] = len(list_outliers)
-        self.outliers_index = utils.select_index(
+        self.outliers_index = utils._select_index(
             self.outliers.keys(), self.outliers)
 
     def manage(self, method="delete", column=None):
-        """
-        You can manage your outliers using different methods:
-        * delete : delete the row if it contains 1 or more outliers
-        value
-        * na : replace all outliers by missing value
-        * winsorise : replace outliers by threshold value obtain through
-        the outlier method used.
+        """ Manage your outliers
+
+        After detecting outliers, you can deal with them using 
+        different methods. The method you will apply can be applied
+        only on specific columns. 
+        ---
+        Parameters
+            * method (str): You can manage your outliers using different methods :
+                * delete : delete the row if it contains 1 or more outliers
+                value, also call truncation
+                * na : replace all outliers by missing value NaN
+                * winsorise : replace outliers by threshold value obtain through
+                the outlier method used.
+        Furh
         """
         if column is None:
             column = self.columns_to_test
@@ -159,7 +175,7 @@ class Outliers:
         column_to_keep = [col for col in self.columns_to_test if col in column]
 
         if method == "delete":
-            index_to_delete_clean = utils.select_index(
+            index_to_delete_clean = utils._select_index(
                 column_to_keep, self.outliers)
             final_df = new_df.drop(index_to_delete_clean)
 
@@ -192,58 +208,57 @@ class Outliers:
         """ Inspect in more details your outlier
 
         This method has the purpose to show some details about the outliers.
-        It renders a table containing all participant having at least one
-        aberrant value.
+        It renders a table containing all outliers, editable via parameters 
+        of the function.
         ---
         Parameters:
-            * aberrant : str
+            * aberrant (str) : Format of aberrant value
                 * value (default value) : If an outlier value is detected,
                 then the cell will contains the value of this one.
                 * bool : If an outlier value is detected, then the cell
                 will contains the boolean True
-            * other_value : str
+            * other_value (str) : Format of other value
                 * bool (default value): If the value is not aberrant,
                 then the cell will contains the boolean cell.
                 * value : If the value is not aberrant, then the cell
                 will contains the value associated
-            * all_participants : bool
+            * all_participants (bool) : Keep all participant or not
                 * False (default) : Participants without aberrant value
                 is not present in the table.
                 * True : Participant without aberrant value is present
-            * all_columns: str
+            * all_columns (bool) : Keep all columns or not
                 * False (default value) : The table only contains columns
                 that has been chosen to test. Thus, if your initial dataframe
                 contains 20 columns and you choose to test 5 of them, the
                 final table will contains 5 columns
-                * True :  The table contains every columns in the initial
+                * True : The table contains every columns in the initial
                 dataframe. Thus, if your initial dataframe contains 20
                 columns and you tested only 5 of them, the final table
                 will contains 20 columns.
         """
+        table = pd.DataFrame(index=self.df.index)
         # the iteration on df.columns and not on keys of self.outliers
         # is present to conserve the order of columns in the initial
         # dataframe
-        ini_table = pd.DataFrame(index=self.df.index)
-
         for column in self.df.columns:
             if column in self.outliers:
                 temporary_series = self.df[[column]].apply(
-                    utils.parameters_of_the_table,
+                    utils._parameters_of_the_table,
                     args=(aberrant, other_value, self.outliers, column),
                     axis=1)
                 df_to_append = pd.DataFrame(temporary_series, columns=[column])
-                ini_table = ini_table.join(df_to_append)
+                table = table.join(df_to_append)
             else:
-                ini_table[column] = self.df[column]
+                table[column] = self.df[column]
         if not all_participants:
-            ini_table = ini_table.loc[ini_table.index.isin(
+            table = table.loc[table.index.isin(
                 self.outliers_index)]
         if not all_columns:
-            ini_table = ini_table[self.outliers.keys()]
-        return ini_table
+            table = table[self.outliers.keys()]
+        return table
 
 
-class MethodIqr(Outliers):
+class MethodIqr(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -260,7 +275,7 @@ class MethodIqr(Outliers):
         self._calculate("iqr")
 
 
-class MethodSd(Outliers):
+class MethodSd(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -277,7 +292,7 @@ class MethodSd(Outliers):
         self._calculate("sd")
 
 
-class MethodRSd(Outliers):
+class MethodRSd(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -327,7 +342,7 @@ class MethodRSd(Outliers):
                 self.iteration += 1
 
 
-class MethodMad(Outliers):
+class MethodMad(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -344,7 +359,7 @@ class MethodMad(Outliers):
         self._calculate("mad")
 
 
-class MethodTukey(Outliers):
+class MethodTukey(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -361,7 +376,7 @@ class MethodTukey(Outliers):
         self._calculate("tukey")
 
 
-class MethodSn(Outliers):
+class MethodSn(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -398,7 +413,7 @@ class MethodSn(Outliers):
             self.outliers_nb[column] = len(list_outliers)
 
 
-class MethodPrctile(Outliers):
+class MethodPrctile(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
@@ -417,8 +432,9 @@ class MethodPrctile(Outliers):
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    """outliers = Sample(df_test,
+    outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
                       ).method_SD(2.5)
-    inspection = outliers.inspect("bool", "bool", all_columns=True)"""
+    inspection = outliers.inspect("bool", "bool", all_columns=True)
+    print(inspection)

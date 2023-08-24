@@ -79,18 +79,12 @@ def _process_participant_column(df_func, pre_participant_column):
     return participant_column
 
 
-def _process_threshold_entered(value):
-    if isinstance(value, dict):
-        for key, val in value.items():
-            pass
-
-
 def _process_distance(value):
     try:
         distance = float(str(value).replace(r"\.", ","))
     except ValueError:
         raise ValueError("You need to enter a numeric "
-                         "(a float or an integer) distance.") \
+                         "(a float or an integer) value.") \
             from ValueError
     return distance
 
@@ -128,10 +122,10 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
               f"to {after_transforming}.")
 
 
-def check(function):
+def check_Sample(function):
     """ Decorator to transform argument in the good format
 
-    For every parameters possible in the package, there is
+    For parameters pass in the class Sample, there is
     a checking of the arguments passed.
     """
     def verify_arguments(*args, **kwargs):
@@ -175,11 +169,10 @@ def check(function):
 
             # check distance
             elif key == "distance":
-                distance = _process_distance(value)
-                new_kwargs["distance"] = distance
+                new_kwargs["distance"] = _process_distance(value)
 
             elif key == "threshold":
-                new_kwargs["threshold"] = _process_threshold_entered(value)
+                new_kwargs["threshold"] = _process_distance(value)
 
         # to pass self when its decorating class
         if "self" in kwargs:
@@ -188,6 +181,38 @@ def check(function):
             func = function(**new_kwargs)
         return func
 
+    return verify_arguments
+
+
+def check_number_entry(function):
+    """ Check the argument pass for the detection of outliers """
+    def verify_arguments(*args, **kwargs):
+        new_kwargs = {}
+
+        # to associate the argument from args to the
+        # keyword to have only kwargs
+        kwargs = signature(function).bind(*args, **kwargs).arguments
+
+        for key, value in kwargs.items():
+            # check dataframe enter
+            if key == "distance":
+                new_kwargs["distance"] = _process_distance(value)
+
+            elif key == "threshold":
+                new_kwargs["threshold"] = _process_distance(value)
+            
+            elif key == "iteration":
+                new_kwargs["iteration"] = _process_distance(value)
+            
+            elif key == "frequency":
+                new_kwargs["frequency"] = _process_distance(value)
+
+        # to pass self when its decorating class
+        if "self" in kwargs:
+            func = function(kwargs["self"], **new_kwargs)
+        else:
+            func = function(**new_kwargs)
+        return func
     return verify_arguments
 
 

@@ -1,10 +1,8 @@
 import pandas as pd
 import numpy as np
-from utils import check
 import mathematics
 
 
-@check
 def threshold_iqr(
     df: pd.DataFrame,
     column_to_test: str,
@@ -46,7 +44,6 @@ def threshold_iqr(
         return ret
 
 
-@check
 def threshold_sd(
     df: pd.DataFrame,
     column_to_test: str,
@@ -70,6 +67,7 @@ def threshold_sd(
     # calculate the interquartile range and the median
     ret = {}
     for column in column_to_test:
+        print(column_to_test)
         sd = np.nanstd(df[column])
         # Pareil que IQR
         moy = np.nanmean(df[column])
@@ -86,7 +84,6 @@ def threshold_sd(
         return ret
 
 
-@check
 def threshold_mad(
     df: pd.DataFrame,
     column_to_test: str,
@@ -125,7 +122,6 @@ def threshold_mad(
         return ret
 
 
-@check
 def threshold_tukey(
     df: pd.DataFrame,
     column_to_test: str,
@@ -162,7 +158,6 @@ def threshold_tukey(
         return ret
 
 
-@check
 def threshold_sn(
     df: pd.DataFrame,
     column_to_test: str,
@@ -198,12 +193,11 @@ def threshold_sn(
         return ret
 
 
-@check
 def threshold_prctile(
     df: pd.DataFrame,
     column_to_test: str,
     distance: float | int
-    ) -> float:
+) -> float:
     """ Percentile detection method
 
     This function allow the user to have the low threshold
@@ -224,7 +218,7 @@ def threshold_prctile(
         # threshold computation
         low_threshold = np.percentile(df[column], distance)
         high_threshold = np.percentile(df[column], 1 - distance)
-        
+
         ret[column] = (low_threshold, high_threshold)
 
     # avoid having a dictionnary for one column
@@ -232,3 +226,33 @@ def threshold_prctile(
         return ret[column_to_test[0]][0], ret[column_to_test[0]][1]
     else:
         return ret
+
+
+def threshold_identical(
+    df: pd.DataFrame,
+    column_to_test: str,
+) -> float:
+    """ Identical detection method
+
+    This function allow the user to have the low threshold
+    and the high threshold with the "Identical" outliers method.
+
+    Parameters
+    ------------
+        df: pd.DataFrame
+            The dataframe used
+        column_to_test: str | list | int | pd.Series
+            The name of the colum of interest
+        distance: float | int
+            The distance used to calculate threshold
+    """
+    ret = {}
+    # get the maximal frequency of the item
+    df_T = df.T
+    
+    all_max_frequency = df.apply(lambda x: pd.value_counts(x), axis = 1).max(axis = 1)
+    print(all_max_frequency)
+    ret = all_max_frequency
+
+    # avoid having a dictionnary for one column
+    return ret

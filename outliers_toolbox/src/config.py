@@ -8,4 +8,5 @@ DICT_FUNCTION = {
     "sn": th.threshold_sn,
     "rsd": th.threshold_sd,
     "prctile": th.threshold_prctile,
+    "identical": th.threshold_identical,
 }

@@ -20,7 +20,7 @@ class Sample:
             to see the line number of outliers, don't specify a
             arguments. 
     """
-    @utils.check
+    @utils.check_Sample
     def __init__(
             self,
             df: pd.DataFrame,
@@ -35,6 +35,7 @@ class Sample:
         else:
             self.df = df
 
+    @utils.check_number_entry
     def method_IQR(self, distance):
         """fonction pour ken"""
         return MethodIqr(
@@ -44,6 +45,7 @@ class Sample:
             distance
         )
 
+    @utils.check_number_entry
     def method_SD(self, distance):
         return MethodSd(
             self.df,
@@ -52,6 +54,7 @@ class Sample:
             distance
         )
 
+    @utils.check_number_entry
     def method_rSD(self, distance, iteration):
         return MethodRSd(
             self.df,
@@ -61,6 +64,7 @@ class Sample:
             iteration
         )
 
+    @utils.check_number_entry
     def method_MAD(self, distance):
         return MethodMad(
             self.df,
@@ -69,6 +73,7 @@ class Sample:
             distance
         )
 
+    @utils.check_number_entry
     def method_Tukey(self, distance):
         return MethodTukey(
             self.df,
@@ -77,6 +82,7 @@ class Sample:
             distance
         )
 
+    @utils.check_number_entry
     def method_Sn(self, distance):
         return MethodSn(
             self.df,
@@ -85,6 +91,7 @@ class Sample:
             distance
         )
 
+    @utils.check_number_entry
     def method_prctile(self, distance):
         return MethodPrctile(
             self.df,
@@ -92,12 +99,23 @@ class Sample:
             self.participant_column,
             distance
         )
+
+    @utils.check_number_entry
     def method_cutoff(self, threshold):
         return MethodCutOff(
             self.df,
             self.columns_to_test,
             self.participant_column,
             threshold
+        )
+
+    @utils.check_number_entry
+    def method_identical(self, frequency):
+        return MethodIdentical(
+            self.df,
+            self.columns_to_test,
+            self.participant_column,
+            frequency
         )
 
 
@@ -146,7 +164,7 @@ class _Outliers:
         for column in self.columns_to_test:
             # Calculate threshold
             low_threshold, high_threshold = func(
-                self.df, column, self.distance)
+                self.df, [column], self.distance)
             # list of outliers by column
             list_outliers = self.df.index[
                 ((self.df[column] < low_threshold) |
@@ -158,6 +176,7 @@ class _Outliers:
         self.outliers_index = utils._select_index(
             self.outliers.keys(), self.outliers)
 
+    @utils.check_Sample
     def manage(self, method="delete", column=None):
         """ Manage your outliers
 
@@ -172,7 +191,8 @@ class _Outliers:
                 * na : replace all outliers by missing value NaN
                 * winsorise : replace outliers by threshold value obtain through
                 the outlier method used.
-        Furh
+            * column (str|list|pd.Series|int) : Reference specific columns 
+            if you want to apply to manage only on them.
         """
         if column is None:
             column = self.columns_to_test
@@ -318,7 +338,10 @@ class MethodRSd(_Outliers):
         self._calculate("rsd")
 
     def _calculate(self, method):
+        self.outliers_index = {}
         self.outliers = {}
+        self.threshold = {}
+        self.outliers_nb = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
 
@@ -334,19 +357,25 @@ class MethodRSd(_Outliers):
 
                 # Calculate threshold
                 low_threshold, high_threshold = func(
-                    df_to_operate_n_plus_1, column, self.distance)
+                    df_to_operate_n_plus_1, [column], self.distance)
                 # list of outliers by column
                 list_outliers = self.df.index[
                     ((self.df[column] < low_threshold) |
                      (self.df[column] > high_threshold))
                 ].tolist()
+
                 self.outliers[column] = list_outliers
+
                 df_to_operate_n_plus_1 = df_to_operate_n.drop(
                     labels=list_outliers,
                     axis=0,
                     errors="ignore"
                 )
                 self.iteration += 1
+            self.threshold[column] = (low_threshold, high_threshold)
+            self.outliers_nb[column] = len(list_outliers)
+            self.outliers_index = utils._select_index(
+                self.outliers.keys(), self.outliers)
 
 
 class MethodMad(_Outliers):
@@ -407,7 +436,7 @@ class MethodSn(_Outliers):
         for column in self.columns_to_test:
             # Calculate threshold
             threshold, all_distance = func(
-                self.df, column, self.distance)
+                self.df, [column], self.distance)
             # list of outliers by column
             # Contrary to the parent calculate method,
             # the identification is realised on the all_distance
@@ -452,7 +481,7 @@ class MethodCutOff(_Outliers):
         self.threshold = threshold
         self.method = "Cut-Off"
         self._calculate()
-    
+
     def _calculate(self):
         """ Private method used to calculate outliers """
         self.outliers_index = {}
@@ -469,11 +498,53 @@ class MethodCutOff(_Outliers):
         self.outliers_index = utils._select_index(
             self.outliers.keys(), self.outliers)
 
+
+class MethodIdentical(_Outliers):
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        column_to_test: str | list | int | pd.Series,
+        participant_column: str | int | pd.Series,
+        frequency: int | float
+    ) -> None:
+
+        self.df = df
+        self.columns_to_test = column_to_test
+        self.participant_column = participant_column
+        self.frequency = frequency
+        self.method = "Identical"
+        self._calculate("identical")
+        
+    def _calculate(self, method):
+        """ Private method used to calculate outliers """
+        self.outliers_index = {}
+        self.outliers = {}
+        self.threshold = {}
+        self.outliers_nb = {}
+        # get the function for calculate threshold
+        func = config.DICT_FUNCTION.get(method)
+        for column in self.columns_to_test:
+            # Calculate threshold
+            max_frequency = func(
+                self.df, [column])
+            # list of outliers by column
+            '''list_outliers = self.df.index[
+                ((self.df[column] < low_threshold) |
+                 (self.df[column] > high_threshold))
+            ].tolist()
+            self.outliers[column] = list_outliers
+            self.threshold[column] = (low_threshold, high_threshold)
+            self.outliers_nb[column] = len(list_outliers)
+        self.outliers_index = utils._select_index(
+            self.outliers.keys(), self.outliers)'''
+
+
+
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_cutoff(2.5)
-    inspection = outliers.inspect("value", "bool", all_columns=False)
+                      ).method_identical(80)
+    inspection = outliers.inspect(all_columns=True)
     print(inspection)

@@ -221,6 +221,7 @@ def _select_index(column_to_keep, dict_col) -> list:
     self.outliers and clean it
     """
     # remove list in the list
+    # column to keep is for a specific function
     index_to_delete = [
         index for key, value in dict_col.items()
         for index in value if key in column_to_keep
@@ -236,3 +237,12 @@ def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
     else:
         final = False if other_value == "bool" else x[column]
     return final
+
+
+def _get_position(df, dict_col):
+    index_to_find = _select_index(dict_col.keys(), dict_col)
+    position_index = []
+    for index in index_to_find:
+        position_index.append(df.index.get_loc(index))
+    position_index.sort()
+    return position_index

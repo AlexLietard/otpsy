@@ -155,10 +155,11 @@ class _Outliers:
 
     def _calculate(self, method):
         """ Private method used to calculate outliers """
-        self.index = {}
+        self.all_index = {}
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
+        self.position = {}
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
@@ -173,8 +174,12 @@ class _Outliers:
             self.dict_col[column] = list_outliers
             self.threshold[column] = (low_threshold, high_threshold)
             self.nb[column] = len(list_outliers)
-        self.index = utils._select_index(
+            self.position[column] = utils._get_position(
+              self.df, self.dict_col)
+            
+        self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
+
 
     def manage(self, method="delete", column=None):
         """ Manage your outliers
@@ -278,7 +283,7 @@ class _Outliers:
                 table[column] = self.df[column]
         if not all_participants:
             table = table.loc[table.index.isin(
-                self.index)]
+                self.all_index)]
         if not all_columns:
             table = table[self.dict_col.keys()]
         return table
@@ -337,11 +342,11 @@ class MethodRSd(_Outliers):
         self._calculate("rsd")
 
     def _calculate(self, method):
-        self.index = {}
+        self.all_index = {}
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
-        self.dict_position = {}
+        self.position = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
 
@@ -374,9 +379,10 @@ class MethodRSd(_Outliers):
                 self.iteration += 1
             self.threshold[column] = (low_threshold, high_threshold)
             self.nb[column] = len(list_outliers)
-            self.index = utils._select_index(
-                self.dict_col.keys(), self.dict_col)
-
+            self.position[column] = utils._get_position(
+                self.df, self.dict_col)
+        self.all_index = utils._select_index(
+            self.dict_col.keys(), self.dict_col)
 
 
 
@@ -431,10 +437,11 @@ class MethodSn(_Outliers):
         self._calculate("sn")
 
     def _calculate(self, method):
-        self.index = {}
+        self.all_index = {}
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
+        self.position = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
             # Calculate threshold
@@ -450,8 +457,12 @@ class MethodSn(_Outliers):
             self.dict_col[column] = list_outliers
             self.threshold[column] = threshold
             self.nb[column] = len(list_outliers)
-        self.index = utils._select_index(
+            self.position[column] = utils._get_position(
+                self.df, self.dict_col)
+            
+        self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
+
 
 
 class MethodPrctile(_Outliers):
@@ -489,9 +500,10 @@ class MethodCutOff(_Outliers):
 
     def _calculate(self):
         """ Private method used to calculate outliers """
-        self.index = {}
+        self.all_index = {}
         self.dict_col = {}
         self.nb = {}
+        self.position = {}
         # get the function for calculate threshold
         for column in self.columns_to_test:
             # list of outliers by column
@@ -500,8 +512,11 @@ class MethodCutOff(_Outliers):
             ].tolist()
             self.dict_col[column] = list_outliers
             self.nb[column] = len(list_outliers)
-        self.index = utils._select_index(
+            self.position[column] = utils._get_position(
+                self.df, self.dict_col)
+        self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
+
 
 
 class MethodIdentical(_Outliers):
@@ -519,10 +534,10 @@ class MethodIdentical(_Outliers):
         self.frequency = frequency
         self.method = "Identical"
         self._calculate("identical")
-        
+
     def _calculate(self, method):
         """ Private method used to calculate outliers """
-        self.index = {}
+        self.all_index = {}
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -537,11 +552,12 @@ class MethodIdentical(_Outliers):
         ].tolist()
         self.dict_col = list_outliers
         self.nb = len(list_outliers)
-        self.index = list_outliers
-    
+        self.all_index = list_outliers
+        self.position = utils._get_position(
+            self.df, self.dict_col)
+
     def __str__(self):
         return ", ".join(self.dict_col)
-
 
 
 if __name__ == "__main__":
@@ -549,5 +565,5 @@ if __name__ == "__main__":
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_rSD(3, 5)
-    outliers.manage("winsorise")
+                      ).method_Sn(3)
+    print(outliers.position)

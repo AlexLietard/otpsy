@@ -137,12 +137,12 @@ class _Outliers:
             + "-"*30 + "\n"
         for column in self.columns_to_test:
             output_text += f"The column {column} has " \
-                           f"{self.outliers_nb[column]} outliers : "
-            if self.outliers_nb[column] > 0:
-                output_text += str(self.outliers[column][0]) + ", " + \
-                    str(self.outliers[column][1]) \
+                           f"{self.nb[column]} outliers : "
+            if self.nb[column] > 0:
+                output_text += str(self.dict_col[column][0]) + ", " + \
+                    str(self.dict_col[column][1]) \
                     + "."*5 + ", " + \
-                    str(self.outliers[column][-1])
+                    str(self.dict_col[column][-1])
             if self.method == "Sn":
                 output_text += "\nThreshold median distance to other " \
                     f"point is {round(self.threshold[column], 2)} \n\n"
@@ -155,10 +155,10 @@ class _Outliers:
 
     def _calculate(self, method):
         """ Private method used to calculate outliers """
-        self.outliers_index = {}
-        self.outliers = {}
+        self.index = {}
+        self.dict_col = {}
         self.threshold = {}
-        self.outliers_nb = {}
+        self.nb = {}
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
@@ -170,11 +170,11 @@ class _Outliers:
                 ((self.df[column] < low_threshold) |
                  (self.df[column] > high_threshold))
             ].tolist()
-            self.outliers[column] = list_outliers
+            self.dict_col[column] = list_outliers
             self.threshold[column] = (low_threshold, high_threshold)
-            self.outliers_nb[column] = len(list_outliers)
-        self.outliers_index = utils._select_index(
-            self.outliers.keys(), self.outliers)
+            self.nb[column] = len(list_outliers)
+        self.index = utils._select_index(
+            self.dict_col.keys(), self.dict_col)
 
     def manage(self, method="delete", column=None):
         """ Manage your outliers
@@ -202,12 +202,12 @@ class _Outliers:
 
         if method == "delete":
             index_to_delete_clean = utils._select_index(
-                column_to_keep, self.outliers)
+                column_to_keep, self.dict_col)
             final_df = new_df.drop(index_to_delete_clean)
 
         elif method == "na":
             for column in column_to_keep:
-                new_df.loc[self.outliers[column], column] = np.nan
+                new_df.loc[self.dict_col[column], column] = np.nan
             final_df = new_df
 
         elif method == "winsorise":
@@ -267,10 +267,10 @@ class _Outliers:
         # is present to conserve the order of columns in the initial
         # dataframe
         for column in self.df.columns:
-            if column in self.outliers:
+            if column in self.dict_col:
                 temporary_series = self.df[[column]].apply(
                     utils._parameters_of_the_table,
-                    args=(aberrant, other_value, self.outliers, column),
+                    args=(aberrant, other_value, self.dict_col, column),
                     axis=1)
                 df_to_append = pd.DataFrame(temporary_series, columns=[column])
                 table = table.join(df_to_append)
@@ -278,9 +278,9 @@ class _Outliers:
                 table[column] = self.df[column]
         if not all_participants:
             table = table.loc[table.index.isin(
-                self.outliers_index)]
+                self.index)]
         if not all_columns:
-            table = table[self.outliers.keys()]
+            table = table[self.dict_col.keys()]
         return table
 
 
@@ -337,10 +337,11 @@ class MethodRSd(_Outliers):
         self._calculate("rsd")
 
     def _calculate(self, method):
-        self.outliers_index = {}
-        self.outliers = {}
+        self.index = {}
+        self.dict_col = {}
         self.threshold = {}
-        self.outliers_nb = {}
+        self.nb = {}
+        self.dict_position = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
 
@@ -363,7 +364,7 @@ class MethodRSd(_Outliers):
                      (self.df[column] > high_threshold))
                 ].tolist()
 
-                self.outliers[column] = list_outliers
+                self.dict_col[column] = list_outliers
 
                 df_to_operate_n_plus_1 = df_to_operate_n.drop(
                     labels=list_outliers,
@@ -372,9 +373,11 @@ class MethodRSd(_Outliers):
                 )
                 self.iteration += 1
             self.threshold[column] = (low_threshold, high_threshold)
-            self.outliers_nb[column] = len(list_outliers)
-            self.outliers_index = utils._select_index(
-                self.outliers.keys(), self.outliers)
+            self.nb[column] = len(list_outliers)
+            self.index = utils._select_index(
+                self.dict_col.keys(), self.dict_col)
+
+
 
 
 class MethodMad(_Outliers):
@@ -428,9 +431,10 @@ class MethodSn(_Outliers):
         self._calculate("sn")
 
     def _calculate(self, method):
-        self.outliers = {}
+        self.index = {}
+        self.dict_col = {}
         self.threshold = {}
-        self.outliers_nb = {}
+        self.nb = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
             # Calculate threshold
@@ -443,9 +447,11 @@ class MethodSn(_Outliers):
             list_outliers = all_distance.index[
                 all_distance > threshold
             ].tolist()
-            self.outliers[column] = list_outliers
+            self.dict_col[column] = list_outliers
             self.threshold[column] = threshold
-            self.outliers_nb[column] = len(list_outliers)
+            self.nb[column] = len(list_outliers)
+        self.index = utils._select_index(
+            self.dict_col.keys(), self.dict_col)
 
 
 class MethodPrctile(_Outliers):
@@ -483,19 +489,19 @@ class MethodCutOff(_Outliers):
 
     def _calculate(self):
         """ Private method used to calculate outliers """
-        self.outliers_index = {}
-        self.outliers = {}
-        self.outliers_nb = {}
+        self.index = {}
+        self.dict_col = {}
+        self.nb = {}
         # get the function for calculate threshold
         for column in self.columns_to_test:
             # list of outliers by column
             list_outliers = self.df.index[
                 self.df[column] < self.threshold
             ].tolist()
-            self.outliers[column] = list_outliers
-            self.outliers_nb[column] = len(list_outliers)
-        self.outliers_index = utils._select_index(
-            self.outliers.keys(), self.outliers)
+            self.dict_col[column] = list_outliers
+            self.nb[column] = len(list_outliers)
+        self.index = utils._select_index(
+            self.dict_col.keys(), self.dict_col)
 
 
 class MethodIdentical(_Outliers):
@@ -516,10 +522,10 @@ class MethodIdentical(_Outliers):
         
     def _calculate(self, method):
         """ Private method used to calculate outliers """
-        self.outliers_index = {}
-        self.outliers = {}
+        self.index = {}
+        self.dict_col = {}
         self.threshold = {}
-        self.outliers_nb = {}
+        self.nb = {}
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
         # Calculate threshold
@@ -529,11 +535,12 @@ class MethodIdentical(_Outliers):
         list_outliers = self.df.index[
             (max_frequency > self.frequency)
         ].tolist()
-        self.outliers = list_outliers
-        self.outliers_nb = len(list_outliers)
-        self.outliers_index = list_outliers
+        self.dict_col = list_outliers
+        self.nb = len(list_outliers)
+        self.index = list_outliers
+    
     def __str__(self):
-        return ", ".join(self.outliers)
+        return ", ".join(self.dict_col)
 
 
 
@@ -542,9 +549,5 @@ if __name__ == "__main__":
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_identical(.80)
+                      ).method_rSD(3, 5)
     outliers.manage("winsorise")
-
-    print(df_test.set_index("LIB_NOM_PAT_IND_TPW_IND").loc[outliers.outliers[0], ["PAT1", "CLI1"]])
-    """ inspection = outliers.inspect(all_columns=True)
-    print(inspection)"""

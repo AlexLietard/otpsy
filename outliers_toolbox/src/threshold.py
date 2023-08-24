@@ -67,7 +67,6 @@ def threshold_sd(
     # calculate the interquartile range and the median
     ret = {}
     for column in column_to_test:
-        print(column_to_test)
         sd = np.nanstd(df[column])
         # Pareil que IQR
         moy = np.nanmean(df[column])

@@ -216,13 +216,13 @@ def check_number_entry(function):
     return verify_arguments
 
 
-def _select_index(column_to_keep, outliers) -> list:
+def _select_index(column_to_keep, dict_col) -> list:
     """Private method to take all value of the dictionnary
     self.outliers and clean it
     """
     # remove list in the list
     index_to_delete = [
-        index for key, value in outliers.items()
+        index for key, value in dict_col.items()
         for index in value if key in column_to_keep
     ]
     # avoid duplicate

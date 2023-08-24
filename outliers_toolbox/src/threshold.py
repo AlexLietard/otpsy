@@ -231,7 +231,7 @@ def threshold_prctile(
 def threshold_identical(
     df: pd.DataFrame,
     column_to_test: str,
-) -> float:
+) -> pd.Series:
     """ Identical detection method
 
     This function allow the user to have the low threshold
@@ -248,11 +248,8 @@ def threshold_identical(
     """
     ret = {}
     # get the maximal frequency of the item
-    df_T = df.T
-    
-    all_max_frequency = df.apply(lambda x: pd.value_counts(x), axis = 1).max(axis = 1)
-    print(all_max_frequency)
-    ret = all_max_frequency
+    all_max_frequency = df[column_to_test].apply(lambda x: pd.value_counts(x), axis = 1).max(axis = 1)
+    ret = all_max_frequency.div(len(column_to_test))
 
     # avoid having a dictionnary for one column
     return ret

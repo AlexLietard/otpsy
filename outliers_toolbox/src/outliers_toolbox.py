@@ -176,7 +176,6 @@ class _Outliers:
         self.outliers_index = utils._select_index(
             self.outliers.keys(), self.outliers)
 
-    @utils.check_Sample
     def manage(self, method="delete", column=None):
         """ Manage your outliers
 
@@ -212,9 +211,9 @@ class _Outliers:
             final_df = new_df
 
         elif method == "winsorise":
-            if self.method == "Sn":
-                raise ValueError("No winsorisation is "
-                                 "possible with the Sn method")
+            if self.method == "Sn" or self.method == "Identical":
+                raise ValueError('No winsorisation is '
+                                 f'possible with the "{self.method}" method')
             for column in column_to_keep:
                 low_threshold, high_threshold = self.threshold[column]
                 new_df.loc[new_df[column] <
@@ -523,20 +522,18 @@ class MethodIdentical(_Outliers):
         self.outliers_nb = {}
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
-        for column in self.columns_to_test:
-            # Calculate threshold
-            max_frequency = func(
-                self.df, [column])
-            # list of outliers by column
-            '''list_outliers = self.df.index[
-                ((self.df[column] < low_threshold) |
-                 (self.df[column] > high_threshold))
-            ].tolist()
-            self.outliers[column] = list_outliers
-            self.threshold[column] = (low_threshold, high_threshold)
-            self.outliers_nb[column] = len(list_outliers)
-        self.outliers_index = utils._select_index(
-            self.outliers.keys(), self.outliers)'''
+        # Calculate threshold
+        max_frequency = func(
+            self.df, self.columns_to_test)
+        # list of outliers by column
+        list_outliers = self.df.index[
+            (max_frequency > self.frequency)
+        ].tolist()
+        self.outliers = list_outliers
+        self.outliers_nb = len(list_outliers)
+        self.outliers_index = list_outliers
+    def __str__(self):
+        return ", ".join(self.outliers)
 
 
 
@@ -545,6 +542,9 @@ if __name__ == "__main__":
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_identical(80)
-    inspection = outliers.inspect(all_columns=True)
-    print(inspection)
+                      ).method_identical(.80)
+    outliers.manage("winsorise")
+
+    print(df_test.set_index("LIB_NOM_PAT_IND_TPW_IND").loc[outliers.outliers[0], ["PAT1", "CLI1"]])
+    """ inspection = outliers.inspect(all_columns=True)
+    print(inspection)"""

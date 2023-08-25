@@ -138,11 +138,17 @@ class _Outliers:
         for column in self.columns_to_test:
             output_text += f"The column {column} has " \
                            f"{self.nb[column]} outliers : "
-            if self.nb[column] > 0:
+            
+            if self.nb[column] > 0 and self.nb[column] <= 5:
+                output_text += str(", ".join(self.dict_col[column]))
+            elif self.nb[column] > 5:
                 output_text += str(self.dict_col[column][0]) + ", " + \
                     str(self.dict_col[column][1]) \
                     + "."*5 + ", " + \
                     str(self.dict_col[column][-1])
+            else: # if there is no outliers
+                output_text = output_text[0:-3] + "." # take out last ":"
+            
             if self.method == "Sn":
                 output_text += "\nThreshold median distance to other " \
                     f"point is {round(self.threshold[column], 2)} \n\n"
@@ -175,11 +181,10 @@ class _Outliers:
             self.threshold[column] = (low_threshold, high_threshold)
             self.nb[column] = len(list_outliers)
             self.position[column] = utils._get_position(
-              self.df, self.dict_col)
-            
+                self.df, self.dict_col)
+
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
-
 
     def manage(self, method="delete", column=None):
         """ Manage your outliers
@@ -385,7 +390,6 @@ class MethodRSd(_Outliers):
             self.dict_col.keys(), self.dict_col)
 
 
-
 class MethodMad(_Outliers):
     def __init__(
         self,
@@ -459,10 +463,9 @@ class MethodSn(_Outliers):
             self.nb[column] = len(list_outliers)
             self.position[column] = utils._get_position(
                 self.df, self.dict_col)
-            
+
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
-
 
 
 class MethodPrctile(_Outliers):
@@ -518,7 +521,6 @@ class MethodCutOff(_Outliers):
             self.dict_col.keys(), self.dict_col)
 
 
-
 class MethodIdentical(_Outliers):
     def __init__(
         self,
@@ -565,5 +567,5 @@ if __name__ == "__main__":
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_Sn(3)
-    print(outliers.position)
+                      ).method_IQR(2)
+    print(outliers)

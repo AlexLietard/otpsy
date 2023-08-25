@@ -200,12 +200,15 @@ def check_number_entry(function):
 
             elif key == "threshold":
                 new_kwargs["threshold"] = _process_distance(value)
-            
+
             elif key == "iteration":
                 new_kwargs["iteration"] = _process_distance(value)
-            
+
             elif key == "frequency":
-                new_kwargs["frequency"] = _process_distance(value)
+                frequency = _process_distance(value)
+                if frequency > 1:
+                    raise ValueError("Frequency must be inferior to 1")
+                new_kwargs["frequency"] = frequency
 
         # to pass self when its decorating class
         if "self" in kwargs:

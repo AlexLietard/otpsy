@@ -86,7 +86,8 @@ def threshold_sd(
 def threshold_mad(
     df: pd.DataFrame,
     column_to_test: str,
-    distance: float | int
+    distance: float | int,
+    b: float | int
 ) -> float:
     """ MAD detection method
 
@@ -106,7 +107,6 @@ def threshold_mad(
     ret = {}
     for column in column_to_test:
         med = np.nanmedian(df[column])
-        b = 1.4826
         mad = mathematics.compute_mad(df, column, med, b)
 
         # threshold

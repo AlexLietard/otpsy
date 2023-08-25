@@ -36,7 +36,7 @@ class Sample:
             self.df = df
 
     @utils.check_number_entry
-    def method_IQR(self, distance):
+    def method_IQR(self, distance=2):
         """fonction pour ken"""
         return MethodIqr(
             self.df,
@@ -46,7 +46,7 @@ class Sample:
         )
 
     @utils.check_number_entry
-    def method_SD(self, distance):
+    def method_SD(self, distance=2.5):
         return MethodSd(
             self.df,
             self.columns_to_test,
@@ -55,7 +55,7 @@ class Sample:
         )
 
     @utils.check_number_entry
-    def method_rSD(self, distance, iteration):
+    def method_rSD(self, distance=3, iteration=50):
         return MethodRSd(
             self.df,
             self.columns_to_test,
@@ -65,16 +65,17 @@ class Sample:
         )
 
     @utils.check_number_entry
-    def method_MAD(self, distance):
+    def method_MAD(self, distance=2.5, b=1.4826):
         return MethodMad(
             self.df,
             self.columns_to_test,
             self.participant_column,
-            distance
+            distance,
+            b
         )
 
     @utils.check_number_entry
-    def method_Tukey(self, distance):
+    def method_Tukey(self, distance=1.5):
         return MethodTukey(
             self.df,
             self.columns_to_test,
@@ -83,7 +84,7 @@ class Sample:
         )
 
     @utils.check_number_entry
-    def method_Sn(self, distance):
+    def method_Sn(self, distance=3):
         return MethodSn(
             self.df,
             self.columns_to_test,
@@ -92,7 +93,7 @@ class Sample:
         )
 
     @utils.check_number_entry
-    def method_prctile(self, distance):
+    def method_prctile(self, distance=0.95):
         return MethodPrctile(
             self.df,
             self.columns_to_test,
@@ -110,7 +111,7 @@ class Sample:
         )
 
     @utils.check_number_entry
-    def method_identical(self, frequency):
+    def method_identical(self, frequency=0.98):
         return MethodIdentical(
             self.df,
             self.columns_to_test,
@@ -138,7 +139,7 @@ class _Outliers:
         for column in self.columns_to_test:
             output_text += f"The column {column} has " \
                            f"{self.nb[column]} outliers : "
-            
+
             if self.nb[column] > 0 and self.nb[column] <= 5:
                 output_text += str(", ".join(self.dict_col[column]))
             elif self.nb[column] > 5:
@@ -146,9 +147,9 @@ class _Outliers:
                     str(self.dict_col[column][1]) \
                     + "."*5 + ", " + \
                     str(self.dict_col[column][-1])
-            else: # if there is no outliers
-                output_text = output_text[0:-3] + "." # take out last ":"
-            
+            else:  # if there is no outliers
+                output_text = output_text[0:-3] + "."  # take out last ":"
+
             if self.method == "Sn":
                 output_text += "\nThreshold median distance to other " \
                     f"point is {round(self.threshold[column], 2)} \n\n"
@@ -170,8 +171,14 @@ class _Outliers:
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
             # Calculate threshold
-            low_threshold, high_threshold = func(
-                self.df, [column], self.distance)
+            # for the MAD method, a "b" can be given
+            if method == "mad":
+                low_threshold, high_threshold = func(
+                    self.df, [column], self.distance, self.b)
+            else:
+                low_threshold, high_threshold = func(
+                    self.df, [column], self.distance)
+
             # list of outliers by column
             list_outliers = self.df.index[
                 ((self.df[column] < low_threshold) |
@@ -396,13 +403,15 @@ class MethodMad(_Outliers):
         df: pd.DataFrame,
         column_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        distance: int | float
+        distance: int | float,
+        b: int | float
     ) -> None:
 
         self.df = df
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.b = b
         self.method = "Median Absolute Distance"
         self._calculate("mad")
 
@@ -567,5 +576,5 @@ if __name__ == "__main__":
     outliers = Sample(df_test,
                       column_to_test=["CLI1", "PAT1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_IQR(2)
+                      ).method_Sn(3)
     print(outliers)

@@ -1,5 +1,6 @@
 import utils
 import config
+import additional_function
 import pandas as pd
 import numpy as np
 
@@ -20,12 +21,13 @@ class Sample:
             to see the line number of outliers, don't specify a
             arguments. 
     """
-    @utils.check_Sample
+    @utils.check_sample
     def __init__(
             self,
             df: pd.DataFrame,
             column_to_test: str | list | int | pd.Series,
             participant_column: str | int | pd.Series = "",
+            **kwargs
     ) -> None:
 
         self.columns_to_test = column_to_test
@@ -34,10 +36,14 @@ class Sample:
             self.df = df.set_index(self.participant_column)
         else:
             self.df = df
+        
+        if "missing" in kwargs:
+            self.missing = kwargs["missing"]
+        else:
+            self.missing = "No additional missing values"
 
     @utils.check_number_entry
     def method_IQR(self, distance=2):
-        """fonction pour ken"""
         return MethodIqr(
             self.df,
             self.columns_to_test,
@@ -208,7 +214,7 @@ class _Outliers:
                 * winsorise : replace outliers by threshold value obtain through
                 the outlier method used.
             * column (str|list|pd.Series|int) : Reference specific columns 
-            if you want to apply to manage only on them.
+            if you want to apply the method manage only on them.
         """
         if column is None:
             column = self.columns_to_test
@@ -573,8 +579,9 @@ class MethodIdentical(_Outliers):
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    outliers = Sample(df_test,
-                      column_to_test=["CLI1", "PAT1"],
+    print(df_test.head())
+    sample = Sample(df_test,
+                      column_to_test=["PAT1", "CLI1"],
                       participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      ).method_Sn(3)
-    print(outliers)
+                      )
+    print(sample.missing)

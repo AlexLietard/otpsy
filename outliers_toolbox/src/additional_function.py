@@ -1,3 +1,4 @@
+import utils
 def show_attributes() -> str:
     """ Show main attributes accessible
 
@@ -15,11 +16,10 @@ def show_attributes() -> str:
                   "value: number of outliers for each column\n"
     final_text += "obj.threshold : dictionnary\n " \
                   "\tkey : column with at least one aberrant value / "\
-                  "value : [low_threshold, high_threshold]\n" 
+                  "value : [low_threshold, high_threshold]\n"
     final_text += "obj.outliers_index : list\n" \
                   "\tList containing all index with at least " \
                   "one aberrant value\n"
-    
-    return final_text
 
+    return final_text
 

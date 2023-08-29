@@ -1,6 +1,26 @@
-import pandas as pd
 from pandas.api.types import is_numeric_dtype, is_float_dtype
 from inspect import signature
+import pandas as pd
+import numpy as np
+
+
+class NewMissingValue:
+    def __init__(self) -> None:
+        self.nb = {}
+        self.position = {}
+
+    def __str__(self):
+        final_text = """\
+You can have access to more details about new missing value. 
+To access :
+    * the position :
+        - name_of_your_object_Sample.missing.position
+    * the number before, after and the delta :
+        - name_of_your_object_Sample.missing.nb
+To access a specific columns, \
+enter name_of_your_object_Sample.df["column_wanted"]
+        """
+        return final_text
 
 
 def _process_column_to_test(df_func, pre_column):
@@ -99,30 +119,48 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
 
     columns_modified = []
     before_transforming = df_func.isna().sum().sum()
+    missing = NewMissingValue()
 
     # convert each column that is not a float
     # or integer
     for column in column_to_test_func:
         if not is_float_dtype(df_func[column]) or \
            not is_numeric_dtype(df_func[column]):
+            # track the change on Na
+            number_before = df_func[column].isna().sum()
+            position_before = np.where(df_func[column].isnull())[0]
+
+            # convert
             df_func[column] = pd.to_numeric(
                 df_func[column].astype(str).
                 str.replace(",", "."), errors='coerce')
-        columns_modified.append(column)
+
+            # prevent from an entire column with missing value
+            if pd.isna(df_func[column]).all():
+                raise TypeError(f"Can't convert {column} to numeric.")
+
+            position_after = np.where(df_func[column].isnull())[0]
+            missing.position[column] = list(
+                set(position_after) - set(position_before))
+            number_after = df_func[column].isna().sum()
+            missing.nb[column] = (
+                number_before, number_after, number_after-number_before)
+            columns_modified.append(column)
 
     after_transforming = df_func.isna().sum().sum()
 
     if len(columns_modified) > 0 and before_transforming < after_transforming:
-        print(f"UserWarning: Columns {columns_modified} has "
+        print(f"UserWarning: Column{'s' if len(columns_modified)>0 else ''} : "
+              f"{' & '.join(columns_modified)} has "
               "been modified because they were "
-              "not numeric. When it was not "
-              "convertible to numeric, it gave new "
-              "missing value. The number of missing "
+              "not numeric. The number of missing "
               f"value went from {before_transforming} "
-              f"to {after_transforming}.")
+              f"to {after_transforming}. Enter name_of_your_obj.missing for "
+              "more details.")
+    return missing
 
 
-def check_Sample(function):
+def check_sample(function):
     """ Decorator to transform argument in the good format
 
     For parameters pass in the class Sample, there is
@@ -148,8 +186,9 @@ def check_Sample(function):
             elif key == "column_to_test":
                 pre_column = value
                 column_to_test = _process_column_to_test(df, pre_column)
-                _convert_column_to_numeric(df, column_to_test)
+                missing = _convert_column_to_numeric(df, column_to_test)
                 new_kwargs[key] = column_to_test
+                new_kwargs["missing"] = missing
 
             # check participant column
             elif key == "participant_column":
@@ -209,7 +248,7 @@ def check_number_entry(function):
                 if frequency > 1:
                     raise ValueError("Frequency must be inferior to 1")
                 new_kwargs["frequency"] = frequency
-            
+
             elif key == "b":
                 new_kwargs["b"] = _process_distance(value)
 

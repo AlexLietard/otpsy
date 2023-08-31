@@ -203,12 +203,21 @@ def check_sample(function):
         # keyword to have only kwargs
         kwargs = signature(function).bind(*args, **kwargs).arguments
         kwargs["column_to_test"] = kwargs.get("column_to_test", "")
+        
         for key, value in kwargs.items():
             # check dataframe enter
             if key == "df":
-                if not isinstance(value, pd.DataFrame):
-                    raise TypeError("The argument entered for df"
-                                    "is not a dataframe.")
+                if not isinstance(value, (
+                    pd.DataFrame, pd.Series, np.ndarray)):
+                    raise TypeError("The argument entered for df "
+                                    "is not supported.")
+                
+                if isinstance(value, np.ndarray):
+                    value = pd.DataFrame(value, columns=["Tested"])
+                
+                elif isinstance(value, pd.Series):
+                    value = value.to_frame()
+
                 new_kwargs["df"] = value
                 df = value
 
@@ -216,7 +225,16 @@ def check_sample(function):
             elif key == "column_to_test":
                 pre_column = value
                 if value == "all" or value == "":
-                    column_to_test = list(df.columns)
+                    try:
+                        column_to_test = list(df.columns)
+                    except AttributeError:
+                        # in case its an pd.Series
+                        if isinstance(df, pd.Series):
+                            column_to_test = [df.name]
+                        else:
+                            raise ValueError("Can't extract "\
+                                             "the column to test")
+
                     # To avoid the conversion of the participant
                     # column where this is not the purpose
                     try:

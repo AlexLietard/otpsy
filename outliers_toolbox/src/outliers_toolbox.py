@@ -581,7 +581,8 @@ class MethodIdentical(_Outliers):
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     df_outliers = df_test.drop(["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis = 1)
-    sample = Sample(df_outliers)
+    bla = np.array([1, 2, 3, 4, 5, 6, 1000])
+    sample = Sample(bla)
     outliers = sample.method_MAD()
     new_df = outliers.manage()
     print(new_df)

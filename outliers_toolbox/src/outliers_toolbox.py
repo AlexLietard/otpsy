@@ -25,8 +25,9 @@ class Sample:
     def __init__(
             self,
             df: pd.DataFrame,
-            column_to_test: str | list | int | pd.Series,
+            column_to_test: str | list | int | pd.Series = "",
             participant_column: str | int | pd.Series = "",
+            ignore: bool = False,
             **kwargs
     ) -> None:
 
@@ -579,9 +580,8 @@ class MethodIdentical(_Outliers):
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    print(df_test.head())
-    sample = Sample(df_test,
-                      column_to_test=["PAT1", "CLI1"],
-                      participant_column="LIB_NOM_PAT_IND_TPW_IND"
-                      )
-    print(sample.missing)
+    df_outliers = df_test.drop(["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis = 1)
+    sample = Sample(df_outliers)
+    outliers = sample.method_MAD()
+    new_df = outliers.manage()
+    print(new_df)

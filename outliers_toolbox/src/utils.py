@@ -44,7 +44,7 @@ new missing value(s).\n"""
                         str(self.position[column][-1])
                 final_text += "\n"
             final_text += "print(object_name.missing.position) for all position"
-        else: 
+        else:
             final_text += "There is no new missing values."
         return final_text
 
@@ -202,7 +202,7 @@ def check_sample(function):
         # to associate the argument from args to the
         # keyword to have only kwargs
         kwargs = signature(function).bind(*args, **kwargs).arguments
-
+        kwargs["column_to_test"] = kwargs.get("column_to_test", "")
         for key, value in kwargs.items():
             # check dataframe enter
             if key == "df":
@@ -215,7 +215,16 @@ def check_sample(function):
             # check column to test
             elif key == "column_to_test":
                 pre_column = value
-                column_to_test = _process_column_to_test(df, pre_column)
+                if value == "all" or value == "":
+                    column_to_test = list(df.columns)
+                    # To avoid the conversion of the participant
+                    # column where this is not the purpose
+                    try:
+                        column_to_test.remove(kwargs["participant_column"])
+                    except:
+                        pass
+                else:
+                    column_to_test = _process_column_to_test(df, pre_column)
                 missing = _convert_column_to_numeric(df, column_to_test)
                 new_kwargs[key] = column_to_test
                 new_kwargs["missing"] = missing

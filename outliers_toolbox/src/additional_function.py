@@ -1,4 +1,3 @@
-import utils
 def show_attributes() -> str:
     """ Show main attributes accessible
 

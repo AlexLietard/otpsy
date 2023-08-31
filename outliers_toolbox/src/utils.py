@@ -8,18 +8,44 @@ class NewMissingValue:
     def __init__(self) -> None:
         self.nb = {}
         self.position = {}
+        self.columns_converted = []
+        self.new_missing_columns = []
 
     def __str__(self):
-        final_text = """\
-You can have access to more details about new missing value. 
-To access :
-    * the position :
-        - name_of_your_object_Sample.missing.position
-    * the number before, after and the delta :
-        - name_of_your_object_Sample.missing.nb
-To access a specific columns, \
-enter name_of_your_object_Sample.df["column_wanted"]
-        """
+        final_text = f"""\
+-----------------------------
+Summary of new missing value
+-----------------------------
+
+{f'{", ".join(self.columns_converted)} has been converted to numeric.' 
+    if len(self.columns_converted) > 0 
+    else 'No column has been converted. Thus there is no missing value.'}
+"""
+        if len(self.new_missing_columns) > 0:
+            final_text += f"""\
+{", ".join(self.new_missing_columns)} present\
+{'s' if len(self.new_missing_columns)==1 else ''} \
+new missing value(s).\n"""
+
+            final_text += "-"*30 + "\n"
+            for column in self.new_missing_columns:
+                final_text += f"The column {column} went from " \
+                              f"{self.nb[column][0]} to {self.nb[column][1]}" \
+                              f" (delta : {self.nb[column][2]}) missing value(s) : "
+
+                if self.nb[column][2] > 0 and self.nb[column][2] <= 5:
+                    text_position = [str(pos) for pos in self.position[column]]
+                    final_text += ", ".join(text_position)
+
+                elif self.nb[column][2] > 5:
+                    final_text += str(self.position[column][0]) + ", " + \
+                        str(self.position[column][1]) \
+                        + "."*5 + ", " + \
+                        str(self.position[column][-1])
+                final_text += "\n"
+            final_text += "print(object_name.missing.position) for all position"
+        else: 
+            final_text += "There is no new missing values."
         return final_text
 
 
@@ -117,7 +143,6 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
     # the number of missing values. This information
     # will be use to give a feedback to the user.
 
-    columns_modified = []
     before_transforming = df_func.isna().sum().sum()
     missing = NewMissingValue()
 
@@ -145,17 +170,22 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
             number_after = df_func[column].isna().sum()
             missing.nb[column] = (
                 number_before, number_after, number_after-number_before)
-            columns_modified.append(column)
+            missing.columns_converted.append(column)
+
+            if number_after > number_before:
+                missing.new_missing_columns.append(column)
 
     after_transforming = df_func.isna().sum().sum()
 
-    if len(columns_modified) > 0 and before_transforming < after_transforming:
-        print(f"UserWarning: Column{'s' if len(columns_modified)>0 else ''} : "
-              f"{' & '.join(columns_modified)} has "
+    if len(missing.columns_converted) > 0 and \
+            before_transforming < after_transforming:
+
+        print(f"UserWarning: Column{'s' if len(missing.columns_converted)>0 else ''} : "
+              f"{' & '.join(missing.columns_converted)} has "
               "been modified because they were "
               "not numeric. The number of missing "
               f"value went from {before_transforming} "
-              f"to {after_transforming}. Enter name_of_your_obj.missing for "
+              f"to {after_transforming}. print(name_of_your_obj.missing) for "
               "more details.")
     return missing
 

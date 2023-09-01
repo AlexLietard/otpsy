@@ -1,6 +1,5 @@
 import utils
 import config
-import additional_function
 import pandas as pd
 import numpy as np
 
@@ -37,7 +36,7 @@ class Sample:
             self.df = df.set_index(self.participant_column)
         else:
             self.df = df
-        
+
         if "missing" in kwargs:
             self.missing = kwargs["missing"]
         else:
@@ -307,11 +306,46 @@ class _Outliers:
             table = table[self.dict_col.keys()]
         return table
 
+    def __add__(self, o):
+        dic_ini = self.dict_col
+        if isinstance(o, dict):
+            dic_to_add = o
+        else:
+            try:
+                dic_to_add = o.dict_col
+            except AttributeError:
+                raise ValueError("The addition need to be realised with"
+                                 " a dictionnary or and outliers object")
+
+        for column in dic_to_add:
+            try:
+                # even if this if else seems strange, it has a function
+                # Indeed, if the participant enter a string, it is possible
+                # to iterate on it, so we can't add a single string to it.
+                # Thus I checked if its a string to append it now.
+                if isinstance(dic_to_add[column], str):
+                    dic_ini[column].append(dic_to_add[column])
+                else:
+                    dic_ini[column].extend(dic_to_add[column])
+
+            except KeyError as key:
+                raise KeyError(f'It seems that the column {column} '
+                               'added is not present in the outliers'
+                               ' object') from key
+            except TypeError as e:
+                if isinstance(dic_to_add[column], (int, float)):
+                    dic_ini[column].append(dic_to_add[column])
+                else:
+                    raise TypeError("This type of value is not "
+                                    "supported.") from e
+        self.dict_col = dic_ini
+        return self
+
 
 class MethodIqr(_Outliers):
     def __init__(
         self,
-        df: pd.DataFrame,
+        df: pd.DataFrame | np.ndarray | pd.Series,
         column_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float
@@ -580,9 +614,6 @@ class MethodIdentical(_Outliers):
 
 if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    df_outliers = df_test.drop(["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis = 1)
-    bla = np.array([1, 2, 3, 4, 5, 6, 1000])
-    sample = Sample(bla)
-    outliers = sample.method_MAD()
-    new_df = outliers.manage()
-    print(new_df)
+    df_outliers = df_test.drop(
+        ["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis=1)
+    sample = Sample(df_test["CLI1"])

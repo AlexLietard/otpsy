@@ -166,6 +166,67 @@ class _Outliers:
                     "\n\n"
         return output_text[0:-2]
 
+    def __add__(self, o):
+        dic_ini = self.dict_col
+        if isinstance(o, (dict, list)):
+            dic_to_add = o
+        else:
+            try:
+                dic_to_add = o.dict_col
+            except AttributeError:
+                raise ValueError("The addition need to be realised with"
+                                 " a dictionnary or and outliers object")
+
+        for column in dic_to_add:
+            try:
+                # even if this if else seems strange, it has a function
+                # Indeed, if the participant enter a string, it is possible
+                # to iterate on it, so we can't add a single string to it.
+                # Thus I checked if its a string to append it now.
+                if isinstance(dic_to_add[column], str):
+                    dic_ini[column].append(dic_to_add[column])
+                else:
+                    dic_ini[column].extend(dic_to_add[column])
+
+            except KeyError as key:
+                raise KeyError(f'It seems that the column {column} '
+                               'added is not present in the outliers'
+                               ' object') from key
+            except TypeError as e:
+                if isinstance(dic_to_add[column], (int, float)):
+                    dic_ini[column].append(dic_to_add[column])
+                else:
+                    raise TypeError("This type of value is not "
+                                    "supported.") from e
+        self.dict_col = dic_ini
+        return self
+
+    def __sub__(self, o):
+        dic_ini = self.dict_col
+        if isinstance(o, list):
+            for column in dic_ini:
+                o_str = [str(value) for value in o]
+                dic_ini[column] = [value for value in dic_ini[column]
+                                   if str(value) not in o_str]
+        elif isinstance(o, dict):
+            for column in o:
+                if isinstance(o[column], (int, str)):
+                    o[column] = [o[column]]
+                o[column] = [str(value) for value in o[column]]
+                dic_ini[column] = [value for value in dic_ini[column]
+                                   if str(value) not in o[column]]
+
+        elif isinstance(o, (int, str)):
+            for column in dic_ini:
+                dic_ini[column] = [value for value in dic_ini[column]
+                                    if str(value) != str(o)]
+        else:
+            raise ValueError("The substraction need to be realised with"
+                                 " a dictionnary or and outliers object")
+        self.dict_col = dic_ini
+
+        return self
+
     def _calculate(self, method):
         """ Private method used to calculate outliers """
         self.all_index = {}
@@ -305,41 +366,6 @@ class _Outliers:
         if not all_columns:
             table = table[self.dict_col.keys()]
         return table
-
-    def __add__(self, o):
-        dic_ini = self.dict_col
-        if isinstance(o, dict):
-            dic_to_add = o
-        else:
-            try:
-                dic_to_add = o.dict_col
-            except AttributeError:
-                raise ValueError("The addition need to be realised with"
-                                 " a dictionnary or and outliers object")
-
-        for column in dic_to_add:
-            try:
-                # even if this if else seems strange, it has a function
-                # Indeed, if the participant enter a string, it is possible
-                # to iterate on it, so we can't add a single string to it.
-                # Thus I checked if its a string to append it now.
-                if isinstance(dic_to_add[column], str):
-                    dic_ini[column].append(dic_to_add[column])
-                else:
-                    dic_ini[column].extend(dic_to_add[column])
-
-            except KeyError as key:
-                raise KeyError(f'It seems that the column {column} '
-                               'added is not present in the outliers'
-                               ' object') from key
-            except TypeError as e:
-                if isinstance(dic_to_add[column], (int, float)):
-                    dic_ini[column].append(dic_to_add[column])
-                else:
-                    raise TypeError("This type of value is not "
-                                    "supported.") from e
-        self.dict_col = dic_ini
-        return self
 
 
 class MethodIqr(_Outliers):
@@ -616,4 +642,11 @@ if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     df_outliers = df_test.drop(
         ["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis=1)
-    sample = Sample(df_test["CLI1"])
+    sample = Sample(df_test,
+                    column_to_test=["CLI1", "PAT1"])
+    
+
+    outliers = sample.method_IQR()
+    print("Before: ", outliers.dict_col)
+    bla = outliers - {"PAT1": [36, 89, 391]}
+    print("After : ", bla.dict_col)

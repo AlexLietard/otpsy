@@ -2,6 +2,7 @@ import utils
 import config
 import pandas as pd
 import numpy as np
+from re import match
 
 
 class Sample:
@@ -138,16 +139,20 @@ class _Outliers:
         output_text += "\nSummary of the outliers detection\n"
         output_text += "-"*30
         output_text += "\n\n"
-        output_text += f"Method used : {self.method}\n"
-        output_text += f"Distance used : {self.distance}\n"
-        output_text += f"Column tested : {', '.join(self.columns_to_test)}\n" \
-            + "-"*30 + "\n"
-        for column in self.columns_to_test:
+
+        if self.add == True:
+            output_text += utils.header_add_true(self)
+        else:
+            output_text += utils.header_add_false(self)
+
+        """for column in self.columns_to_test:
             output_text += f"The column {column} has " \
                            f"{self.nb[column]} outliers : "
 
             if self.nb[column] > 0 and self.nb[column] <= 5:
-                output_text += str(", ".join(self.dict_col[column]))
+                output_text += ", ".join([str(val)
+                                         for val in self.dict_col[column]])
+
             elif self.nb[column] > 5:
                 output_text += str(self.dict_col[column][0]) + ", " + \
                     str(self.dict_col[column][1]) \
@@ -163,7 +168,7 @@ class _Outliers:
                 output_text += "\nLow threshold : " \
                     f"{round(self.threshold[column][0], 2)} / "\
                     f"High threshold : {round(self.threshold[column][1], 2)}"\
-                    "\n\n"
+                    "\n\n"""
         return output_text[0:-2]
 
     def __add__(self, o):
@@ -175,18 +180,26 @@ class _Outliers:
                 dic_to_add = o.dict_col
             except AttributeError:
                 raise ValueError("The addition need to be realised with"
-                                 " a dictionnary or and outliers object")
+                                 " a dictionnary or and outliers object.")
 
         for column in dic_to_add:
             try:
-                # even if this if else seems strange, it has a function
+                # even if this if else seems strange, this isinstance is
+                # useful.
                 # Indeed, if the participant enter a string, it is possible
                 # to iterate on it, so we can't add a single string to it.
                 # Thus I checked if its a string to append it now.
-                if isinstance(dic_to_add[column], str):
-                    dic_ini[column].append(dic_to_add[column])
+                if column in dic_ini:
+                    if isinstance(dic_to_add[column], str):
+                        dic_ini.get(column, []).append(dic_to_add[column])
+                    else:
+                        dic_ini.get(column, []).extend(dic_to_add[column])
+
                 else:
-                    dic_ini[column].extend(dic_to_add[column])
+                    if isinstance(dic_to_add[column], str):
+                        dic_ini[column] = [dic_to_add[column]]
+                    else:
+                        dic_ini[column] = dic_to_add[column]
 
             except KeyError as key:
                 raise KeyError(f'It seems that the column {column} '
@@ -199,32 +212,67 @@ class _Outliers:
                     raise TypeError("This type of value is not "
                                     "supported.") from e
         self.dict_col = dic_ini
+
+        # Add the another method and distance in the outlier object
+        if self.add == False:  # if this the first addition
+            self.method = [self.method] + [o.method]
+            self.distance = {self.distance: [
+                self.dimin], o.distance: [o.dimin]}
+            self.dimin = (self.distance)
+
+        else:
+            self.method.append(o.method)
+            if o.distance not in self.distance:
+                self.distance[o.distance] = [o.dimin]
+            else:
+                self.distance[o.distance].append(o.dimin)
+
+        # Add column to test associated with columns to test
+        self.columns_to_test_w_method = {}
+        for column in self.columns_to_test:
+            self.columns_to_test_w_method[column] = [str(self.dimin)]
+        for column in o.columns_to_test:
+            if column in self.columns_to_test:
+                self.columns_to_test_w_method[column].append(o.dimin)
+            else:
+                self.columns_to_test_w_method[column] = [o.dimin]
+
+        self.columns_to_test = list(
+            set(self.columns_to_test + o.columns_to_test))
+
+        self.add = True
+
         return self
 
     def __sub__(self, o):
         dic_ini = self.dict_col
-        if isinstance(o, list):
-            for column in dic_ini:
-                o_str = [str(value) for value in o]
-                dic_ini[column] = [value for value in dic_ini[column]
-                                   if str(value) not in o_str]
-        elif isinstance(o, dict):
-            for column in o:
-                if isinstance(o[column], (int, str)):
-                    o[column] = [o[column]]
-                o[column] = [str(value) for value in o[column]]
-                dic_ini[column] = [value for value in dic_ini[column]
-                                   if str(value) not in o[column]]
+        try:
+            if isinstance(o, list):
+                for column in dic_ini:
+                    o_str = [str(value) for value in o]
+                    dic_ini[column] = [value for value in dic_ini[column]
+                                       if str(value) not in o_str]
+            elif isinstance(o, dict):
+                for column in o:
+                    if isinstance(o[column], (int, str)):
+                        o[column] = [o[column]]
+                    o[column] = [str(value) for value in o[column]]
+                    dic_ini[column] = [value for value in dic_ini[column]
+                                       if str(value) not in o[column]]
 
-        elif isinstance(o, (int, str)):
-            for column in dic_ini:
-                dic_ini[column] = [value for value in dic_ini[column]
-                                    if str(value) != str(o)]
-        else:
-            raise ValueError("The substraction need to be realised with"
-                                 " a dictionnary or and outliers object")
+            elif isinstance(o, (int, str)):
+                for column in dic_ini:
+                    dic_ini[column] = [value for value in dic_ini[column]
+                                       if str(value) != str(o)]
+        except KeyError as key:
+            raise KeyError(f'It seems that the column {column} '
+                           'added is not present in the outliers'
+                           ' object') from key
+        except TypeError as type:
+            raise TypeError("This type of value is not "
+                            "supported.") from type
+
         self.dict_col = dic_ini
-
         return self
 
     def _calculate(self, method):
@@ -234,6 +282,10 @@ class _Outliers:
         self.threshold = {}
         self.nb = {}
         self.position = {}
+        # As there is no constructor, this attribute has the purpose.
+        # If the user use the method __add__, add take the value True.
+        # This attribute is used in the method __str__.
+        self.add = False
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
@@ -382,7 +434,8 @@ class MethodIqr(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Inter-quartile range"
-        self._calculate("iqr")
+        self.dimin = "iqr"
+        self._calculate(self.dimin)
 
 
 class MethodSd(_Outliers):
@@ -399,7 +452,8 @@ class MethodSd(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Standard Deviation"
-        self._calculate("sd")
+        self.dimin = "sd"
+        self._calculate(self.dimin)
 
 
 class MethodRSd(_Outliers):
@@ -418,7 +472,8 @@ class MethodRSd(_Outliers):
         self.distance = distance
         self.max_iteration = max_iteration
         self.method = "Recursive Standard Deviation"
-        self._calculate("rsd")
+        self.dimin = "rsd"
+        self._calculate(self.dimin)
 
     def _calculate(self, method):
         self.all_index = {}
@@ -480,7 +535,8 @@ class MethodMad(_Outliers):
         self.distance = distance
         self.b = b
         self.method = "Median Absolute Distance"
-        self._calculate("mad")
+        self.dimin = "mad"
+        self._calculate(self.dimin)
 
 
 class MethodTukey(_Outliers):
@@ -497,7 +553,8 @@ class MethodTukey(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Tukey"
-        self._calculate("tukey")
+        self.dimin = "tukey"
+        self._calculate(self.dimin)
 
 
 class MethodSn(_Outliers):
@@ -514,7 +571,8 @@ class MethodSn(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Sn"
-        self._calculate("sn")
+        self.dimin = "sn"
+        self._calculate(self.dimin)
 
     def _calculate(self, method):
         self.all_index = {}
@@ -558,7 +616,8 @@ class MethodPrctile(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Percentile"
-        self._calculate("prctile")
+        self.dimin = "prctile"
+        self._calculate(self.dimin)
 
 
 class MethodCutOff(_Outliers):
@@ -575,6 +634,7 @@ class MethodCutOff(_Outliers):
         self.participant_column = participant_column
         self.threshold = threshold
         self.method = "Cut-Off"
+        self.dimin = "cut-off"
         self._calculate()
 
     def _calculate(self):
@@ -611,6 +671,7 @@ class MethodIdentical(_Outliers):
         self.participant_column = participant_column
         self.frequency = frequency
         self.method = "Identical"
+        self.dimin = "id"
         self._calculate("identical")
 
     def _calculate(self, method):
@@ -644,9 +705,13 @@ if __name__ == "__main__":
         ["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis=1)
     sample = Sample(df_test,
                     column_to_test=["CLI1", "PAT1"])
-    
 
-    outliers = sample.method_IQR()
-    print("Before: ", outliers.dict_col)
-    bla = outliers - {"PAT1": [36, 89, 391]}
-    print("After : ", bla.dict_col)
+    outliers_iqr = sample.method_IQR()
+
+    sample = Sample(df_test,
+                    column_to_test=["CLI1", "DIF1"])
+    outliers_mad = sample.method_MAD()
+    sample = Sample(df_test, column_to_test=["SOC1", "EXP1"])
+    out = sample.method_SD(3)
+    bla = outliers_iqr+outliers_mad + out
+    print(bla)

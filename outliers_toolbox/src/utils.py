@@ -203,18 +203,18 @@ def check_sample(function):
         # keyword to have only kwargs
         kwargs = signature(function).bind(*args, **kwargs).arguments
         kwargs["column_to_test"] = kwargs.get("column_to_test", "")
-        
+
         for key, value in kwargs.items():
             # check dataframe enter
             if key == "df":
                 if not isinstance(value, (
-                    pd.DataFrame, pd.Series, np.ndarray)):
+                        pd.DataFrame, pd.Series, np.ndarray)):
                     raise TypeError("The argument entered for df "
                                     "is not supported.")
-                
+
                 if isinstance(value, np.ndarray):
                     value = pd.DataFrame(value, columns=["Tested"])
-                
+
                 elif isinstance(value, pd.Series):
                     value = value.to_frame()
 
@@ -232,7 +232,7 @@ def check_sample(function):
                         if isinstance(df, pd.Series):
                             column_to_test = [df.name]
                         else:
-                            raise ValueError("Can't extract "\
+                            raise ValueError("Can't extract "
                                              "the column to test")
 
                     # To avoid the conversion of the participant
@@ -348,3 +348,22 @@ def _get_position(df, dict_col):
         position_index.append(df.index.get_loc(index))
     position_index.sort()
     return position_index
+
+
+def header_add_true(obj):
+    output_text = ""
+    output_text += f"Method used : {obj.method}\n"
+    output_text += f"Distance used : {obj.distance}\n"
+
+    # Show column tested
+    output_text += "Column tested : "
+    for column in obj.columns_to_test:
+        output_text += f"{column} (" \
+            f"{', '.join(obj.columns_to_test_w_method[column])}), "
+
+    output_text = output_text[0:-2] + "\n"
+    output_text += "-"*30 + "\n"
+
+
+def header_add_false(obj):
+    pass

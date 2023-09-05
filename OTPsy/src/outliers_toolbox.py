@@ -2,7 +2,6 @@ import utils
 import config
 import pandas as pd
 import numpy as np
-from re import match
 
 
 class Sample:
@@ -143,10 +142,9 @@ class _Outliers:
         if self.multi == True:
             output_text += utils.header_add_true(self)
             output_text += utils.content_add_true(self)
+
         else:
             output_text += utils.header_add_false(self)
-            output_text += utils.content_add_false(self)
-
 
         return output_text[0:-2]
 
@@ -159,7 +157,13 @@ class _Outliers:
                 dic_to_add = o.dict_col
             except AttributeError:
                 raise ValueError("The addition need to be realised with"
-                                 " a dictionnary or and outliers object.")
+                                 " a dictionnary or an outliers object.")
+
+        # If this isinstance is not present, the new_obj reinitialise each time
+        if not isinstance(self, MethodMulti):
+            new_obj = MethodMulti()
+        else:
+            new_obj = self
 
         for column in dic_to_add:
             try:
@@ -191,12 +195,6 @@ class _Outliers:
                     raise TypeError("This type of value is not "
                                     "supported.") from e
 
-        # If this isinstance is not present, the new_obj reinitialise each time
-        if not isinstance(self, MethodMulti):
-            new_obj = MethodMulti()
-        else:
-            new_obj = self
-
         new_obj.dict_col = dic_ini
 
         # Update all parameters for __str__ output
@@ -207,13 +205,14 @@ class _Outliers:
             # distance
             new_obj.distance = {self.distance: [
                 self.dimin], o.distance: [o.dimin]}
-            
+
             # dimin
             new_obj.dimin.extend([self.dimin, o.dimin])
 
             # column associated with method
             for column in self.columns_to_test:
                 new_obj.columns_to_test_w_method[column] = [str(self.dimin)]
+                new_obj.threshold[column] = {self.dimin : self.threshold[column]}
 
         else:
             new_obj.method.append(o.method)
@@ -225,13 +224,23 @@ class _Outliers:
         for column in o.columns_to_test:
             if column in self.columns_to_test:
                 new_obj.columns_to_test_w_method[column].append(o.dimin)
+                new_obj.threshold[column][o.dimin] = o.threshold[column]
             else:
                 new_obj.columns_to_test_w_method[column] = [o.dimin]
+                new_obj.threshold[column] = {o.dimin: o.threshold[column]}
+        
         # Add column to test associated with columns to test
-
-
         new_obj.columns_to_test = list(
             set(self.columns_to_test + o.columns_to_test))
+        
+        # Add number of outliers associated to a specific column and 
+        # avoid duplicate in outliers
+        for column in new_obj.columns_to_test:
+            new_obj.dict_col[column] = list(set(
+                new_obj.dict_col[column]
+            ))
+            new_obj.nb[column] = len(new_obj.dict_col[column])
+
 
         return new_obj
 
@@ -694,6 +703,8 @@ class MethodMulti(_Outliers):
     def __init__(self):
         self.method = []
         self.distance = {}
+        self.nb = {}
+        self.threshold = {}
         self.columns_to_test = []
         self.columns_to_test_w_method = {}
         self.multi = True
@@ -712,7 +723,9 @@ if __name__ == "__main__":
     sample = Sample(df_test,
                     column_to_test=["CLI1", "DIF1"])
     outliers_mad = sample.method_MAD()
+
     sample = Sample(df_test, column_to_test=["SOC1", "EXP1"])
     out = sample.method_SD(3)
-    bla = outliers_iqr+outliers_mad + out
+
+    bla = outliers_iqr + outliers_mad + out
     print(bla)

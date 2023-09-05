@@ -372,13 +372,41 @@ def header_add_true(obj):
     return output_text
 
 
-def content_add_true(obj):
-    output_text = ""
-    return output_text
-
-
 def header_add_false(obj):
     pass
+
+
+def content_add_true(obj):
+    output_text = ""
+    for column in obj.columns_to_test:
+        output_text += f"The column {column} has " \
+            f"{obj.nb[column]} outliers : "
+
+        if obj.nb[column] > 0 and obj.nb[column] <= 5:
+            output_text += ", ".join([str(val)
+                                      for val in obj.dict_col[column]])
+
+        elif obj.nb[column] > 5:
+            output_text += str(obj.dict_col[column][0]) + ", " + \
+                str(obj.dict_col[column][1]) \
+                + "."*5 + ", " + \
+                str(obj.dict_col[column][-1])
+        else:  # if there is no outliers
+            output_text = output_text[0:-3] + "."  # take out last ":"
+
+        output_text += "\n"
+        if obj.method == "Sn":
+            output_text += "\nThreshold median distance to other " \
+                f"point is {round(obj.threshold[column], 2)} \n\n"
+        else:
+            for method in obj.threshold[column]:
+                output_text += f"{method.upper()}:" \
+                    f" low: {round(obj.threshold[column][method][0], 2)} / "\
+                    f"high: " \
+                    f"{round(obj.threshold[column][method][1], 2)} ; "\
+
+            output_text = output_text[0:-2] + "\n\n"
+    return output_text
 
 
 def content_add_false(obj):

@@ -352,8 +352,14 @@ def _get_position(df, dict_col):
 
 def header_add_true(obj):
     output_text = ""
-    output_text += f"Method used : {obj.method}\n"
-    output_text += f"Distance used : {obj.distance}\n"
+    # show method used
+    output_text += f"Method used  : {', '.join(obj.method)}\n"
+
+    # show distance used
+    output_text += f"Distance used : "
+    for distance in obj.distance:
+        output_text += f"{distance} ({', '.join(obj.distance[distance])}), "
+    output_text = output_text[0:-2] + "\n"
 
     # Show column tested
     output_text += "Column tested : "
@@ -363,7 +369,42 @@ def header_add_true(obj):
 
     output_text = output_text[0:-2] + "\n"
     output_text += "-"*30 + "\n"
+    return output_text
+
+
+def content_add_true(obj):
+    output_text = ""
+    return output_text
 
 
 def header_add_false(obj):
     pass
+
+
+def content_add_false(obj):
+    output_text = ""
+    for column in obj.columns_to_test:
+        output_text += f"The column {column} has " \
+            f"{obj.nb[column]} outliers : "
+
+        if obj.nb[column] > 0 and obj.nb[column] <= 5:
+            output_text += ", ".join([str(val)
+                                      for val in obj.dict_col[column]])
+
+        elif obj.nb[column] > 5:
+            output_text += str(obj.dict_col[column][0]) + ", " + \
+                str(obj.dict_col[column][1]) \
+                + "."*5 + ", " + \
+                str(obj.dict_col[column][-1])
+        else:  # if there is no outliers
+            output_text = output_text[0:-3] + "."  # take out last ":"
+
+        if obj.method == "Sn":
+            output_text += "\nThreshold median distance to other " \
+                f"point is {round(obj.threshold[column], 2)} \n\n"
+        else:
+            output_text += "\nLow threshold : " \
+                f"{round(obj.threshold[column][0], 2)} / "\
+                f"High threshold : {round(obj.threshold[column][1], 2)}"\
+                "\n\n"
+    return output_text

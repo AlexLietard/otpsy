@@ -140,35 +140,14 @@ class _Outliers:
         output_text += "-"*30
         output_text += "\n\n"
 
-        if self.add == True:
+        if self.multi == True:
             output_text += utils.header_add_true(self)
+            output_text += utils.content_add_true(self)
         else:
             output_text += utils.header_add_false(self)
+            output_text += utils.content_add_false(self)
 
-        """for column in self.columns_to_test:
-            output_text += f"The column {column} has " \
-                           f"{self.nb[column]} outliers : "
 
-            if self.nb[column] > 0 and self.nb[column] <= 5:
-                output_text += ", ".join([str(val)
-                                         for val in self.dict_col[column]])
-
-            elif self.nb[column] > 5:
-                output_text += str(self.dict_col[column][0]) + ", " + \
-                    str(self.dict_col[column][1]) \
-                    + "."*5 + ", " + \
-                    str(self.dict_col[column][-1])
-            else:  # if there is no outliers
-                output_text = output_text[0:-3] + "."  # take out last ":"
-
-            if self.method == "Sn":
-                output_text += "\nThreshold median distance to other " \
-                    f"point is {round(self.threshold[column], 2)} \n\n"
-            else:
-                output_text += "\nLow threshold : " \
-                    f"{round(self.threshold[column][0], 2)} / "\
-                    f"High threshold : {round(self.threshold[column][1], 2)}"\
-                    "\n\n"""
         return output_text[0:-2]
 
     def __add__(self, o):
@@ -211,38 +190,50 @@ class _Outliers:
                 else:
                     raise TypeError("This type of value is not "
                                     "supported.") from e
-        self.dict_col = dic_ini
 
-        # Add the another method and distance in the outlier object
-        if self.add == False:  # if this the first addition
-            self.method = [self.method] + [o.method]
-            self.distance = {self.distance: [
+        # If this isinstance is not present, the new_obj reinitialise each time
+        if not isinstance(self, MethodMulti):
+            new_obj = MethodMulti()
+        else:
+            new_obj = self
+
+        new_obj.dict_col = dic_ini
+
+        # Update all parameters for __str__ output
+        if self.multi == False:  # if this is the first addition
+            # method
+            new_obj.method = [self.method] + [o.method]
+
+            # distance
+            new_obj.distance = {self.distance: [
                 self.dimin], o.distance: [o.dimin]}
-            self.dimin = (self.distance)
+            
+            # dimin
+            new_obj.dimin.extend([self.dimin, o.dimin])
+
+            # column associated with method
+            for column in self.columns_to_test:
+                new_obj.columns_to_test_w_method[column] = [str(self.dimin)]
 
         else:
-            self.method.append(o.method)
-            if o.distance not in self.distance:
-                self.distance[o.distance] = [o.dimin]
+            new_obj.method.append(o.method)
+            if o.distance not in new_obj.distance:
+                new_obj.distance[o.distance] = [o.dimin]
             else:
-                self.distance[o.distance].append(o.dimin)
+                new_obj.distance[o.distance].append(o.dimin)
 
-        # Add column to test associated with columns to test
-        self.columns_to_test_w_method = {}
-        for column in self.columns_to_test:
-            self.columns_to_test_w_method[column] = [str(self.dimin)]
         for column in o.columns_to_test:
             if column in self.columns_to_test:
-                self.columns_to_test_w_method[column].append(o.dimin)
+                new_obj.columns_to_test_w_method[column].append(o.dimin)
             else:
-                self.columns_to_test_w_method[column] = [o.dimin]
+                new_obj.columns_to_test_w_method[column] = [o.dimin]
+        # Add column to test associated with columns to test
 
-        self.columns_to_test = list(
+
+        new_obj.columns_to_test = list(
             set(self.columns_to_test + o.columns_to_test))
 
-        self.add = True
-
-        return self
+        return new_obj
 
     def __sub__(self, o):
         dic_ini = self.dict_col
@@ -285,7 +276,7 @@ class _Outliers:
         # As there is no constructor, this attribute has the purpose.
         # If the user use the method __add__, add take the value True.
         # This attribute is used in the method __str__.
-        self.add = False
+        self.multi = False
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
@@ -697,6 +688,16 @@ class MethodIdentical(_Outliers):
 
     def __str__(self):
         return ", ".join(self.dict_col)
+
+
+class MethodMulti(_Outliers):
+    def __init__(self):
+        self.method = []
+        self.distance = {}
+        self.columns_to_test = []
+        self.columns_to_test_w_method = {}
+        self.multi = True
+        self.dimin = []
 
 
 if __name__ == "__main__":

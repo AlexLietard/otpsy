@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import mathematics
+from . import mathematics
 
 
 def threshold_iqr(

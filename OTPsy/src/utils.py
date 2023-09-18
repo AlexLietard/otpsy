@@ -341,8 +341,11 @@ def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
     return final
 
 
-def _get_position(df, dict_col):
-    index_to_find = _select_index(dict_col.keys(), dict_col)
+def _get_position(df, dict_col, dimin = ""):
+    if dimin == "id":
+        index_to_find = dict_col
+    else:       
+        index_to_find = _select_index(dict_col.keys(), dict_col)
     position_index = []
     for index in index_to_find:
         position_index.append(df.index.get_loc(index))
@@ -373,7 +376,15 @@ def header_add_true(obj):
 
 
 def header_add_false(obj):
-    pass
+    output_text = "-"*30
+    output_text += "\nSummary of the outliers detection\n"
+    output_text += "-"*30
+    output_text += "\n\n"
+    output_text += f"Method used : {obj.method}\n"
+    output_text += f"Distance used : {obj.distance}\n"
+    output_text += f"Column tested : {', '.join(obj.columns_to_test)}\n" \
+        + "-"*30 + "\n"
+    return output_text
 
 
 def content_add_true(obj):
@@ -395,17 +406,19 @@ def content_add_true(obj):
             output_text = output_text[0:-3] + "."  # take out last ":"
 
         output_text += "\n"
-        if obj.method == "Sn":
-            output_text += "\nThreshold median distance to other " \
-                f"point is {round(obj.threshold[column], 2)} \n\n"
-        else:
-            for method in obj.threshold[column]:
+
+        for method in obj.threshold[column]:
+            # This is because Sn and cut-off have only one threshold value
+            if method == "sn" or method == "cut-off":
+                output_text += f"{method.upper()}: " \
+                    f"{round(obj.threshold[column][method], 2)} ; "
+            else:
                 output_text += f"{method.upper()}:" \
                     f" low: {round(obj.threshold[column][method][0], 2)} / "\
                     f"high: " \
                     f"{round(obj.threshold[column][method][1], 2)} ; "\
 
-            output_text = output_text[0:-2] + "\n\n"
+        output_text = output_text[0:-2] + "\n\n"
     return output_text
 
 

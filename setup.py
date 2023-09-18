@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
-setup(name='outliers_toolbox',
+setup(name='OTPsy',
 
       version='0.0.1',
 
-      url='https://github.com/AlexLietard/outliers_toolbox',
+      url='https://github.com/AlexLietard/OTPsy',
 
       license='MIT',
 

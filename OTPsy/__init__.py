@@ -1,4 +1,4 @@
-from .src.outliers_toolbox import *
+from .src.OTPsy import *
 from .src.threshold import *
 from .src.config import *
 from .src.mathematics import *

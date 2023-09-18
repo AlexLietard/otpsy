@@ -1,0 +1,16 @@
+LICENSE
+README.md
+setup.py
+OTPsy/__init__.py
+OTPsy.egg-info/PKG-INFO
+OTPsy.egg-info/SOURCES.txt
+OTPsy.egg-info/dependency_links.txt
+OTPsy.egg-info/not-zip-safe
+OTPsy.egg-info/top_level.txt
+OTPsy/src/OTPsy.py
+OTPsy/src/__init__.py
+OTPsy/src/additional_function.py
+OTPsy/src/config.py
+OTPsy/src/mathematics.py
+OTPsy/src/threshold.py
+OTPsy/src/utils.py

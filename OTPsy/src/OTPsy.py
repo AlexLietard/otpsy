@@ -1,5 +1,5 @@
-import utils
-import config
+from . import utils
+from . import config
 import pandas as pd
 import numpy as np
 
@@ -15,10 +15,10 @@ class Sample:
             * Enter either the name, a list of name,
             the index of column, or directly the column
         * participant_column: str | int | pd.Series
-            * Enter the participant refering participant. 
+            * Enter the participant refering participant.
             If this column is directly your index, or you want
             to see the line number of outliers, don't specify a
-            arguments. 
+            arguments.
     """
     @utils.check_sample
     def __init__(
@@ -26,7 +26,6 @@ class Sample:
             df: pd.DataFrame,
             column_to_test: str | list | int | pd.Series = "",
             participant_column: str | int | pd.Series = "",
-            ignore: bool = False,
             **kwargs
     ) -> None:
 
@@ -130,7 +129,7 @@ class _Outliers:
     """ ! Private Parent class of every outliers class !
 
     The Outliers class contains all the common method of the child class.
-    Child class are all outliers class (SD, IQR,...). 
+    Child class are all outliers class (SD, IQR,...).
     """
 
     def __str__(self):
@@ -145,7 +144,7 @@ class _Outliers:
 
         else:
             output_text += utils.header_add_false(self)
-
+            output_text += utils.content_add_false(self)
         return output_text[0:-2]
 
     def __add__(self, o):
@@ -161,7 +160,7 @@ class _Outliers:
 
         # If this isinstance is not present, the new_obj reinitialise each time
         if not isinstance(self, MethodMulti):
-            new_obj = MethodMulti()
+            new_obj = MethodMulti(self.df)
         else:
             new_obj = self
 
@@ -172,22 +171,20 @@ class _Outliers:
                 # Indeed, if the participant enter a string, it is possible
                 # to iterate on it, so we can't add a single string to it.
                 # Thus I checked if its a string to append it now.
-                if column in dic_ini:
-                    if isinstance(dic_to_add[column], str):
-                        dic_ini.get(column, []).append(dic_to_add[column])
-                    else:
-                        dic_ini.get(column, []).extend(dic_to_add[column])
-
+                if isinstance(dic_to_add[column], str):
+                    dic_ini[column].append(dic_to_add[column])
                 else:
+                    dic_ini[column].extend(dic_to_add[column])
+
+            except KeyError as key:
+                if issubclass(type(o), _Outliers):
                     if isinstance(dic_to_add[column], str):
                         dic_ini[column] = [dic_to_add[column]]
                     else:
                         dic_ini[column] = dic_to_add[column]
-
-            except KeyError as key:
-                raise KeyError(f'It seems that the column {column} '
-                               'added is not present in the outliers'
-                               ' object') from key
+                else:
+                    raise KeyError(f'It seems that the column {column} '
+                                   'added is not present') from key
             except TypeError as e:
                 if isinstance(dic_to_add[column], (int, float)):
                     dic_ini[column].append(dic_to_add[column])
@@ -195,54 +192,67 @@ class _Outliers:
                     raise TypeError("This type of value is not "
                                     "supported.") from e
 
-        new_obj.dict_col = dic_ini
+        if issubclass(type(o), _Outliers):
+            new_obj.dict_col = dic_ini
 
-        # Update all parameters for __str__ output
-        if self.multi == False:  # if this is the first addition
-            # method
-            new_obj.method = [self.method] + [o.method]
+            # Update all parameters for __str__ output
+            if self.multi == False:  # if this is the first addition
+                # method
+                new_obj.method = [self.method]
 
-            # distance
-            new_obj.distance = {self.distance: [
-                self.dimin], o.distance: [o.dimin]}
+                # distance
+                new_obj.distance = {self.distance: [self.dimin]}
 
-            # dimin
-            new_obj.dimin.extend([self.dimin, o.dimin])
+                # dimin
+                new_obj.dimin.extend([self.dimin, o.dimin])
 
-            # column associated with method
-            for column in self.columns_to_test:
-                new_obj.columns_to_test_w_method[column] = [str(self.dimin)]
-                new_obj.threshold[column] = {self.dimin : self.threshold[column]}
+                # column associated with method
+                for column in self.columns_to_test:
+                    new_obj.columns_to_test_w_method[column] = [
+                        str(self.dimin)]
+                    new_obj.threshold[column] = {
+                        self.dimin: self.threshold[column]}
 
-        else:
+            # Add the element about o
             new_obj.method.append(o.method)
             if o.distance not in new_obj.distance:
                 new_obj.distance[o.distance] = [o.dimin]
             else:
                 new_obj.distance[o.distance].append(o.dimin)
 
-        for column in o.columns_to_test:
-            if column in self.columns_to_test:
-                new_obj.columns_to_test_w_method[column].append(o.dimin)
-                new_obj.threshold[column][o.dimin] = o.threshold[column]
-            else:
-                new_obj.columns_to_test_w_method[column] = [o.dimin]
-                new_obj.threshold[column] = {o.dimin: o.threshold[column]}
-        
-        # Add column to test associated with columns to test
-        new_obj.columns_to_test = list(
-            set(self.columns_to_test + o.columns_to_test))
-        
-        # Add number of outliers associated to a specific column and 
-        # avoid duplicate in outliers
-        for column in new_obj.columns_to_test:
-            new_obj.dict_col[column] = list(set(
-                new_obj.dict_col[column]
-            ))
-            new_obj.nb[column] = len(new_obj.dict_col[column])
+            for column in o.columns_to_test:
+                if column in self.columns_to_test:
+                    new_obj.columns_to_test_w_method[column].append(o.dimin)
+                    new_obj.threshold[column][o.dimin] = o.threshold[column]
+                else:
+                    new_obj.columns_to_test_w_method[column] = [o.dimin]
+                    if o.dimin == "cut-off":
+                        new_obj.threshold[column] = {o.dimin: o.threshold}
+                    else:
+                        new_obj.threshold[column] = {
+                            o.dimin: o.threshold[column]}
 
+            # Add column to test associated with columns to test
+            new_obj.columns_to_test = list(
+                set(self.columns_to_test + o.columns_to_test))
 
-        return new_obj
+            # Add number of outliers associated to a specific column and
+            # avoid duplicate in outliers
+            for column in new_obj.columns_to_test:
+                new_obj.dict_col[column] = list(set(
+                    new_obj.dict_col[column]
+                ))
+                new_obj.nb[column] = len(new_obj.dict_col[column])
+            return new_obj
+
+        else:
+            self.dict_col = dic_ini
+            for column in self.columns_to_test:
+                self.dict_col[column] = list(set(
+                    self.dict_col[column]
+                ))
+                self.nb[column] = len(self.dict_col[column])
+            return self
 
     def __sub__(self, o):
         dic_ini = self.dict_col
@@ -273,6 +283,12 @@ class _Outliers:
                             "supported.") from type
 
         self.dict_col = dic_ini
+        for column in self.columns_to_test:
+            self.dict_col[column] = list(set(
+                self.dict_col[column]
+            ))
+            self.nb[column] = len(self.dict_col[column])
+
         return self
 
     def _calculate(self, method):
@@ -632,6 +648,7 @@ class MethodCutOff(_Outliers):
         self.df = df
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
+        self.distance = threshold
         self.threshold = threshold
         self.method = "Cut-Off"
         self.dimin = "cut-off"
@@ -670,6 +687,8 @@ class MethodIdentical(_Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.frequency = frequency
+        self.threshold = frequency
+        self.distance = frequency
         self.method = "Identical"
         self.dimin = "id"
         self._calculate("identical")
@@ -693,14 +712,30 @@ class MethodIdentical(_Outliers):
         self.nb = len(list_outliers)
         self.all_index = list_outliers
         self.position = utils._get_position(
-            self.df, self.dict_col)
+            self.df, self.dict_col, self.dimin)
 
     def __str__(self):
-        return ", ".join(self.dict_col)
+        output_text = utils.header_add_false(self)
+        output_text += f"There is {self.nb} participant with a frequency" \
+                       f" above {self.frequency} : "
+
+        if self.nb > 0 and self.nb <= 5:
+            output_text += ", ".join([str(val)
+                                      for val in self.dict_col])
+
+        elif self.nb > 5:
+            output_text += str(self.dict_col[0]) + ", " + \
+                str(self.dict_col[1]) \
+                + "."*5 + ", " + \
+                str(self.dict_col[-1])
+        else:  # if there is no outliers
+            output_text = output_text[0:-3] + "."  # take out last ":"
+        return output_text[0:-2]
 
 
 class MethodMulti(_Outliers):
-    def __init__(self):
+    def __init__(self, df):
+        self.df = df
         self.method = []
         self.distance = {}
         self.nb = {}
@@ -715,17 +750,13 @@ if __name__ == "__main__":
     df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
     df_outliers = df_test.drop(
         ["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis=1)
-    sample = Sample(df_test,
-                    column_to_test=["CLI1", "PAT1"])
 
-    outliers_iqr = sample.method_IQR()
+
 
     sample = Sample(df_test,
-                    column_to_test=["CLI1", "DIF1"])
+                    column_to_test=["CLI1", "PAT1", "ASD1", "EXP1"],
+                    participant_column="LIB_NOM_PAT_IND_TPW_IND")
+
     outliers_mad = sample.method_MAD()
 
-    sample = Sample(df_test, column_to_test=["SOC1", "EXP1"])
-    out = sample.method_SD(3)
-
-    bla = outliers_iqr + outliers_mad + out
-    print(bla)
+    print(outliers_mad)

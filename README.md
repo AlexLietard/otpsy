@@ -21,6 +21,7 @@ After the detection, they can be inspect through the inspect() method which retu
 Outliers can be remove, winsorise or replace by na with the method `manage`
 
 ---
+
 ## TODO
 
 Visualisation through a dashboard is coming.

@@ -24,5 +24,5 @@ Outliers can be remove, winsorise or replace by na with the method `manage`
 
 ## TODO
 
-Visualisation through a dashboard is coming.
-Consistency between the different method for an outliers. 
+Visualisation through a dashboard is coming.  
+Consistency between the different method for an outliers.

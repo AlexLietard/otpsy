@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from . import mathematics
+import mathematics
 
 
 def threshold_iqr(
@@ -247,7 +247,8 @@ def threshold_identical(
     """
     ret = {}
     # get the maximal frequency of the item
-    all_max_frequency = df[column_to_test].apply(lambda x: pd.value_counts(x), axis = 1).max(axis = 1)
+    all_max_frequency = df[column_to_test].apply(
+        lambda x: pd.value_counts(x), axis=1).max(axis=1)
     ret = all_max_frequency.div(len(column_to_test))
 
     # avoid having a dictionnary for one column

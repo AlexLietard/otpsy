@@ -1,7 +1,8 @@
-from . import utils
-from . import config
+import utils
+import config
 import pandas as pd
 import numpy as np
+from visualise import app
 
 
 class Sample:
@@ -435,6 +436,13 @@ class _Outliers:
             table = table[self.dict_col.keys()]
         return table
 
+    def visualise(self, column=""):
+        if column == "":
+            column_to_vis = self.columns_to_test
+        else:
+            column_to_vis = utils._process_column_to_test(self.df, column)
+        app.main(self.df, column_to_vis)
+        
 
 class MethodIqr(_Outliers):
     def __init__(
@@ -751,12 +759,10 @@ if __name__ == "__main__":
     df_outliers = df_test.drop(
         ["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis=1)
 
-
-
     sample = Sample(df_test,
                     column_to_test=["CLI1", "PAT1", "ASD1", "EXP1"],
                     participant_column="LIB_NOM_PAT_IND_TPW_IND")
 
     outliers_mad = sample.method_MAD()
 
-    print(outliers_mad)
+    outliers_mad.visualise(["CLI1", "PAT1"])

@@ -38,7 +38,6 @@ def S_n(df, column):
     """ Compute Sn on Python
     
     This function aim to compute the Sn value. This value is obtained
-    $ADD_FORMULA$
     """
     n = len(df[column])
     c = _select_c(n)

@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-setup(name='OTPsy',
+setup(name='otpsy',
 
       version='0.0.1',
 

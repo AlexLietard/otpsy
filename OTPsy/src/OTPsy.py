@@ -129,8 +129,8 @@ class Sample:
 class _Outliers:
     """ ! Private Parent class of every outliers class !
 
-    The Outliers class contains all the common method of the child class.
-    Child class are all outliers class (SD, IQR,...).
+    The Outliers class contains all the common method of the children classes.
+    Children classes are all outliers class (SD, IQR,...).
     """
 
     def __str__(self):
@@ -256,6 +256,12 @@ class _Outliers:
             return self
 
     def __sub__(self, o):
+        """
+        This method allows to substract remove outliers from the object. 
+        For example, if you detect outliers through a specific method,
+        you can judge that the participant X is not outliers and remove
+        him from the outliers. 
+        """ 
         dic_ini = self.dict_col
         try:
             if isinstance(o, list):
@@ -265,12 +271,13 @@ class _Outliers:
                                        if str(value) not in o_str]
             elif isinstance(o, dict):
                 for column in o:
+                    # transform to a list for allow iteration
                     if isinstance(o[column], (int, str)):
                         o[column] = [o[column]]
                     o[column] = [str(value) for value in o[column]]
                     dic_ini[column] = [value for value in dic_ini[column]
                                        if str(value) not in o[column]]
-
+            # if there is just one column
             elif isinstance(o, (int, str)):
                 for column in dic_ini:
                     dic_ini[column] = [value for value in dic_ini[column]

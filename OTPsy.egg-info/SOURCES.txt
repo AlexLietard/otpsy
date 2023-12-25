@@ -14,3 +14,16 @@ OTPsy/src/config.py
 OTPsy/src/mathematics.py
 OTPsy/src/threshold.py
 OTPsy/src/utils.py
+otpsy/__init__.py
+otpsy.egg-info/PKG-INFO
+otpsy.egg-info/SOURCES.txt
+otpsy.egg-info/dependency_links.txt
+otpsy.egg-info/not-zip-safe
+otpsy.egg-info/top_level.txt
+otpsy/src/__init__.py
+otpsy/src/additional_function.py
+otpsy/src/config.py
+otpsy/src/mathematics.py
+otpsy/src/otpsy.py
+otpsy/src/threshold.py
+otpsy/src/utils.py

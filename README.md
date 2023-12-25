@@ -8,19 +8,25 @@ For now, the package allows to detect outliers with a user-inputed distance with
 * IQR (IQR distance to median)
 * Tukey (IQR distance from quartiles)
 * Standard Deviation SD
-* Recursive Standard Deviation rSD 
-* Median Absolute Distance MAD 
+* Recursive Standard Deviation rSD
+* Median Absolute Distance MAD
 * $S_n$ method
 * Percentile
 * Cut-off (reponse time under 80 ms for example)
 * Identical response (for likert scale for example or behavioral performance)
 
-The detection is made through the creation of an outliers object. 
+The detection is made through the creation of an outliers object.
 
-After the detection, they can be inspect through the inspect() method which returns a dataframe. 
+After the detection, they can be inspect through the inspect() method which returns a dataframe.
 Outliers can be remove, winsorise or replace by na with the method `manage`
 
 ---
+
+## Example
+
+Imagine that you realise a study in which you want to explore the influence of art exposition on visual exploration of angry face (I don't know where this example came from, but it's sufficient). Thus, you collect data about the explored time of the painting scene, number of fixations of anger face (or another DV), score on depression and anxiety.
+With this data, you want to control for different things :
+* Does participants don't look at the scene ? 
 
 ## TODO
 

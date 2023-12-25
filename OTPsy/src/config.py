@@ -10,3 +10,9 @@ DICT_FUNCTION = {
     "prctile": th.threshold_prctile,
     "identical": th.threshold_identical,
 }
+
+HEXA_FOR_PLOTLY = {
+    "iqr": "#D1F5BE",
+    "sd": "#9DB17C",
+    "rsd" : "#4B3B40"
+}

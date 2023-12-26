@@ -1,10 +1,16 @@
 from otpsy.src import config
+
+# Data visualisation
+import pandas as pd
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
+# Dashboard
 import dash
 from dash import html
 from dash import dcc
 import dash_bootstrap_components as dbc
-import pandas as pd
-import plotly.express as px
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import load_figure_template
 
@@ -24,18 +30,19 @@ CONTENT_STYLE = {
     "margin-right": "2rem",
     "padding": "2rem 1rem",
 }
+CHECKLIST_DISTANCE = {
+    "color": "#FFFFFF",
+    "width": "2em",
+    "height": "1em",
+    "outline": "0",
+    "padding": "0",
+    "float": "left",
+    "margin-right": "5px",
+    'display': 'inline-flex'
+}
 
 def main(df, column_to_vis):
-    a = {
-        "color": "#FFFFFF",
-        "width": "2em",
-        "height": "1em",
-        "outline": "0",
-        "padding": "0",
-        "float": "left",
-        "margin-right": "5px",
-        'display': 'inline-flex'
-        }
+
     app = dash.Dash(__name__, external_stylesheets=[
                     dbc.themes.DARKLY])  # set app layout
     list_of_method = ["IQR", "MAD", "SD", "rSD"]
@@ -96,7 +103,7 @@ def main(df, column_to_vis):
                                         dbc.Checklist(options=ls_distance_with_html,
                                             value = [2],
                                             id="distance",
-                                            style = a
+                                            style = CHECKLIST_DISTANCE
                                 )]))
                         ]))], style=SIDEBAR_STYLE)
     
@@ -125,12 +132,16 @@ def main(df, column_to_vis):
         print("Y", y)
         print("Method :", method)
         print("Distance : ", distance)
-
-        fig = px.scatter(df, 
-                         x=df.reset_index().index, 
-                         y=y, 
-                         hover_name= df.index,
-                         width=800, height=450)
+        print(df[y[0]])
+        fig = make_subplots(rows = len(y), cols= 1)
+        for i in range(len(y)):
+            fig.add_trace(
+                go.Scatter(x = df.reset_index().index, 
+                           y=df[y[i]],
+                           hovertext=df.index, mode="markers",
+                           xaxis=f"x{i+1}",
+                           yaxis=f"y{i+1}"),
+                           row=i+1, col=1)
         
         if triggered_id == 'method' or triggered_id == "distance":
             fig = update_threshold(df, fig, method, y, distance)

@@ -1,8 +1,8 @@
 Metadata-Version: 2.1
 Name: otpsy
 Version: 0.0.1
-Summary: Packages designed to detect outliers in Psychology
-Home-page: https://github.com/AlexLietard/OTPsy
+Summary: Packages designed to detect outliers in Social and Human Sciences
+Home-page: https://github.com/AlexLietard/otpsy
 Author: Alexandre LIETARD
 Author-email: alex.lietard77@gmail.com
 License: MIT

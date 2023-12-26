@@ -4,7 +4,7 @@ setup(name='otpsy',
 
       version='0.0.1',
 
-      url='https://github.com/AlexLietard/OTPsy',
+      url='https://github.com/AlexLietard/otpsy',
 
       license='MIT',
 
@@ -12,7 +12,7 @@ setup(name='otpsy',
 
       author_email='alex.lietard77@gmail.com',
 
-      description='Packages designed to detect outliers in Psychology',
+      description='Packages designed to detect outliers in Social and Human Sciences',
 
       packages=find_packages(exclude=['tests']),
 

@@ -5,3 +5,4 @@ outliers_toolbox.egg-info/
 outliers_toolbox-0.0.1-py3-none-any.whl
 dist/
 build/
+.eggs/

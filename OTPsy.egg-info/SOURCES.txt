@@ -14,3 +14,5 @@ otpsy/src/mathematics.py
 otpsy/src/otpsy.py
 otpsy/src/threshold.py
 otpsy/src/utils.py
+otpsy/src/visualise/__init__.py
+otpsy/src/visualise/app.py

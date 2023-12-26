@@ -1,4 +1,4 @@
-import threshold as th
+import otpsy.src.threshold as th
 
 DICT_FUNCTION = {
     "iqr": th.threshold_iqr,

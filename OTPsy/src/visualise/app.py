@@ -1,7 +1,4 @@
-from os import chdir
-chdir("../")
-
-import config
+from otpsy.src import config
 import dash
 from dash import html
 from dash import dcc
@@ -13,10 +10,25 @@ from dash_bootstrap_templates import load_figure_template
 
 load_figure_template('darkly')
 
+SIDEBAR_STYLE = {
+    "position": "fixed",
+    "top": 0,
+    "left": 0,
+    "bottom": 0,
+    "width": "16rem",
+    "padding": "2rem 1rem",
+    "background-color": "#222222",
+}
+CONTENT_STYLE = {
+    "margin-left": "18rem",
+    "margin-right": "2rem",
+    "padding": "2rem 1rem",
+}
+
 def main(df, column_to_vis):
-    a = {"border": "1px solid rgb(63,63,63)",
-        "color": "#2186f4",
-        "width": "1em",
+    a = {
+        "color": "#FFFFFF",
+        "width": "2em",
         "height": "1em",
         "outline": "0",
         "padding": "0",
@@ -24,9 +36,8 @@ def main(df, column_to_vis):
         "margin-right": "5px",
         'display': 'inline-flex'
         }
-    app = dash.Dash(external_stylesheets=[
+    app = dash.Dash(__name__, external_stylesheets=[
                     dbc.themes.DARKLY])  # set app layout
-    df_vis = df.reset_index()
     list_of_method = ["IQR", "MAD", "SD", "rSD"]
     ls_method_with_html = []
     ls_distance = [2, 2.5, 3]
@@ -44,40 +55,60 @@ def main(df, column_to_vis):
                            'value': num})
 
     fig = px.scatter(df,
-                     x=df_vis.index,
-                     y=column_to_vis[0])  # initialize app
-
-    app.layout = html.Div(children=[
+                     x=df.reset_index().index,
+                     y=column_to_vis[0],
+                     hover_name=df.index)  # initialize app
+    sidebar = html.Div(
+                    [dbc.Col(
+                        html.Div([
+                            html.H4("Options"),
+                                dbc.Row(html.Div([
+                                    html.Hr(),
+                                    html.P(
+                                        "Select columns"),
+                                    dcc.Dropdown(
+                                        options=[{'label': i, 'value': i}
+                                                for i in column_to_vis],
+                                        value=str(column_to_vis[0]),
+                                        id='column',
+                                        className = "drop",
+                                        clearable=False, multi=True
+                                )])),
+                                dbc.Row(
+                                    html.Div([
+                                        html.Hr(),
+                                        html.P(
+                                            "Select method"
+                                        ),
+                                        dbc.Checklist(options=ls_method_with_html,
+                                            id="method",
+                                            label_checked_style={"color": "#FFFFFF"},
+                                            input_checked_style={
+                                                "backgroundColor": "#324c71",
+                                                "borderColor": "#324c71"}
+                                )])),
+                                dbc.Row(
+                                    html.Div([
+                                        html.Hr(),
+                                        html.P(
+                                            "Select distance"
+                                        ),
+                                        dbc.Checklist(options=ls_distance_with_html,
+                                            value = [2],
+                                            id="distance",
+                                            style = a
+                                )]))
+                        ]))], style=SIDEBAR_STYLE)
+    
+    content = html.Div([
         html.H1('Outliers visualisation', style={
-                'textAlign': 'center', "font-weight": "bold"}),
+                'textAlign': 'center', "font-weight": "bold "}),
         html.Br(),
-        # In this line, insert 3 columns
-        dbc.Row(
-            [dbc.Col(
-                html.Div(
-                    dcc.Dropdown(
-                        options=[{'label': i, 'value': i}
-                                 for i in column_to_vis],
-                        value=str(column_to_vis[0]),
-                        id='column',
-                        style={"width": "50%", "offset": 1, },
-                        clearable=False)
-                )
-            ),
-                dbc.Col(html.Div(children=[
-                    dcc.Checklist(options=ls_method_with_html,
-                                  id="method",
-                                  inputStyle=a)]),
-                                  ),
-                dbc.Col(html.Div(children=[
-                    dcc.Checklist(options=ls_distance_with_html,
-                                  value = [2],
-                                  id="distance",
-                                  style = a
-                                  )]))]
-        ),
-        dcc.Graph(id='scatter', figure=fig)
-    ])
+        dcc.Graph(id='scatter', figure=fig)], style=CONTENT_STYLE)
+    
+    app.layout = html.Div(children=[sidebar, content]) 
+    
+    
     # callbacks
     # https://dash.plotly.com/duplicate-callback-outputs
 
@@ -95,11 +126,18 @@ def main(df, column_to_vis):
         print("Method :", method)
         print("Distance : ", distance)
 
-        fig = px.scatter(df, x=df.index, y=y)
+        fig = px.scatter(df, 
+                         x=df.reset_index().index, 
+                         y=y, 
+                         hover_name= df.index,
+                         width=800, height=450)
         
         if triggered_id == 'method' or triggered_id == "distance":
             fig = update_threshold(df, fig, method, y, distance)
-
+        
+        fig.update_layout(
+            margin=dict(l=30, r=30, t=30, b=20),
+        )
         return fig
 
     app.run_server(debug=True)

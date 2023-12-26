@@ -1,8 +1,9 @@
-import utils
-import config
+from otpsy.src import utils
+from otpsy.src import config
+from otpsy.src.visualise import app
+
 import pandas as pd
 import numpy as np
-from visualise import app
 
 
 class Sample:
@@ -41,6 +42,13 @@ class Sample:
             self.missing = kwargs["missing"]
         else:
             self.missing = "No additional missing values"
+    
+    def visualise(self, column=""):
+        if column == "":
+            column_to_vis = self.columns_to_test
+        else:
+            column_to_vis = utils._process_column_to_test(self.df, column)
+        app.main(self.df, column_to_vis)
 
     @utils.check_number_entry
     def method_IQR(self, distance=2):
@@ -442,13 +450,6 @@ class _Outliers:
         if not all_columns:
             table = table[self.dict_col.keys()]
         return table
-
-    def visualise(self, column=""):
-        if column == "":
-            column_to_vis = self.columns_to_test
-        else:
-            column_to_vis = utils._process_column_to_test(self.df, column)
-        app.main(self.df, column_to_vis)
         
 
 class MethodIqr(_Outliers):

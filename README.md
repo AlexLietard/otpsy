@@ -2,7 +2,7 @@
 
 ## Resume
 
-In the last decades, lot of methods to detect outliers in a statistical distribution arised. Outliers are data point that are extremely distant from most of other data points.  
+Outliers are data point that are extremely distant from most of other data points.In the last decades, lot of methods to detect outliers in a statistical distribution arised.  
 This package has the purpose to sum up the different method and to be able to used the different method without difficulty in psychology. The **particularity** is that it allows easily the computation of multiple columns testing.
 
 For now, the package allows to detect outliers with a user-inputed distance with the method :
@@ -17,16 +17,16 @@ For now, the package allows to detect outliers with a user-inputed distance with
 * Cut-off (reponse time under 80 ms for example)
 * Identical response (for likert scale for example or behavioral performance)
 
-The detection is made through the creation of an outliers object.
+The detection is made through the creation of an `sample` object in which you specify the df, the columns to test and the column refering to the participant.
 
 After the detection, they can be inspect through the inspect() method which returns a dataframe.
-Outliers can be remove, winsorise or replace by na with the method `manage`
+Outliers can be remove, winsorise or replace by na with the method `manage()`.
 
 ---
 
 ## Example
 
-Imagine that you realise a study in which you want to explore the influence of art exposition on visual exploration of angry face (I don't know where this example came from, but it's sufficient). Thus, you collect data about the explored time of the painting scene, number of fixations of anger face (or another DV), score on depression and anxiety.
+Imagine that you realise a study in which you want to explore the influence of art exposition on visual exploration of angry face. Thus, you collect data about the explored time of the painting scene, number of fixations of anger face (or another DV), score on depression and anxiety.
 With this data, you want to control for different things :
 
 * Does participants don't look at the scene ?
@@ -35,16 +35,15 @@ With this data, you want to control for different things :
 
 ## TODO
 
-Consistency between the different method for an outliers.
 About visualisation :
 
 * Hover text on shape or annotation or legend to understand which color corresponds to which method.
 * Add summary to the left
-* Add line to bins
+* Add all method to the visualisation, with the possibility to add user-input value.
 
 About outliers method :
 
-* Finish the identical method
+* Finish the identical method (i.e. associate it to the \_\_add__)
 
 About the structure :
 

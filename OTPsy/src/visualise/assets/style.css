@@ -24,6 +24,11 @@ p {
     color: #fff;
 }
 
+/* color of font for choice */
+.Select-value{
+    color: #eee;
+}
+
 /* ? */
 .is-focused:not(.is-open) > .Select-control {
     border-color: #324c71;

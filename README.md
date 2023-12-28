@@ -5,6 +5,7 @@ In the last decades, lot of methods to detect outliers in a statistical distribu
 This package has the purpose to sum up the different method and to be able to used the different method without difficulty in psychology. The **particularity** is that it allows easily the computation of multiple columns testing.
 
 For now, the package allows to detect outliers with a user-inputed distance with the method :
+
 * IQR (IQR distance to median)
 * Tukey (IQR distance from quartiles)
 * Standard Deviation SD
@@ -26,9 +27,24 @@ Outliers can be remove, winsorise or replace by na with the method `manage`
 
 Imagine that you realise a study in which you want to explore the influence of art exposition on visual exploration of angry face (I don't know where this example came from, but it's sufficient). Thus, you collect data about the explored time of the painting scene, number of fixations of anger face (or another DV), score on depression and anxiety.
 With this data, you want to control for different things :
-* Does participants don't look at the scene ? 
+
+* Does participants don't look at the scene ?
 
 ## TODO
 
-Visualisation through a dashboard is coming.  
 Consistency between the different method for an outliers.
+About visualisation :
+
+* Hover text on shape or annotation or legend to understand which color corresponds to which method.
+* Add summary to the left
+* Add line to bins
+
+About outliers method :
+
+* Finish the identical method
+
+About the structure :
+
+* Create automated test
+* Create tutorial
+* Create data simulation

@@ -1,3 +1,7 @@
+""" Design of the visualisation of data 
+
+"""
+
 from otpsy.src import config
 
 # Data visualisation
@@ -5,6 +9,7 @@ import pandas as pd
 import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+from numpy import histogram, argmax, isnan
 
 # Dashboard
 import dash
@@ -24,6 +29,7 @@ SIDEBAR_STYLE = {
     "width": "16rem",
     "padding": "2rem 1rem",
     "background-color": "#222222",
+    'overflowY': 'auto'
 }
 CONTENT_STYLE = {
     "margin-left": "18rem",
@@ -48,6 +54,8 @@ def main(df, column_to_vis):
     ls_method_with_html = []
     ls_distance = [2, 2.5, 3]
     ls_distance_with_html = []
+    ls_graph = ["Scatter", "Histogram"]
+    ls_graph_with_html = []
 
     for method in list_of_method:
         ls_method_with_html.append({'label': html.Div(
@@ -59,13 +67,19 @@ def main(df, column_to_vis):
             str(num), style={'font-size': 15, 
                            'padding-right': "0.5rem"}), 
                            'value': num})
+    for type in ls_graph:
+        ls_graph_with_html.append({'label': html.Div(
+            type, style={'font-size': 15, 
+                         'padding-right': "0.5rem",
+                         'color': "#FFFFFF"}), 
+                         'value': type})
 
     fig = px.scatter({'data':[]})  # initialize app
     sidebar = html.Div(
                     [dbc.Col(
                         html.Div([
                             html.H4("Options"),
-                            # in this column, there is 3 row, starting with a line,
+                            # in this column, there are 4 rows, starting with a line,
                             # followed by the name of the category and options
                             # Columns to show
                                 dbc.Row(html.Div([
@@ -103,6 +117,18 @@ def main(df, column_to_vis):
                                         dbc.Checklist(options=ls_distance_with_html,
                                             id="distance",
                                             style = CHECKLIST_DISTANCE
+                                )])),
+                                dbc.Row(
+                                    html.Div([
+                                        html.Hr(),
+                                        html.P(
+                                            "Select graph type"
+                                        ),
+                                        dcc.Dropdown(
+                                            options=ls_graph_with_html,
+                                            id="graph",
+                                            value = "Scatter",
+                                            className = "drop"
                                 )]))
                         ]))], style=SIDEBAR_STYLE)
     
@@ -122,12 +148,13 @@ def main(df, column_to_vis):
         Output(component_id='scatter', component_property='figure'),
         Input(component_id='column', component_property='value'),
         Input(component_id='method', component_property='value'),
-        Input(component_id='distance', component_property='value')
+        Input(component_id='distance', component_property='value'),
+        Input(component_id="graph", component_property='value')
     )
-    def update_graph(y, method, distance):
-        triggered_id = dash.ctx.triggered_id
+    def update_graph(y, method, distance, graph_type):
         # allow to know which subplot corresponds to the method
         ref = {}
+        max_frequency = {}
         if y == None or len(y) == 0:
             fig = px.scatter({'data': []})
             # number_of_subplots = 1 because the value of number_of_subplots 
@@ -136,25 +163,52 @@ def main(df, column_to_vis):
             # with : height_of_figure = height_of_a_subplot * number_of_subplots. 
             # However, if there is no column (y == None), height_of_figure can't be 0.
             number_of_subplots = 1
-        else:
+        elif graph_type == "Scatter":
             title_of_subplots = [f"Scatter plot of {col}" for col in y]
-            fig = make_subplots(rows = len(y), 
+            fig = make_subplots(rows=len(y), 
                                 cols= 1, 
-                                subplot_titles=title_of_subplots)
+                                subplot_titles=title_of_subplots,
+                                vertical_spacing=0.12)
             for i, column in enumerate(y):
                 fig.add_trace(
-                    go.Scatter(x = df.reset_index().index, 
-                            y=df[column],
-                            hovertext=df.index,
-                            mode="markers",
-                            xaxis=f"x{i+1}",
-                            yaxis=f"y{i+1}"),
-                            row=i+1, col=1)
+                    go.Scatter(
+                        x=df.reset_index().index, 
+                        y=df[column],
+                        hovertemplate= f'Index: %{{text}}<extra></extra><br>' \
+                                    f'Row number: %{{x}}<br>{column}: %{{y}}<br>',
+                        text=df.index,
+                        mode="markers",
+                        xaxis=f"x{i+1}",
+                        yaxis=f"y{i+1}"),
+                        row=i+1, col=1)
                 fig.update_xaxes(title="Row Number")
                 fig.update_yaxes(title=column)
                 ref[column] = i + 1
             
-            fig = update_threshold(df, fig, method, y, distance, ref)
+            fig = update_threshold(df, fig, method, y, distance, ref, graph_type, "")
+            number_of_subplots = i + 1
+        
+        elif graph_type == "Histogram":
+            title_of_subplots = [f"Histogram plot of {col}" for col in y]
+            fig = make_subplots(rows=len(y), 
+                                cols= 1, 
+                                subplot_titles=title_of_subplots,
+                                vertical_spacing=0.12)
+            for i, column in enumerate(y):
+                max_frequency_for_a_column = create_hist_numpy(df, column)
+                fig.add_trace(
+                    go.Histogram(
+                        x=df[column], 
+                        xaxis=f"x{i+1}",
+                        yaxis=f"y{i+1}"),
+                        row=i+1, col=1,
+                        )
+                fig.update_xaxes(title=column)
+                fig.update_yaxes(title="Count")
+                ref[column] = i + 1
+                max_frequency[column] = max_frequency_for_a_column
+            
+            fig = update_threshold(df, fig, method, y, distance, ref, graph_type, max_frequency)
 
             number_of_subplots = i + 1
         height_of_one_plot = 400
@@ -163,15 +217,22 @@ def main(df, column_to_vis):
             height = height_of_one_plot*number_of_subplots,
             width = 900,
             margin=dict(l=30, r=30, t=30, b=20),
+            showlegend = False
         )
         return fig
 
     app.run_server(debug=True)
 
-def update_threshold(df, fig, pre_method, y, distance, ref):
+def create_hist_numpy(df, column):
+    col = df[column][~isnan(df[column])]
+    hist, bin_edges = histogram(col, bins='auto')
+    max_frequency=hist[argmax(hist)]
+    return max_frequency
+
+
+def update_threshold(df, fig, pre_method, y, distance, ref, graph_type, max_frequency):
     layout = {"showlegend":True}
     layout['shapes'] = []
-    len_df = len(df.index)
     if pre_method == None or distance == None:
         return fig
     for column in y:
@@ -188,9 +249,9 @@ def update_threshold(df, fig, pre_method, y, distance, ref):
                 else:
                     low_threshold, high_threshold = func(
                         df, [column], dis)
-                low_line = create_line_plotly(low_threshold, len_df, method, ref[column])
+                low_line = create_line_plotly(low_threshold, df[column], method, ref[column], graph_type, max_frequency)
                 layout['shapes'].append(low_line)
-                high_line = create_line_plotly(high_threshold, len_df, method, ref[column])
+                high_line = create_line_plotly(high_threshold, df[column], method, ref[column], graph_type, max_frequency)
                 layout['shapes'].append(high_line)
 
     fig.update_layout(layout)
@@ -198,18 +259,25 @@ def update_threshold(df, fig, pre_method, y, distance, ref):
     return fig
 
 
-def create_line_plotly(threshold, len_df, method, reference):
+def create_line_plotly(threshold, column, method, reference, graph_type, max_frequency):
+    """
+    Create horizontal (or vertical) line on the scatter (histogram) 
+    plot to represent the threshold corresponding to distance.
+    """
+    x0 = 0 if graph_type == "Scatter" else threshold
+    y0 = threshold if graph_type == "Scatter" else 0
+    x1 = len(column) if graph_type == "Scatter" else threshold
+    y1 = threshold if graph_type == "Scatter" else max_frequency[column.name]
     line={
         'type': 'line',
         'xref': f'x{reference}',
         'yref': f'y{reference}',
-        'x0': 0,
-        'y0': threshold,
-        'x1': len_df,
-        'y1': threshold,
+        'x0': x0,
+        'y0': y0,
+        'x1': x1,
+        'y1': y1,
         'line': {'color': f'{config.HEXA_FOR_PLOTLY[method]}','width': 4},
     }
-    print(line)
     return line
 
 

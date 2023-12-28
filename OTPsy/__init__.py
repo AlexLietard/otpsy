@@ -1,4 +1,4 @@
-from otpsy.src.otpsy import *
+from otpsy.src.main import *
 from otpsy.src.threshold import *
 from otpsy.src.config import *
 from otpsy.src.mathematics import *

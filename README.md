@@ -1,6 +1,7 @@
 # Outliers Toolkit for Psychology, OTPsy
 
 ## Resume
+
 In the last decades, lot of methods to detect outliers in a statistical distribution arised. Outliers are data point that are extremely distant from most of other data points.  
 This package has the purpose to sum up the different method and to be able to used the different method without difficulty in psychology. The **particularity** is that it allows easily the computation of multiple columns testing.
 
@@ -30,6 +31,8 @@ With this data, you want to control for different things :
 
 * Does participants don't look at the scene ?
 
+---
+
 ## TODO
 
 Consistency between the different method for an outliers.
@@ -48,3 +51,4 @@ About the structure :
 * Create automated test
 * Create tutorial
 * Create data simulation
+* Create a clear documentation

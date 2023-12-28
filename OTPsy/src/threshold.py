@@ -242,8 +242,6 @@ def threshold_identical(
             The dataframe used
         column_to_test: str | list | int | pd.Series
             The name of the colum of interest
-        distance: float | int
-            The distance used to calculate threshold
     """
     ret = {}
     # get the maximal frequency of the item
@@ -251,5 +249,4 @@ def threshold_identical(
         lambda x: pd.value_counts(x), axis=1).max(axis=1)
     ret = all_max_frequency.div(len(column_to_test))
 
-    # avoid having a dictionnary for one column
     return ret

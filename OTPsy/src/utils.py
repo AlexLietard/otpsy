@@ -376,10 +376,7 @@ def header_add_true(obj):
 
 
 def header_add_false(obj):
-    output_text = "-"*30
-    output_text += "\nSummary of the outliers detection\n"
-    output_text += "-"*30
-    output_text += "\n\n"
+    output_text = ""
     output_text += f"Method used : {obj.method}\n"
     output_text += f"Distance used : {obj.distance}\n"
     output_text += f"Column tested : {', '.join(obj.columns_to_test)}\n" \

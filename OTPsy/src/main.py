@@ -175,7 +175,7 @@ class _Outliers:
 
         for column in dic_to_add:
             try:
-                # even if this if else seems strange, this isinstance is
+                # even if this "if else" seems strange, this isinstance is
                 # useful.
                 # Indeed, if the participant enter a string, it is possible
                 # to iterate on it, so we can't add a single string to it.
@@ -187,6 +187,7 @@ class _Outliers:
 
             except KeyError as key:
                 if issubclass(type(o), _Outliers):
+                    # assign a list if it is a string
                     if isinstance(dic_to_add[column], str):
                         dic_ini[column] = [dic_to_add[column]]
                     else:
@@ -212,7 +213,7 @@ class _Outliers:
                 # distance
                 new_obj.distance = {self.distance: [self.dimin]}
 
-                # dimin
+                # short name
                 new_obj.dimin.extend([self.dimin, o.dimin])
 
                 # column associated with method
@@ -222,13 +223,14 @@ class _Outliers:
                     new_obj.threshold[column] = {
                         self.dimin: self.threshold[column]}
 
-            # Add the element about o
+            # Add the element about o (the other object)
             new_obj.method.append(o.method)
             if o.distance not in new_obj.distance:
                 new_obj.distance[o.distance] = [o.dimin]
             else:
                 new_obj.distance[o.distance].append(o.dimin)
 
+            # for each column in the object to add
             for column in o.columns_to_test:
                 if column in self.columns_to_test:
                     new_obj.columns_to_test_w_method[column].append(o.dimin)
@@ -703,8 +705,6 @@ class MethodIdentical(_Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.frequency = frequency
-        self.threshold = frequency
-        self.distance = frequency
         self.method = "Identical"
         self.dimin = "id"
         self._calculate("identical")
@@ -771,6 +771,6 @@ if __name__ == "__main__":
                     column_to_test=["CLI1", "PAT1", "ASD1", "EXP1"],
                     participant_column="LIB_NOM_PAT_IND_TPW_IND")
 
-    outliers_mad = sample.method_MAD()
+    outliers_iqr = sample.method_IQR()
+    print(outliers_iqr)
 
-    outliers_mad.visualise(["CLI1", "PAT1"])

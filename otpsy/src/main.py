@@ -156,70 +156,15 @@ class _Outliers:
             output_text += utils.content_add_false(self)
         return output_text[0:-2]
 
-    def __add__(self, o):
-        """
-        Overloading the \_\_add__ outliers object function to enable
-        the addition of outliers to the existing object.
-
-        If the object being added is another outliers object,
-        it returns a new object, specifically a multi-outliers object.
-        Otherwise, it returns the same object with an additional
-        section labeled 'Added manually.
-        """
-        # Dictionnary containing the outliers present in the object
-        # receiving the __add__.
-        # self.dict_col = {Column1: [outliers], Column2 : [outliers]}
-        dic_ini = self.dict_col
-
-        # verify the type and raise error if not supported
-        if isinstance(o, (dict)):
-            dic_to_add = o
-        else:
-            # try if o is another outliers object
-            try:
-                dic_to_add = o.dict_col
-            except AttributeError:
-                raise ValueError("The addition need to be realised with"
-                                 " a dictionnary or an outliers object.")
-
-        # If this isinstance is not present, the new_obj reinitialise each time
-        # another object is added. It allows to deal with multiples addition
-        # like "out = out_method1 + out_method2 + out_method3
+    def concat(self, obj_to_merge):
+        
+        # see it is useful
         if not isinstance(self, MethodMulti):
             new_obj = MethodMulti(self.df)
         else:
             new_obj = self
-
-        for column in dic_to_add:
-            try:
-                # even if this "if else" seems strange, this isinstance is
-                # useful.
-                # Indeed, if the participant enter a string, it is possible
-                # to iterate on it, so we can't add a single string to it.
-                # Thus I checked if its a string to append it now.
-                if isinstance(dic_to_add[column], str):
-                    dic_ini[column].append(dic_to_add[column])
-                else:
-                    dic_ini[column].extend(dic_to_add[column])
-
-            except KeyError as key:
-                if issubclass(type(o), _Outliers):
-                    # assign a list if it is a string
-                    if isinstance(dic_to_add[column], str):
-                        dic_ini[column] = [dic_to_add[column]]
-                    else:
-                        dic_ini[column] = dic_to_add[column]
-                else:
-                    raise KeyError(f'It seems that the column {column} '
-                                   'added is not present') from key
-            except TypeError as e:
-                if isinstance(dic_to_add[column], (int, float)):
-                    dic_ini[column].append(dic_to_add[column])
-                else:
-                    raise TypeError("This type of value is not "
-                                    "supported.") from e
-
-        if issubclass(type(o), _Outliers):
+        # Update paramaters like method if this is an outliers object
+        if issubclass(type(obj_to_merge), _Outliers):
             new_obj.dict_col = dic_ini
 
             # Update all parameters for __str__ output
@@ -231,7 +176,7 @@ class _Outliers:
                 new_obj.distance = {self.distance: [self.dimin]}
 
                 # short name
-                new_obj.dimin.extend([self.dimin, o.dimin])
+                new_obj.dimin.extend([self.dimin, obj_to_merge.dimin])
 
                 # column associated with method
                 for column in self.columns_to_test:
@@ -241,28 +186,28 @@ class _Outliers:
                         self.dimin: self.threshold[column]}
 
             # Add the element about o (the other object)
-            new_obj.method.append(o.method)
-            if o.distance not in new_obj.distance:
-                new_obj.distance[o.distance] = [o.dimin]
+            new_obj.method.append(obj_to_merge.method)
+            if obj_to_merge.distance not in new_obj.distance:
+                new_obj.distance[obj_to_merge.distance] = [obj_to_merge.dimin]
             else:
-                new_obj.distance[o.distance].append(o.dimin)
+                new_obj.distance[obj_to_merge.distance].append(obj_to_merge.dimin)
 
             # for each column in the object to add
-            for column in o.columns_to_test:
+            for column in obj_to_merge.columns_to_test:
                 if column in self.columns_to_test:
-                    new_obj.columns_to_test_w_method[column].append(o.dimin)
-                    new_obj.threshold[column][o.dimin] = o.threshold[column]
+                    new_obj.columns_to_test_w_method[column].append(obj_to_merge.dimin)
+                    new_obj.threshold[column][obj_to_merge.dimin] = obj_to_merge.threshold[column]
                 else:
-                    new_obj.columns_to_test_w_method[column] = [o.dimin]
-                    if o.dimin == "cut-off":
-                        new_obj.threshold[column] = {o.dimin: o.threshold}
+                    new_obj.columns_to_test_w_method[column] = [obj_to_merge.dimin]
+                    if obj_to_merge.dimin == "cut-off":
+                        new_obj.threshold[column] = {obj_to_merge.dimin: obj_to_merge.threshold}
                     else:
                         new_obj.threshold[column] = {
-                            o.dimin: o.threshold[column]}
+                            obj_to_merge.dimin: obj_to_merge.threshold[column]}
 
             # Add column to test associated with columns to test
             new_obj.columns_to_test = list(
-                set(self.columns_to_test + o.columns_to_test))
+                set(self.columns_to_test + obj_to_merge.columns_to_test))
 
             # Add number of outliers associated to a specific column and
             # avoid duplicate in outliers
@@ -271,16 +216,47 @@ class _Outliers:
                     new_obj.dict_col[column]
                 ))
                 new_obj.nb[column] = len(new_obj.dict_col[column])
-            return new_obj
+        return MethodMulti()
 
-        else:
-            self.dict_col = dic_ini
-            for column in self.columns_to_test:
-                self.dict_col[column] = list(set(
-                    self.dict_col[column]
-                ))
-                self.nb[column] = len(self.dict_col[column])
-            return self
+    def add(self, list_to_merge):
+        """
+        The addition of outliers to the existing object.
+
+        If the object being added is another outliers object,
+        it returns a new object, specifically a multi-outliers object.
+        Otherwise, it returns the same object with an additional
+        section labeled 'Added manually', 
+        or "added_manually" on the dataframe.
+        """
+
+        # If User input : out_obj.add("participant1")
+        if isinstance(list_to_merge, (str)):
+            list_to_merge = [list_to_merge]
+        
+        # User input out_obj.add(["participant1", "participant2"]) or
+        # string transform to list
+        if isinstance(list_to_merge, (list)):
+            # if there is already a column added_manually coming from
+            # a past addition, it extends it. If not, it create a new
+            # key that have the value []. 
+            # The comprehension list is to avoid redundancy
+            self.dict_col.setdefault("added_manually", []).extend(
+                [elem for elem in list_to_merge 
+                 if elem not in self.dict_col["added_manually"]])
+            
+            # Update other parameters
+            self.nb["added_manually"] = len(self.dict_col["added_manually"])
+            self.position["added_manually"] = utils._get_position(
+                self.df, self.dict_col)
+            self.all_index = utils._select_index(
+                self.dict_col.keys(), self.dict_col)
+        
+        elif issubclass(type(list_to_merge), _Outliers):
+            raise KeyError('You can\'t add an outlier object'
+                            ' with this method. \n'
+                            'You can use ot.concat(out1, out2)')
+
+        return self
 
     def __sub__(self, o):
         """

@@ -388,7 +388,7 @@ def content_add_true(obj):
     output_text = ""
     for column in obj.columns_to_test:
         output_text += f"The column {column} has " \
-            f"{obj.nb[column]} outliers : "
+            f"{obj.nb[column]} outlier{'s' if obj.nb[column] != 0 else ''} : "
 
         if obj.nb[column] > 0 and obj.nb[column] <= 5:
             output_text += ", ".join([str(val)
@@ -423,7 +423,7 @@ def content_add_false(obj):
     output_text = ""
     for column in obj.columns_to_test:
         output_text += f"The column {column} has " \
-            f"{obj.nb[column]} outliers : "
+            f"{obj.nb[column]} outlier{'s' if obj.nb[column] != 0 else ''} : "
 
         if obj.nb[column] > 0 and obj.nb[column] <= 5:
             output_text += ", ".join([str(val)

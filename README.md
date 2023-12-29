@@ -29,7 +29,7 @@ Outliers can be remove, winsorise or replace by na with the method `manage()`.
 Imagine that you realise a study in which you want to explore the influence of art exposition on visual exploration of angry face. Thus, you collect data about the explored time of the painting scene, number of fixations of anger face (or another DV), score on depression and anxiety.
 With this data, you want to control for different things :
 
-* Does participants don't look at the scene ?
+* Does participants look at the scene ?
 
 ---
 
@@ -44,6 +44,7 @@ About visualisation :
 About outliers method :
 
 * Finish the identical method (i.e. associate it to the \_\_add__)
+* Update the object's attributes after the \_\_sub__() function
 
 About the structure :
 
@@ -51,3 +52,4 @@ About the structure :
 * Create tutorial
 * Create data simulation
 * Create a clear documentation
+* Create an export function to keep the mathematical information

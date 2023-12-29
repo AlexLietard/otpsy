@@ -33,10 +33,10 @@ class Sample:
 
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
-        if self.participant_column != "":
-            self.df = df.set_index(self.participant_column)
-        else:
+        if self.participant_column == "":
             self.df = df
+        else:
+            self.df = df.set_index(self.participant_column)
 
         if "missing" in kwargs:
             self.missing = kwargs["missing"]
@@ -157,10 +157,25 @@ class _Outliers:
         return output_text[0:-2]
 
     def __add__(self, o):
+        """
+        Overloading the \_\_add__ outliers object function to enable
+        the addition of outliers to the existing object.
+
+        If the object being added is another outliers object,
+        it returns a new object, specifically a multi-outliers object.
+        Otherwise, it returns the same object with an additional
+        section labeled 'Added manually.
+        """
+        # Dictionnary containing the outliers present in the object
+        # receiving the __add__.
+        # self.dict_col = {Column1: [outliers], Column2 : [outliers]}
         dic_ini = self.dict_col
-        if isinstance(o, (dict, list)):
+
+        # verify the type and raise error if not supported
+        if isinstance(o, (dict)):
             dic_to_add = o
         else:
+            # try if o is another outliers object
             try:
                 dic_to_add = o.dict_col
             except AttributeError:
@@ -168,6 +183,8 @@ class _Outliers:
                                  " a dictionnary or an outliers object.")
 
         # If this isinstance is not present, the new_obj reinitialise each time
+        # another object is added. It allows to deal with multiples addition
+        # like "out = out_method1 + out_method2 + out_method3
         if not isinstance(self, MethodMulti):
             new_obj = MethodMulti(self.df)
         else:
@@ -274,20 +291,26 @@ class _Outliers:
         """ 
         dic_ini = self.dict_col
         try:
+            # User inputed something like
+            # Out_obj - ["participant1", "participant2"]
             if isinstance(o, list):
                 for column in dic_ini:
                     o_str = [str(value) for value in o]
                     dic_ini[column] = [value for value in dic_ini[column]
                                        if str(value) not in o_str]
+            # User inputed something like
+            # Out_obj - {"first_column": ["participant1", "participant2"]}
             elif isinstance(o, dict):
                 for column in o:
-                    # transform to a list for allow iteration
+                    # transform to a list for allow iteration if user input :
+                    # Out_obj - {"first_column": "participant1"}
                     if isinstance(o[column], (int, str)):
                         o[column] = [o[column]]
                     o[column] = [str(value) for value in o[column]]
                     dic_ini[column] = [value for value in dic_ini[column]
                                        if str(value) not in o[column]]
-            # if there is just one column
+            # If there is just one participant index 
+            # User inputed : Out_obj - "participant1"
             elif isinstance(o, (int, str)):
                 for column in dic_ini:
                     dic_ini[column] = [value for value in dic_ini[column]
@@ -760,17 +783,4 @@ class MethodMulti(_Outliers):
         self.columns_to_test_w_method = {}
         self.multi = True
         self.dimin = []
-
-
-if __name__ == "__main__":
-    df_test = pd.read_csv("C:/Users/alexl/Downloads/blabla.csv", sep=";")
-    df_outliers = df_test.drop(
-        ["premiere_lettre", "LIB_NOM_PAT_IND_TPW_IND"], axis=1)
-
-    sample = Sample(df_test,
-                    column_to_test=["CLI1", "PAT1", "ASD1", "EXP1"],
-                    participant_column="LIB_NOM_PAT_IND_TPW_IND")
-
-    outliers_iqr = sample.method_IQR()
-    print(outliers_iqr)
 

@@ -1,3 +1,4 @@
+run.py
 .pylintrc
 otpsy.egg-info/
 dist/

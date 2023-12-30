@@ -196,7 +196,7 @@ def threshold_prctile(
     df: pd.DataFrame,
     column_to_test: str,
     distance: float | int
-) -> float:
+) -> tuple:
     """ Percentile detection method
 
     This function allow the user to have the low threshold

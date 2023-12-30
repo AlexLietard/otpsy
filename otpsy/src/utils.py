@@ -371,7 +371,7 @@ def header_add_true(obj):
             f"{', '.join(obj.columns_to_test_w_method[column])}), "
 
     output_text = output_text[0:-2] + "\n"
-    output_text += f"Total number of outliers : {len(obj.all_index)}"
+    output_text += f"Total number of outliers : {len(obj.all_index)}\n"
     output_text += f"Total number of flagged values : " \
         f"{sum(obj.nb.values())}\n"
     output_text += "-"*30 + "\n"

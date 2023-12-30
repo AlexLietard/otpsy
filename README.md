@@ -43,9 +43,8 @@ About visualisation :
 
 About outliers method :
 
-* Allow the concat of more than two outliers object
-* Finish the identical method (i.e. associate it to the \_\_add__)
-* Update the object's attributes after the \_\_sub__() function
+* Do the documentation of concat
+* Finish the identical method (i.e. associate it to the add)
 
 About the structure :
 
@@ -53,4 +52,4 @@ About the structure :
 * Create tutorial
 * Create data simulation
 * Create a clear documentation
-* Create an export function to keep the mathematical information
+* Create an export function to keep the information

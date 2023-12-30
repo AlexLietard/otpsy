@@ -156,70 +156,9 @@ class _Outliers:
             output_text += utils.content_add_false(self)
         return output_text[0:-2]
 
-    def concat(self, obj_to_merge):
-        
-        # see it is useful
-        if not isinstance(self, MethodMulti):
-            new_obj = MethodMulti(self.df)
-        else:
-            new_obj = self
-        # Update paramaters like method if this is an outliers object
-        if issubclass(type(obj_to_merge), _Outliers):
-            new_obj.dict_col = dic_ini
-
-            # Update all parameters for __str__ output
-            if self.multi == False:  # if this is the first addition
-                # method
-                new_obj.method = [self.method]
-
-                # distance
-                new_obj.distance = {self.distance: [self.dimin]}
-
-                # short name
-                new_obj.dimin.extend([self.dimin, obj_to_merge.dimin])
-
-                # column associated with method
-                for column in self.columns_to_test:
-                    new_obj.columns_to_test_w_method[column] = [
-                        str(self.dimin)]
-                    new_obj.threshold[column] = {
-                        self.dimin: self.threshold[column]}
-
-            # Add the element about o (the other object)
-            new_obj.method.append(obj_to_merge.method)
-            if obj_to_merge.distance not in new_obj.distance:
-                new_obj.distance[obj_to_merge.distance] = [obj_to_merge.dimin]
-            else:
-                new_obj.distance[obj_to_merge.distance].append(obj_to_merge.dimin)
-
-            # for each column in the object to add
-            for column in obj_to_merge.columns_to_test:
-                if column in self.columns_to_test:
-                    new_obj.columns_to_test_w_method[column].append(obj_to_merge.dimin)
-                    new_obj.threshold[column][obj_to_merge.dimin] = obj_to_merge.threshold[column]
-                else:
-                    new_obj.columns_to_test_w_method[column] = [obj_to_merge.dimin]
-                    if obj_to_merge.dimin == "cut-off":
-                        new_obj.threshold[column] = {obj_to_merge.dimin: obj_to_merge.threshold}
-                    else:
-                        new_obj.threshold[column] = {
-                            obj_to_merge.dimin: obj_to_merge.threshold[column]}
-
-            # Add column to test associated with columns to test
-            new_obj.columns_to_test = list(
-                set(self.columns_to_test + obj_to_merge.columns_to_test))
-
-            # Add number of outliers associated to a specific column and
-            # avoid duplicate in outliers
-            for column in new_obj.columns_to_test:
-                new_obj.dict_col[column] = list(set(
-                    new_obj.dict_col[column]
-                ))
-                new_obj.nb[column] = len(new_obj.dict_col[column])
-        return MethodMulti()
-
     def add(self, list_to_merge):
         """
+        NEED TO TEST IT
         The addition of outliers to the existing object.
 
         If the object being added is another outliers object,
@@ -467,8 +406,8 @@ class MethodIqr(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Inter-quartile range"
-        self.dimin = "iqr"
-        self._calculate(self.dimin)
+        self.shortname = "iqr"
+        self._calculate(self.shortname)
 
 
 class MethodSd(_Outliers):
@@ -485,8 +424,8 @@ class MethodSd(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Standard Deviation"
-        self.dimin = "sd"
-        self._calculate(self.dimin)
+        self.shortname = "sd"
+        self._calculate(self.shortname)
 
 
 class MethodRSd(_Outliers):
@@ -505,8 +444,8 @@ class MethodRSd(_Outliers):
         self.distance = distance
         self.max_iteration = max_iteration
         self.method = "Recursive Standard Deviation"
-        self.dimin = "rsd"
-        self._calculate(self.dimin)
+        self.shortname = "rsd"
+        self._calculate(self.shortname)
 
     def _calculate(self, method):
         self.all_index = {}
@@ -568,8 +507,8 @@ class MethodMad(_Outliers):
         self.distance = distance
         self.b = b
         self.method = "Median Absolute Distance"
-        self.dimin = "mad"
-        self._calculate(self.dimin)
+        self.shortname = "mad"
+        self._calculate(self.shortname)
 
 
 class MethodTukey(_Outliers):
@@ -586,8 +525,8 @@ class MethodTukey(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Tukey"
-        self.dimin = "tukey"
-        self._calculate(self.dimin)
+        self.shortname = "tukey"
+        self._calculate(self.shortname)
 
 
 class MethodSn(_Outliers):
@@ -604,8 +543,8 @@ class MethodSn(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Sn"
-        self.dimin = "sn"
-        self._calculate(self.dimin)
+        self.shortname = "sn"
+        self._calculate(self.shortname)
 
     def _calculate(self, method):
         self.all_index = {}
@@ -649,8 +588,8 @@ class MethodPrctile(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Percentile"
-        self.dimin = "prctile"
-        self._calculate(self.dimin)
+        self.shortname = "prctile"
+        self._calculate(self.shortname)
 
 
 class MethodCutOff(_Outliers):
@@ -668,7 +607,7 @@ class MethodCutOff(_Outliers):
         self.distance = threshold
         self.threshold = threshold
         self.method = "Cut-Off"
-        self.dimin = "cut-off"
+        self.shortname = "cut-off"
         self._calculate()
 
     def _calculate(self):
@@ -705,7 +644,7 @@ class MethodIdentical(_Outliers):
         self.participant_column = participant_column
         self.frequency = frequency
         self.method = "Identical"
-        self.dimin = "id"
+        self.shortname = "id"
         self._calculate("identical")
 
     def _calculate(self, method):
@@ -727,7 +666,7 @@ class MethodIdentical(_Outliers):
         self.nb = len(list_outliers)
         self.all_index = list_outliers
         self.position = utils._get_position(
-            self.df, self.dict_col, self.dimin)
+            self.df, self.dict_col, self.shortname)
 
     def __str__(self):
         output_text = utils.header_add_false(self)
@@ -758,5 +697,5 @@ class MethodMulti(_Outliers):
         self.columns_to_test = []
         self.columns_to_test_w_method = {}
         self.multi = True
-        self.dimin = []
+        self.shortname = []
 

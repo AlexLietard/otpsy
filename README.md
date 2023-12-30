@@ -43,6 +43,7 @@ About visualisation :
 
 About outliers method :
 
+* Split \_\_add__ into add and merge
 * Finish the identical method (i.e. associate it to the \_\_add__)
 * Update the object's attributes after the \_\_sub__() function
 

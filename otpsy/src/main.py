@@ -158,14 +158,10 @@ class _Outliers:
 
     def add(self, list_to_merge):
         """
-        NEED TO TEST IT
         The addition of outliers to the existing object.
 
-        If the object being added is another outliers object,
-        it returns a new object, specifically a multi-outliers object.
-        Otherwise, it returns the same object with an additional
-        section labeled 'Added manually', 
-        or "added_manually" on the dataframe.
+        It add an additional section labeled 'Added manually' with the details
+        in the report.
         """
 
         # If User input : out_obj.add("participant1")
@@ -180,8 +176,8 @@ class _Outliers:
             # key that have the value []. 
             # The comprehension list is to avoid redundancy
             self.dict_col.setdefault("added_manually", []).extend(
-                [elem for elem in list_to_merge 
-                 if elem not in self.dict_col["added_manually"]])
+                list(set([elem for elem in list_to_merge 
+                 if elem not in self.dict_col["added_manually"]])))
             
             # Update other parameters
             self.nb["added_manually"] = len(self.dict_col["added_manually"])

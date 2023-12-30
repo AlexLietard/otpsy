@@ -49,6 +49,7 @@ class Sample:
         else:
             column_to_vis = utils._process_column_to_test(self.df, column)
         app.main(self.df, column_to_vis)
+        return self
 
     @utils.check_number_entry
     def method_IQR(self, distance=2):
@@ -141,6 +142,42 @@ class _Outliers:
     Children classes are all outliers class (SD, IQR,...).
     """
 
+    def _calculate(self, method):
+        """ Private method used to calculate outliers """
+        self.all_index = {}
+        self.dict_col = {}
+        self.threshold = {}
+        self.nb = {}
+        self.position = {}
+        # As there is no constructor, self.multi has the purpose
+        # to change the print() result
+        self.multi = False
+        # get the function for calculate threshold
+        func = config.DICT_FUNCTION.get(method)
+        for column in self.columns_to_test:
+            # Calculate threshold
+            # for the MAD method, a "b" can be given
+            if method == "mad":
+                low_threshold, high_threshold = func(
+                    self.df, [column], self.distance, self.b)
+            else:
+                low_threshold, high_threshold = func(
+                    self.df, [column], self.distance)
+
+            # list of outliers by column
+            list_outliers = self.df.index[
+                ((self.df[column] < low_threshold) |
+                 (self.df[column] > high_threshold))
+            ].tolist()
+            self.dict_col[column] = list_outliers
+            self.threshold[column] = (low_threshold, high_threshold)
+            self.nb[column] = len(list_outliers)
+            self.position[column] = utils._get_position(
+                self.df, self.dict_col)
+
+        self.all_index = utils._select_index(
+            self.dict_col.keys(), self.dict_col)
+
     def __str__(self):
         output_text = "-"*30
         output_text += "\nSummary of the outliers detection\n"
@@ -193,92 +230,76 @@ class _Outliers:
 
         return self
 
-    def __sub__(self, o):
+    def sub(
+            self, 
+            to_sub : str | list[str] | dict
+            ):
         """
         This method allows to substract remove outliers from the object. 
         For example, if you detect outliers through a specific method,
         you can judge that the participant X is not outliers and remove
-        him from the outliers. 
+        him from the outliers.
+        Outliers to substract are input via the keyword : to\_sub. 
+        You can use it through different implementation :
+            * If you want to delete one index from all column, you can input
+        a string (ex. `obj.sub("participant1")`).
+            * If you want to delete multiples index from all column, 
+        you can input a list of string 
+        (ex. `obj.sub(["participant1", "participant2"])`).
+            * If you want to delete one or more index from a specific column,
+        you can input a dictionnary 
+        (ex. `obj.sub({"Col1": "participant1"})`) or {"Col1": ["P1", "P2"]}
         """ 
-        dic_ini = self.dict_col
         try:
             # User inputed something like
-            # Out_obj - ["participant1", "participant2"]
-            if isinstance(o, list):
-                for column in dic_ini:
-                    o_str = [str(value) for value in o]
-                    dic_ini[column] = [value for value in dic_ini[column]
-                                       if str(value) not in o_str]
+            # Out_obj.sub(["participant1", "participant2"])
+            if isinstance(to_sub, list):
+                for column in self.dict_col:
+                    o_str = [str(value) for value in to_sub]
+                    self.dict_col[column] = [value for value in 
+                                             self.dict_col[column]
+                                             if str(value) not in o_str]
             # User inputed something like
-            # Out_obj - {"first_column": ["participant1", "participant2"]}
-            elif isinstance(o, dict):
-                for column in o:
+            # Out_obj.sub({"first_column": ["participant1", "participant2"]})
+            elif isinstance(to_sub, dict):
+                for column in to_sub:
                     # transform to a list for allow iteration if user input :
-                    # Out_obj - {"first_column": "participant1"}
-                    if isinstance(o[column], (int, str)):
-                        o[column] = [o[column]]
-                    o[column] = [str(value) for value in o[column]]
-                    dic_ini[column] = [value for value in dic_ini[column]
-                                       if str(value) not in o[column]]
+                    # Out_obj.sub({"first_column": "participant1"})
+                    if isinstance(to_sub[column], (int, str)):
+                        to_sub[column] = [to_sub[column]]
+
+                    to_sub[column] = [str(value) for value in to_sub[column]]
+
+                    self.dict_col[column] = [value for value in 
+                                             self.dict_col[column]
+                                             if str(value) not 
+                                             in to_sub[column]]
+
             # If there is just one participant index 
-            # User inputed : Out_obj - "participant1"
-            elif isinstance(o, (int, str)):
-                for column in dic_ini:
-                    dic_ini[column] = [value for value in dic_ini[column]
-                                       if str(value) != str(o)]
+            # User inputed : Out_obj.sub("participant1")
+            elif isinstance(to_sub, (int, str)):
+                for column in self.dict_col:
+                    self.dict_col[column] = [value for value 
+                                             in self.dict_col[column]
+                                            if str(value) != str(to_sub)]
+
         except KeyError as key:
-            raise KeyError(f'It seems that the column {column} '
-                           'added is not present in the outliers'
-                           ' object') from key
+            raise KeyError(f'It seems that the column "{column}"'
+                           ' is not present in the columns'
+                           ' to test in the dataframe') from key
         except TypeError as type:
             raise TypeError("This type of value is not "
                             "supported.") from type
 
-        self.dict_col = dic_ini
+        # Update parameters needed
         for column in self.columns_to_test:
-            self.dict_col[column] = list(set(
-                self.dict_col[column]
-            ))
             self.nb[column] = len(self.dict_col[column])
-
-        return self
-
-    def _calculate(self, method):
-        """ Private method used to calculate outliers """
-        self.all_index = {}
-        self.dict_col = {}
-        self.threshold = {}
-        self.nb = {}
-        self.position = {}
-        # As there is no constructor, this attribute has the purpose.
-        # If the user use the method __add__, add take the value True.
-        # This attribute is used in the method __str__.
-        self.multi = False
-        # get the function for calculate threshold
-        func = config.DICT_FUNCTION.get(method)
-        for column in self.columns_to_test:
-            # Calculate threshold
-            # for the MAD method, a "b" can be given
-            if method == "mad":
-                low_threshold, high_threshold = func(
-                    self.df, [column], self.distance, self.b)
-            else:
-                low_threshold, high_threshold = func(
-                    self.df, [column], self.distance)
-
-            # list of outliers by column
-            list_outliers = self.df.index[
-                ((self.df[column] < low_threshold) |
-                 (self.df[column] > high_threshold))
-            ].tolist()
-            self.dict_col[column] = list_outliers
-            self.threshold[column] = (low_threshold, high_threshold)
-            self.nb[column] = len(list_outliers)
             self.position[column] = utils._get_position(
                 self.df, self.dict_col)
-
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
+
+        return self
 
     def manage(self, method="delete", column=None):
         """ Manage your outliers

@@ -246,7 +246,7 @@ def threshold_identical(
     ret = {}
     # get the maximal frequency of the item
     all_max_frequency = df[column_to_test].apply(
-        lambda x: pd.value_counts(x), axis=1).max(axis=1)
+        lambda x: x.value_counts(), axis=1).max(axis=1)
     ret = all_max_frequency.div(len(column_to_test))
 
     return ret

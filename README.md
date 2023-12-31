@@ -43,8 +43,6 @@ About visualisation :
 
 About outliers method :
 
-* Finish the identical method (i.e. associate it to the add)
-
 About the structure :
 
 * Create automated test

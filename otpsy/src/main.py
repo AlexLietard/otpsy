@@ -179,10 +179,7 @@ class _Outliers:
             self.dict_col.keys(), self.dict_col)
 
     def __str__(self):
-        output_text = "-"*30
-        output_text += "\nSummary of the outliers detection\n"
-        output_text += "-"*30
-        output_text += "\n\n"
+        output_text = utils._title()
 
         if self.multi == True:
             output_text += utils.header_add_true(self)
@@ -304,7 +301,7 @@ class _Outliers:
     def manage(
             self, 
             method: str = "delete" ,
-            column: str | int | list[int] | list[str] ='all'
+            column: str | int | list[str] | list[int] ='all'
             ) -> pd.DataFrame:
         """
         Manage outliers in the dataframe using specified method.
@@ -737,6 +734,10 @@ class MethodIdentical(_Outliers):
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.frequency = frequency
+        # Redundant but it is used for print output
+        self.distance = frequency
+        self.threshold = {"Identical": frequency}
+        self.multi = False
         self.method = "Identical"
         self.shortname = "id"
         self._calculate("identical")
@@ -745,7 +746,6 @@ class MethodIdentical(_Outliers):
         """ Private method used to calculate outliers """
         self.all_index = {}
         self.dict_col = {}
-        self.threshold = {}
         self.nb = {}
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
@@ -756,29 +756,25 @@ class MethodIdentical(_Outliers):
         list_outliers = self.df.index[
             (max_frequency > self.frequency)
         ].tolist()
-        self.dict_col = list_outliers
-        self.nb = len(list_outliers)
+        self.dict_col["Identical"] = list_outliers
+        self.nb["Identical"] = len(list_outliers)
         self.all_index = list_outliers
         self.position = utils._get_position(
             self.df, self.dict_col, self.shortname)
 
     def __str__(self):
-        output_text = utils.header_add_false(self)
-        output_text += f"There is {self.nb} participant with a frequency" \
-                       f" above {self.frequency} : "
+        # I used this for avoid overiding columns to test at this 
+        # moment. It overrides only when this identical method
+        # is added to another object
+        output_text = utils._title()
+        output_text += utils.header_add_false(self)
+        output_text += f"There are {self.nb['Identical']} " \
+                       f"participant"\
+                       f"{'s' if self.nb['Identical'] > 1 else ''}" \
+                       f" with a frequency above {self.frequency} : "
 
-        if self.nb > 0 and self.nb <= 5:
-            output_text += ", ".join([str(val)
-                                      for val in self.dict_col])
-
-        elif self.nb > 5:
-            output_text += str(self.dict_col[0]) + ", " + \
-                str(self.dict_col[1]) \
-                + "."*5 + ", " + \
-                str(self.dict_col[-1])
-        else:  # if there is no outliers
-            output_text = output_text[0:-3] + "."  # take out last ":"
-        return output_text[0:-2]
+        output_text += utils._outliers_index_presentation(self, "Identical")
+        return output_text
 
 
 class MethodMulti(_Outliers):

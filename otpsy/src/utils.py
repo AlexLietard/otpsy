@@ -341,9 +341,9 @@ def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
     return final
 
 
-def _get_position(df, dict_col, dimin = ""):
-    if dimin == "id":
-        index_to_find = dict_col
+def _get_position(df, dict_col, shortname = ""):
+    if shortname == "id":
+        index_to_find = dict_col["Identical"]
     else:       
         index_to_find = _select_index(dict_col.keys(), dict_col)
     position_index = []
@@ -374,7 +374,7 @@ def header_add_true(obj):
     output_text += f"Total number of outliers : {len(obj.all_index)}\n"
     output_text += f"Total number of flagged values : " \
         f"{sum(obj.nb.values())}\n"
-    output_text += "-"*30 + "\n"
+    output_text += "-"*30 + "\n\n"
     return output_text
 
 
@@ -386,40 +386,40 @@ def header_add_false(obj):
     output_text += f"Total number of outliers : {len(obj.all_index)}\n"
     output_text += f"Total number of flagged values : " \
         f"{sum(obj.nb.values())}\n" \
-        + "-"*30 + "\n"
+        + "-"*30 + "\n\n"
     return output_text
 
 
 def content_add_true(obj):
     output_text = ""
     for column in obj.columns_to_test:
-        output_text += f"The column {column} has " \
-            f"{obj.nb[column]} outlier{'s' if obj.nb[column] != 0 else ''} : "
+        if column == "Identical":
+            output_text +=f"There are {obj.nb[column]} " \
+                       f"participant"\
+                       f"{'s' if obj.nb['Identical'] > 1 else ''} with " \
+                       f"a frequency above {obj.threshold['Identical']['id']} : "
+        else:
+            output_text += f"The column {column} has " \
+                f"{obj.nb[column]} outlier"\
+                f"{'s : ' if obj.nb[column] != 0 else '.'}"
 
-        if obj.nb[column] > 0 and obj.nb[column] <= 5:
-            output_text += ", ".join([str(val)
-                                      for val in obj.dict_col[column]])
-
-        elif obj.nb[column] > 5:
-            output_text += str(obj.dict_col[column][0]) + ", " + \
-                str(obj.dict_col[column][1]) \
-                + "."*5 + ", " + \
-                str(obj.dict_col[column][-1])
-        else:  # if there is no outliers
-            output_text = output_text[0:-3] + "."  # take out last ":"
+        output_text += _outliers_index_presentation(obj, column)
 
         output_text += "\n"
 
-        for method in obj.threshold[column]:
+        for shortname in obj.threshold[column]:
             # This is because Sn and cut-off have only one threshold value
-            if method == "sn" or method == "cut-off":
-                output_text += f"{method.upper()}: " \
-                    f"{round(obj.threshold[column][method], 2)} ; "
+            if shortname == "sn" or shortname == "cut-off":
+                output_text += f"{shortname.upper()}: " \
+                    f"{round(obj.threshold[column][shortname], 2)} ; "
+            # The user already know the threshold
+            elif shortname == "id":
+                pass
             else:
-                output_text += f"{method.upper()}:" \
-                    f" low: {round(obj.threshold[column][method][0], 2)} / "\
+                output_text += f"{shortname.upper()}:" \
+                    f" low: {round(obj.threshold[column][shortname][0], 2)} / "\
                     f"high: " \
-                    f"{round(obj.threshold[column][method][1], 2)} ; "\
+                    f"{round(obj.threshold[column][shortname][1], 2)} ; "\
 
         output_text = output_text[0:-2] + "\n\n"
     return output_text
@@ -431,26 +431,27 @@ def content_add_false(obj):
         output_text += f"The column {column} has " \
             f"{obj.nb[column]} outlier{'s : ' if obj.nb[column] != 0 else '.'}"
 
-        output_text += outliers_index_presentation(obj, column)
+        output_text += _outliers_index_presentation(obj, column)
 
         if obj.method == "Sn":
-            output_text += "\nThreshold median distance to other " \
+            output_text += "Threshold median distance to other " \
                 f"point is {round(obj.threshold[column], 2)} \n\n"
         else:
             output_text += "\nLow threshold : " \
                 f"{round(obj.threshold[column][0], 2)} / "\
                 f"High threshold : {round(obj.threshold[column][1], 2)}"\
                 "\n\n"
+
     if "added_manually" in obj.dict_col.keys():
         output_text += "You added manually "\
             f"{len(obj.dict_col['added_manually'])} "\
             f"outlier{'s : ' if obj.nb['added_manually'] != 0 else '.'}"
-        output_text += outliers_index_presentation(obj, "added_manually")
+        output_text += _outliers_index_presentation(obj, "added_manually")
         output_text += "\n\n"
     return output_text
 
 
-def outliers_index_presentation(obj, column):
+def _outliers_index_presentation(obj, column):
     output_text = ""
     if obj.nb[column] > 0 and obj.nb[column] <= 5:
         output_text += ", ".join([str(val)
@@ -462,4 +463,12 @@ def outliers_index_presentation(obj, column):
             + "."*5 + ", " + \
             str(obj.dict_col[column][-1])
 
+    return output_text
+
+
+def _title():
+    output_text = "-"*33
+    output_text += "\nSummary of the outliers detection\n"
+    output_text += "-"*33
+    output_text += "\n\n"
     return output_text

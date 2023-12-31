@@ -6,3 +6,4 @@ build/
 .eggs/
 .vscode/
 otpsy/__pycache__
+otpsy/src/__pycache__

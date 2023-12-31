@@ -143,10 +143,9 @@ def _concat_both_object(new_obj, obj1, obj2):
         obj1_cleaned.columns_to_test_w_method
     
     new_obj.threshold = obj1_cleaned.threshold
-
     # columns_to_test_w_method = {Column: method}
     # threshold = {Column: {shortname: threshold}}
-    for column in obj2.columns_to_test:
+    for column in obj2_cleaned.columns_to_test:
         # add method to each
         new_obj.columns_to_test_w_method.setdefault(column, []).\
             extend(obj2_cleaned.shortname)
@@ -205,6 +204,8 @@ def _change_format_of_attribute(obj):
 
     # short name
     obj.shortname = [obj.shortname]
+    if obj.shortname == ["id"]:
+        obj.columns_to_test = ["Identical"]
 
     for column in obj.columns_to_test:
         # associate colum with method
@@ -218,5 +219,6 @@ def _change_format_of_attribute(obj):
         
     # really not the best way to do that but I'm currently struggling
     obj.threshold = obj.shortname_w_threshold
+
     return obj
         

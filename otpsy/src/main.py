@@ -300,26 +300,46 @@ class _Outliers:
             self.dict_col.keys(), self.dict_col)
 
         return self
-
-    def manage(self, method="delete", column=None):
-        """ Manage your outliers
-
-        After detecting outliers, you can deal with them using 
-        different methods. The method you will apply can be applied
-        only on specific columns. 
-        ---
-        Parameters
-            * method (str): You can manage your outliers using different methods :
-                * delete : delete the row if it contains 1 or more outliers
-                value, also call truncation
-                * na : replace all outliers by missing value NaN
-                * winsorise : replace outliers by threshold value obtain through
-                the outlier method used.
-            * column (str|list|pd.Series|int) : Reference specific columns 
-            if you want to apply the method manage only on them.
+    
+    def manage(
+            self, 
+            method: str = "delete" ,
+            column: str | int | list[int] | list[str] ='all'
+            ) -> pd.DataFrame:
         """
-        if column is None:
-            column = self.columns_to_test
+        Manage outliers in the dataframe using specified method.
+
+        After detecting outliers, this method allows you to manage them
+        using different methods. The specified method can be applied
+        only on specific columns.
+
+        Parameters
+        ----------
+        method : {"delete", "na", "winsorise"}, optional   
+            Method to manage outliers. Default is "delete".
+            - 'delete': Delete the row if it contains 1 or more
+            abberant values. Also known as truncation.
+            - 'na': Replace all outliers with missing value NaN.
+            - 'winsorise': Replace outliers with threshold values
+            obtained through the outlier method used.
+
+        column : str or int or list, optional
+            Reference specific columns if you want to apply the manage
+            method only on them. Default value take into account
+            all columns.
+
+        Returns
+        -------
+        pd.DataFrame
+            A new dataframe with outliers managed based on the specified 
+            method.
+
+        Raises
+        ------
+        ValueError
+            Winsorisation is not possible with "Sn" and "Identical" methods.
+        """
+        column = utils._process_column_to_test(self.df, column)
         # to allow modification of the dataframe without changing the
         # attribute of the object, a new dataframe is created
         new_df = self.df
@@ -351,41 +371,98 @@ class _Outliers:
 
     def inspect(
             self,
-            aberrant: str = "value",
+            aberrant_format: str = "value",
             other_value: str = "bool",
             all_participants: bool = False,
             all_columns: bool = False,
     ):
         """ Inspect in more details your outlier
+        Inspect the dataframe for outliers and generate a 
+        detailed table about them.
 
-        This method has the purpose to show some details about the outliers.
-        It renders a table containing all outliers, editable via parameters 
-        of the function.
-        ---
-        Parameters:
-            * aberrant (str) : Format of aberrant value
-                * value (default value) : If an outlier value is detected,
-                then the cell will contains the value of this one.
-                * bool : If an outlier value is detected, then the cell
-                will contains the boolean True
-            * other_value (str) : Format of other value
-                * bool (default value): If the value is not aberrant,
-                then the cell will contains the boolean cell.
-                * value : If the value is not aberrant, then the cell
-                will contains the value associated
-            * all_participants (bool) : Keep all participant or not
-                * False (default value) : Participants without aberrant value
-                is not present in the table.
-                * True : Participant without aberrant value is present
-            * all_columns (bool) : Keep all columns or not
-                * False (default value) : The table only contains columns
-                that has been chosen to test. Thus, if your initial dataframe
-                contains 20 columns and you choose to test 5 of them, the
-                final table will contains 5 columns
-                * True : The table contains every columns in the initial
-                dataframe. Thus, if your initial dataframe contains 20
-                columns and you tested only 5 of them, the final table
-                will contains 20 columns.
+        Parameters
+        ----------
+        aberrant : {'value', 'bool'}, optional   
+            Format for representing aberrant values.
+            - 'value' (default): If an outlier value is detected, 
+            the cell will contain the value of the outlier.
+            - 'bool': If an outlier value is detected, the cell 
+            will contain the boolean True.   
+
+        other_value : {'bool', 'value'}, optional   
+            Format for representing non-aberrant values.
+            - 'bool' (default): If the value is not aberrant, the cell will 
+            contain the boolean False.
+            - 'value': If the value is not aberrant, the cell will contain 
+            the actual value.
+
+        all_participants : bool, optional   
+            Include all participants or not.
+            - False (default): Participants without aberrant values are not 
+            present in the table.
+            - True: Participants without aberrant values are included in the table.
+
+        all_columns : bool, optional   
+            Include all columns or not.
+            - False (default): The table only contains columns that have been 
+            chosen for testing. If the initial dataframe has 20 columns and 
+            you choose to test 5 of them, the final table will contain 5 columns.
+            - True: The table contains every column in the initial dataframe. 
+            If the initial dataframe has 20 columns and you tested only 5 of 
+            them, the final table will contain all 20 columns.
+
+        Returns
+        -------
+        pd.DataFrame
+            A table with detailed information about outliers based on the 
+            specified parameters.
+        
+        Examples
+        --------
+        Imagine that 5 individuals (P8, P24, P32, P51) are considered 
+        as outliers during the testing of 3 columns (Col1, Col2, Col3).
+        P8 is an outlier in Col1, P24 in Col2, P32 in Col3, and P51 in
+        Col1 and Col3. Each variable ranges from 0 to 20, and aberrant 
+        values are those above 19 or below 1.
+
+        \# Example 1 : If you just input default parameters   
+        >>> result1 = your_instance.inspect()
+        |          | Col1 | Col2 | Col3 |
+        |----------|------|------|------|
+        | P8       |  20  | False| False|
+        | P24      | False|  0.5 | False|
+        | P32      | False| False| 19.5 |
+        | P51      |  20  | False|  20  |
+        
+        \# Example 2 : Get the boolean matrix   
+        >>> result2 = your_instance.inspect(aberrant = 'bool')
+        |          | Col1 | Col2 | Col3 |
+        |----------|------|------|------|
+        | P8       | True | False| False|
+        | P24      | False| True | False|
+        | P32      | False| False| True |
+        | P51      | True | False| True |
+        
+        \# Example 3: other value of outliers are shown
+        >>> result3 = your_instance.inspect(other_value="value")
+        |          | Col1 | Col2 | Col3 |
+        |----------|------|------|------|
+        | P8       |  20  |  10  |  12  |
+        | P24      |  12  |  0.5 |   4  |
+        | P32      |  7   |  14  | 19.5 |
+        | P51      |  20  |  8   |  20  |
+
+        \# Example 4: Include all participants 
+        >>> result4 = your_instance.inspect(other_value = "value",
+                                            all_participants=True)
+        |          | Col1 | Col2 | Col3 |
+        |----------|------|------|------|
+        | P1       |  11  |  10  |  12  |
+        | P2       |  13  |  0.5 |   4  |
+        | P3       |  6   |  14  | 19.5 |
+        | P4       |  4   |  8   |  20  |
+        | P5       |  ..  |  ..  |  ..  |
+
         """
         table = pd.DataFrame(index=self.df.index)
         # the iteration on df.columns and not on keys of self.outliers
@@ -395,7 +472,7 @@ class _Outliers:
             if column in self.dict_col:
                 temporary_series = self.df[[column]].apply(
                     utils._parameters_of_the_table,
-                    args=(aberrant, other_value, self.dict_col, column),
+                    args=(aberrant_format, other_value, self.dict_col, column),
                     axis=1)
                 df_to_append = pd.DataFrame(temporary_series, columns=[column])
                 table = table.join(df_to_append)

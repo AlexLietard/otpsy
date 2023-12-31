@@ -39,11 +39,10 @@ About visualisation :
 
 * Hover text on shape or annotation or legend to understand which color corresponds to which method.
 * Add summary to the left
-* Add all method to the visualisation, with the possibility to add user-input value.
+* Add all methods to the visualisation, with the possibility to add user-input value.
 
 About outliers method :
 
-* Do the documentation of concat
 * Finish the identical method (i.e. associate it to the add)
 
 About the structure :
@@ -51,5 +50,5 @@ About the structure :
 * Create automated test
 * Create tutorial
 * Create data simulation
-* Create a clear documentation
+* Create a clear documentation (in progress)
 * Create an export function to keep the information

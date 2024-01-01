@@ -190,7 +190,7 @@ def _convert_column_to_numeric(df_func, column_to_test_func):
     return missing
 
 
-def check_sample(function):
+def _check_sample(function):
     """ Decorator to transform argument in the good format
 
     For parameters pass in the class Sample, there is
@@ -353,7 +353,7 @@ def _get_position(df, dict_col, shortname = ""):
     return position_index
 
 
-def header_add_true(obj):
+def _header_add_true(obj):
     output_text = ""
     # show method used
     output_text += f"Method used  : {', '.join(obj.method)}\n"
@@ -378,7 +378,7 @@ def header_add_true(obj):
     return output_text
 
 
-def header_add_false(obj):
+def _header_add_false(obj):
     output_text = ""
     output_text += f"Method used : {obj.method}\n"
     output_text += f"Distance used : {obj.distance}\n"
@@ -390,7 +390,7 @@ def header_add_false(obj):
     return output_text
 
 
-def content_add_true(obj):
+def _content_add_true(obj):
     output_text = ""
     for column in obj.columns_to_test:
         if column == "Identical":
@@ -425,7 +425,7 @@ def content_add_true(obj):
     return output_text
 
 
-def content_add_false(obj):
+def _content_add_false(obj):
     output_text = ""
     for column in obj.columns_to_test:
         output_text += f"The column {column} has " \

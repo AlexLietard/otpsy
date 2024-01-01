@@ -2,34 +2,70 @@
 
 ## Resume
 
-Outliers are data point that are extremely distant from most of other data points.In the last decades, lot of methods to detect outliers in a statistical distribution arised.  
-This package has the purpose to sum up the different method and to be able to used the different method without difficulty in psychology. The **particularity** is that it allows easily the computation of multiple columns testing.
+Otpsy is a toolkit for detecting and managing outliers in your dataset with ease. Outliers, those data points that deviate significantly from the majority, can have a substantial impact on statistical analyses. Our package gather various outlier detection methods, making it convenient for psychologists and data analysts to identify and handle outliers in a straightforward manner.
 
-For now, the package allows to detect outliers with a user-inputed distance with the method :
+## Key Features
 
-* IQR (IQR distance to median)
-* Tukey (IQR distance from quartiles)
-* Standard Deviation SD
-* Recursive Standard Deviation rSD
-* Median Absolute Distance MAD
-* $S_n$ method
+### 1. Multiple Methods for Outlier Detection
+
+The package provides a range of outlier detection methods, allowing users to choose the most suitable approach for their specific needs. The available methods include:
+
+* IQR (Interquartile Range)
+* Tukey
+* Standard Deviation (SD)
+* Recursive Standard Deviation (rSD)
+* Median Absolute Distance (MAD)
+* $S_n$ Method
 * Percentile
-* Cut-off (reponse time under 80 ms for example)
-* Identical response (for likert scale for example or behavioral performance)
+* Cut-off (e.g., response time under 80 ms)
+* Identical response (for Likert scales or behavioral performance)
+  
+### 2. Visualisation
 
-The detection is made through the creation of an `sample` object in which you specify the df, the columns to test and the column refering to the participant.
+The Otpsy package enables users to effortlessly visualize outliers across multiple columns and methods simultaneously. This feature facilitates a comprehensive understanding of data distribution and threshold through histograms or scatter plots. The visualisation is running on plotly.
 
-After the detection, they can be inspect through the inspect() method which returns a dataframe.
-Outliers can be remove, winsorise or replace by na with the method `manage()`.
+### 3. Easy Computation for Multiple Columns Testing
+
+One of the major features of this package is its ability to efficiently compute outlier detection for multiple columns simultaneously. This streamlines the process for psychologists dealing with extensive datasets and diverse variables.
+
+### 4. Simple Implementation
+
+To get started, create a `sample` object by specifying the DataFrame, the columns to test, and the participant reference column. After the visualisation of the distribution, you can apply the desired outlier detection method using a method call, such as `sample.methodIQR()`. This will generate an outliers object containing the identified outliers.
+
+### 5. Inspection and Management
+
+After detection, the package allows for comprehensive inspection of the outliers using `print(outliers)`. It shows a string containing detailed information as we can usually see in R summary. Furthermore, with `outliers.inspect()` method, you obtains a DataFrame to inspect the value of outliers.  
+It is possible to concat outliers object `.concat()`, add manually specific index `outliers.add()` or to substract an index `outliers.sub()`. They can be managed using the `outliers.manage()` method, providing options to remove, winsorize, or replace them with NaN values.
 
 ---
 
-## Example
+## Install and use otpsy
 
-Imagine that you realise a study in which you want to explore the influence of art exposition on visual exploration of angry face. Thus, you collect data about the explored time of the painting scene, number of fixations of anger face (or another DV), score on depression and anxiety.
-With this data, you want to control for different things :
+Otpsy is a python package. You can install it with pip :
 
-* Does participants look at the scene ?
+```python
+pip install optsy
+```
+
+For now, the package only support pandas Dataframe and numpy array.
+Imagine that you want to delete participants that have at least one
+aberrant values on the Column 1, the Column 2 or the column 3.
+
+```python
+import otpsy as ot
+import pandas as pd
+
+# Import dataframe
+df = pd.read_csv("example.csv")
+
+# Select what has to be tested
+sample = ot.Sample(dataframe, ["Col1", "Col2", "Col3"], "participant_name")
+
+# Apply a specific method (mad) and remove outliers 
+clean_df = sample.methodMAD(distance = 2.5).manage("delete")
+```
+
+For a more exhaustive presentation of functionnality, check the example folder.
 
 ---
 
@@ -42,6 +78,9 @@ About visualisation :
 * Add all methods to the visualisation, with the possibility to add user-input value.
 
 About outliers method :
+
+* Include the ability to set either a lower or upper threshold on the cut-off method
+* Find a "pythonic" way to make the threshold ">" or ">=" depending of an argument, not just ">".
 
 About the structure :
 

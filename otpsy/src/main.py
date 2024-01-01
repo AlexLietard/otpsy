@@ -22,7 +22,7 @@ class Sample:
             to see the line number of outliers, don't specify a
             arguments.
     """
-    @utils.check_sample
+    @utils._check_sample
     def __init__(
             self,
             df: pd.DataFrame,
@@ -142,8 +142,35 @@ class _Outliers:
     Children classes are all outliers class (SD, IQR,...).
     """
 
-    def _calculate(self, method):
-        """ Private method used to calculate outliers """
+    def _calculate(
+            self, 
+            method
+            ) -> None :
+        """
+        Private method used to calculate outliers.
+        It iterates through the columns, 
+        calculates threshold values using the chosen method, 
+        identifies outliers, and stores relevant information 
+        such as the list of outliers, threshold values, and 
+        their positions in the dataframe for each column
+        The results are stored in instance attributes
+        for further use in outlier management.
+
+        This method is started at each instantation of a
+        children of _Outliers.
+        
+        Parent _calculate is not used for rSD, Sn, Cut-off
+        and identical. 
+
+        Parameters
+        ----------
+        method : str
+            Method for calculating outliers (iqr, sd)
+
+        Returns
+        -------
+        None
+        """        
         self.all_index = {}
         self.dict_col = {}
         self.threshold = {}
@@ -179,38 +206,114 @@ class _Outliers:
             self.dict_col.keys(), self.dict_col)
 
     def __str__(self):
+        """
+        Overloading of the __str__ method to modify the output
+        of the print function.
+        
+        Format
+        ------
+
+        Title
+
+        Headers :
+        * Method used
+        * Distance used
+        * Column tested
+        * Total number of outliers : number of participants that have
+        at least one aberrant values
+        * Total number of flagged values : number of values that are
+        aberrant.
+
+        Content :
+        The column 1 has x outlier.
+        Low threshold / High threshold
+        
+        ...
+
+        """
         output_text = utils._title()
 
         if self.multi == True:
-            output_text += utils.header_add_true(self)
-            output_text += utils.content_add_true(self)
+            output_text += utils._header_add_true(self)
+            output_text += utils._content_add_true(self)
 
         else:
-            output_text += utils.header_add_false(self)
-            output_text += utils.content_add_false(self)
+            output_text += utils._header_add_false(self)
+            output_text += utils._content_add_false(self)
         return output_text[0:-2]
 
-    def add(self, list_to_merge):
+    def add(
+            self, 
+            to_add : str | list[str]
+            ) -> None:
         """
-        The addition of outliers to the existing object.
+        ## Add participant to the outlier object.
 
-        It add an additional section labeled 'Added manually' with the details
-        in the report.
+        This method allows adding specific index to the outlier object.
+        The index corresponds to the name of the participant(s) in the
+        referred participant column 
+        (or initial index if not specified).
+
+        It accepts either a single index or a list of index.
+        Outliers added have a specific column in the summary.
+        Thus, it is not possible to add outlier to a specific column.
+        The function is returning None, so you just have to apply the 
+        method without assigning it to another object.  
+        Right way : obj.add("participant1")
+        Wrong way : obj = obj.add("participant1")
+
+        Parameters
+        ----------
+        to_add : str or list of str
+            If you want to add only one index, you can input specify
+            the index with a string.  
+            If you want to add more than one index you want to add 
+            with a single string or with a list of string.
+
+        Raises
+        ------
+        KeyError
+            If an attempt is made to add an object of type 
+            '_Outliers' using this method.
+
+        Returns
+        -------
+        None
+            The method modifies the object in place and updates relevant parameters.
+
+        Notes
+        -----
+        - If a string is provided, it is converted to a list with a single element.
+        - If the 'added_manually' column already exists, the method extends it with unique elements 
+        from the provided list, avoiding redundancy.
+        - If the 'added_manually' column does not exist, it is created with the provided elements.
+        - Other relevant parameters such as the count and position are updated accordingly.
+
+        Example usage
+        -------------
+        ```python
+        >>> out_obj.add("participant1")
+        >>> out_obj.add(["participant1", "participant2"])
+        ```
+
+        Notes
+        -----
+        You can't add an outlier object with this method. 
+        Use `ot.concat(out1, out2)` to concatenate outlier objects.
         """
-
         # If User input : out_obj.add("participant1")
-        if isinstance(list_to_merge, (str)):
-            list_to_merge = [list_to_merge]
+        if isinstance(to_add, (str)):
+            to_add = [to_add]
         
         # User input out_obj.add(["participant1", "participant2"]) or
         # string transform to list
-        if isinstance(list_to_merge, (list)):
+        if isinstance(to_add, (list)):
             # if there is already a column added_manually coming from
             # a past addition, it extends it. If not, it create a new
             # key that have the value []. 
             # The comprehension list is to avoid redundancy
             self.dict_col.setdefault("added_manually", []).extend(
-                list(set([elem for elem in list_to_merge 
+                list(set([elem for elem in to_add 
                  if elem not in self.dict_col["added_manually"]])))
             
             # Update other parameters
@@ -220,35 +323,66 @@ class _Outliers:
             self.all_index = utils._select_index(
                 self.dict_col.keys(), self.dict_col)
         
-        elif issubclass(type(list_to_merge), _Outliers):
+        elif issubclass(type(to_add), _Outliers):
             raise KeyError('You can\'t add an outlier object'
                             ' with this method. \n'
                             'You can use ot.concat(out1, out2)')
 
-        return self
+        return None
 
     def sub(
             self, 
-            to_sub : str | list[str] | dict
-            ):
+            to_sub : str | list[str] | dict[str: str|list[str]]
+            ) -> None:
         """
-        This method allows to substract remove outliers from the object. 
-        For example, if you detect outliers through a specific method,
-        you can judge that the participant X is not outliers and remove
-        him from the outliers.
-        Outliers to substract are input via the keyword : to\_sub. 
-        You can use it through different implementation :
-            * If you want to delete one index from all column, you can input
-        a string (ex. `obj.sub("participant1")`).
-            * If you want to delete multiples index from all column, 
-        you can input a list of string 
-        (ex. `obj.sub(["participant1", "participant2"])`).
-            * If you want to delete one or more index from a specific column,
-        you can input a dictionnary 
-        (ex. `obj.sub({"Col1": "participant1"})`) or {"Col1": ["P1", "P2"]}
+        ## Remove outliers from the object.
+
+        This method allows removing outliers from the object. For 
+        example, if you detect outliers through a specific method, 
+        you can judge that this participant is not really an outlier
+        and remove him from the group of outliers. The function is 
+        returning None, so you just have to apply the method without 
+        assigning it to another object.   
+        Right way : obj.sub("participant1")
+        Wrong way : obj = obj.sub("participant1")
+
+        Parameters
+        ----------
+        to_sub : str, list of str, or dict of str
+            Outliers to subtract are input via the keyword `to_sub`.
+            * If you want to delete one index from all columns, 
+            you can simply input a string 
+            (e.g., `obj.sub("participant1")`).
+            * If you want to delete multiple indices from all columns,
+            you can input a list of strings
+            (e.g., `obj.sub(["participant1", "participant2"])`).
+            * If you want to delete one or more indices from a 
+            specific column, you can input a dictionary
+            (e.g., `obj.sub({"Col1": "participant1"})`) or 
+            `{"Col1": ["P1", "P2"]}`.
+
+        Raises
+        ------
+        KeyError
+            If the specified column is not present in the columns to test in the dataframe.
+        TypeError
+            If the type of the input value is not supported.
+
+        Returns
+        -------
+        None
+
+        Example usage:
+        ```python
+        obj.sub("participant1")
+        obj.sub(["participant1", "participant2"])
+        obj.sub({"first_column": ["participant1", "participant2"]})
+        ```
+
+        Note: The method modifies the object in place and updates relevant parameters.
         """ 
         try:
-            # User inputed something like
+            # User inputed 
             # Out_obj.sub(["participant1", "participant2"])
             if isinstance(to_sub, list):
                 for column in self.dict_col:
@@ -296,18 +430,18 @@ class _Outliers:
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
 
-        return self
+        return None
     
     def manage(
             self, 
             method: str = "delete" ,
-            column: str | int | list[str] | list[int] ='all'
+            column: str | int | list[str] | list[int] = 'all'
             ) -> pd.DataFrame:
         """
         Manage outliers in the dataframe using specified method.
 
         After detecting outliers, this method allows you to manage them
-        using different methods. The specified method can be applied
+        using different methods. You can choose to apply this method 
         only on specific columns.
 
         Parameters
@@ -336,7 +470,9 @@ class _Outliers:
         ValueError
             Winsorisation is not possible with "Sn" and "Identical" methods.
         """
+        # ignore the format input for the column
         column = utils._process_column_to_test(self.df, column)
+        
         # to allow modification of the dataframe without changing the
         # attribute of the object, a new dataframe is created
         new_df = self.df
@@ -373,7 +509,7 @@ class _Outliers:
             all_participants: bool = False,
             all_columns: bool = False,
     ):
-        """ Inspect in more details your outlier
+        """ ## Inspect in more details your outlier
         Inspect the dataframe for outliers and generate a 
         detailed table about them.
 
@@ -417,49 +553,55 @@ class _Outliers:
         Examples
         --------
         Imagine that 5 individuals (P8, P24, P32, P51) are considered 
-        as outliers during the testing of 3 columns (Col1, Col2, Col3).
-        P8 is an outlier in Col1, P24 in Col2, P32 in Col3, and P51 in
-        Col1 and Col3. Each variable ranges from 0 to 20, and aberrant 
+        as outliers during the testing of 3 columns (Col2, Col5, Col8).
+        P8 is an outlier in Col2, P24 in Col5, P32 in Col8, and P51 in
+        Col2 and Col8. Each variable ranges from 0 to 20, and aberrant 
         values are those above 19 or below 1.
-
-        \# Example 1 : If you just input default parameters   
+        
+        ```python
+        # Example 1 : If you just input default parameters   
         >>> result1 = your_instance.inspect()
-        |          | Col1 | Col2 | Col3 |
+
+        ```markdown
+        |          | Col2 | Col5 | Col8 |
         |----------|------|------|------|
         | P8       |  20  | False| False|
         | P24      | False|  0.5 | False|
         | P32      | False| False| 19.5 |
         | P51      |  20  | False|  20  |
-        
-        \# Example 2 : Get the boolean matrix   
+        ```python
+        # Example 2 : Get the boolean matrix   
         >>> result2 = your_instance.inspect(aberrant = 'bool')
-        |          | Col1 | Col2 | Col3 |
+        ```markdown
+        |          | Col2 | Col5 | Col8 |
         |----------|------|------|------|
         | P8       | True | False| False|
         | P24      | False| True | False|
         | P32      | False| False| True |
         | P51      | True | False| True |
-        
-        \# Example 3: other value of outliers are shown
+        ```python
+        # Example 3: Values that are not aberrant are shown
         >>> result3 = your_instance.inspect(other_value="value")
-        |          | Col1 | Col2 | Col3 |
+        ```markdown
+        |          | Col2 | Col5 | Col8 |
         |----------|------|------|------|
         | P8       |  20  |  10  |  12  |
         | P24      |  12  |  0.5 |   4  |
         | P32      |  7   |  14  | 19.5 |
         | P51      |  20  |  8   |  20  |
-
-        \# Example 4: Include all participants 
+        ```python
+        # Example 4: Include all participants 
         >>> result4 = your_instance.inspect(other_value = "value",
                                             all_participants=True)
-        |          | Col1 | Col2 | Col3 |
+        ```markdown
+        |          | Col2 | Col5 | Col8 |
         |----------|------|------|------|
         | P1       |  11  |  10  |  12  |
         | P2       |  13  |  0.5 |   4  |
         | P3       |  6   |  14  | 19.5 |
         | P4       |  4   |  8   |  20  |
         | P5       |  ..  |  ..  |  ..  |
-
+        ```
         """
         table = pd.DataFrame(index=self.df.index)
         # the iteration on df.columns and not on keys of self.outliers
@@ -767,7 +909,7 @@ class MethodIdentical(_Outliers):
         # moment. It overrides only when this identical method
         # is added to another object
         output_text = utils._title()
-        output_text += utils.header_add_false(self)
+        output_text += utils._header_add_false(self)
         output_text += f"There are {self.nb['Identical']} " \
                        f"participant"\
                        f"{'s' if self.nb['Identical'] > 1 else ''}" \

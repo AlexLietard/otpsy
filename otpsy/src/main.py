@@ -26,12 +26,12 @@ class Sample:
     def __init__(
             self,
             df: pd.DataFrame,
-            column_to_test: str | list | int | pd.Series = "",
+            columns_to_test: str | list | int | pd.Series = "",
             participant_column: str | int | pd.Series = "",
             **kwargs
     ) -> None:
 
-        self.columns_to_test = column_to_test
+        self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         if self.participant_column == "":
             self.df = df
@@ -49,7 +49,8 @@ class Sample:
         else:
             column_to_vis = utils._process_column_to_test(self.df, column)
         app.main(self.df, column_to_vis)
-        return self
+
+        return None
 
     @utils.check_number_entry
     def method_IQR(self, distance=2):
@@ -117,12 +118,19 @@ class Sample:
         )
 
     @utils.check_number_entry
-    def method_cutoff(self, threshold):
+    def method_cutoff(
+        self, 
+        threshold, 
+        filter = 'low-pass',
+        threshold_included = True
+        ):
         return MethodCutOff(
             self.df,
             self.columns_to_test,
             self.participant_column,
-            threshold
+            threshold,
+            filter,
+            threshold_included
         )
 
     @utils.check_number_entry
@@ -629,13 +637,13 @@ class MethodIqr(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame | np.ndarray | pd.Series,
-        column_to_test: str | list | int | pd.Series,
+        columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float
     ) -> None:
 
         self.df = df
-        self.columns_to_test = column_to_test
+        self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Inter-quartile range"
@@ -647,13 +655,13 @@ class MethodSd(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
-        column_to_test: str | list | int | pd.Series,
+        columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float
     ) -> None:
 
         self.df = df
-        self.columns_to_test = column_to_test
+        self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Standard Deviation"
@@ -665,14 +673,14 @@ class MethodRSd(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
-        column_to_test: str | list | int | pd.Series,
+        columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float,
         max_iteration: int,
     ) -> None:
 
         self.df = df
-        self.columns_to_test = column_to_test
+        self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
         self.max_iteration = max_iteration
@@ -728,14 +736,14 @@ class MethodMad(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
-        column_to_test: str | list | int | pd.Series,
+        columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float,
         b: int | float
     ) -> None:
 
         self.df = df
-        self.columns_to_test = column_to_test
+        self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
         self.b = b
@@ -748,13 +756,13 @@ class MethodTukey(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
-        column_to_test: str | list | int | pd.Series,
+        columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float
     ) -> None:
 
         self.df = df
-        self.columns_to_test = column_to_test
+        self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Tukey"
@@ -766,13 +774,13 @@ class MethodSn(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
-        column_to_test: str | list | int | pd.Series,
+        columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float
     ) -> None:
 
         self.df = df
-        self.columns_to_test = column_to_test
+        self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
         self.method = "Sn"
@@ -829,18 +837,27 @@ class MethodCutOff(_Outliers):
     def __init__(
         self,
         df: pd.DataFrame,
-        column_to_test: str | list | int | pd.Series,
+        columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        threshold: int | float
+        threshold: int | float,
+        filter: str,
+        threshold_included: bool
     ) -> None:
-
+        """
+        Parameters
+        ----------
+        Comparison : {'low-pass', 'high-pass'}
+        """
         self.df = df
-        self.columns_to_test = column_to_test
+        self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = threshold
-        self.threshold = threshold
+        self.threshold = {}
+        self.filter = filter
+        self.threshold_included = threshold_included
         self.method = "Cut-Off"
         self.shortname = "cut-off"
+        self.multi = False
         self._calculate()
 
     def _calculate(self):
@@ -852,11 +869,18 @@ class MethodCutOff(_Outliers):
         # get the function for calculate threshold
         for column in self.columns_to_test:
             # list of outliers by column
-            list_outliers = self.df.index[
-                self.df[column] < self.threshold
-            ].tolist()
+            if self.filter == "high-pass":
+                list_outliers = self.df.index[
+                    self.df[column] < self.distance
+                ].tolist()
+            else:
+                list_outliers = self.df.index[
+                    self.df[column] > self.distance
+                ].tolist()
+            # update parameters       
             self.dict_col[column] = list_outliers
             self.nb[column] = len(list_outliers)
+            self.threshold[column] = self.distance
             self.position[column] = utils._get_position(
                 self.df, self.dict_col)
         self.all_index = utils._select_index(
@@ -928,6 +952,7 @@ class MethodMulti(_Outliers):
         self.threshold = {}
         self.columns_to_test = []
         self.columns_to_test_w_method = {}
+        self.position = {}
         self.multi = True
         self.shortname = []
 

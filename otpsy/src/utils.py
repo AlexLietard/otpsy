@@ -54,25 +54,25 @@ def _process_column_to_test(df_func, pre_column):
 
     # The name of column is stored in the attribute self.columns_to_test.
     # We want to obtain the name of each column in a list of column name.
-    column_to_test = []
+    columns_to_test = []
 
     # if the user enters the Series
     if isinstance(pre_column, pd.Series):
-        column_to_test.append(pre_column.name)
+        columns_to_test.append(pre_column.name)
 
     # to select all columns
     elif pre_column == 'all':
-        column_to_test.extend(list(df_func.columns))
+        columns_to_test.extend(list(df_func.columns))
 
     # if the person enters the name of one column
     elif isinstance(pre_column, str):
         if pre_column not in df_func.columns:
             raise NameError("The column you enter is not in the dataframe.")
-        column_to_test.append(pre_column)
+        columns_to_test.append(pre_column)
 
     # if the person enters the index of the column
     elif isinstance(pre_column, int):
-        column_to_test.append(df_func.iloc[:, pre_column].name)
+        columns_to_test.append(df_func.iloc[:, pre_column].name)
 
     # if the person enters a list
     elif isinstance(pre_column, list):
@@ -85,23 +85,23 @@ def _process_column_to_test(df_func, pre_column):
         for col in pre_column:
             # If it's column
             if isinstance(col, pd.Series):
-                column_to_test.append(col.name)
+                columns_to_test.append(col.name)
 
             # If it's name, check its presence in the dataframe
             elif isinstance(col, str):
                 if col not in df_func.columns:
                     raise NameError(f"The column \"{col}\" you enter "
                                     "is not in the dataframe")
-                column_to_test.append(col)
+                columns_to_test.append(col)
 
             # it is the index of column
             elif isinstance(pre_column, int):
-                column_to_test.append(df_func.iloc[:, col].name)
+                columns_to_test.append(df_func.iloc[:, col].name)
     # Avoid potential duplicates
     else:
         raise TypeError(f"The type of data {type(pre_column)} "
                         "is not supported to refer column.")
-    return list(set(column_to_test))
+    return list(set(columns_to_test))
 
 
 def _process_participant_column(df_func, pre_participant_column):
@@ -202,7 +202,7 @@ def _check_sample(function):
         # to associate the argument from args to the
         # keyword to have only kwargs
         kwargs = signature(function).bind(*args, **kwargs).arguments
-        kwargs["column_to_test"] = kwargs.get("column_to_test", "")
+        kwargs["columns_to_test"] = kwargs.get("columns_to_test", "")
 
         for key, value in kwargs.items():
             # check dataframe enter
@@ -222,15 +222,15 @@ def _check_sample(function):
                 df = value
 
             # check column to test
-            elif key == "column_to_test":
+            elif key == "columns_to_test":
                 pre_column = value
                 if value == "all" or value == "":
                     try:
-                        column_to_test = list(df.columns)
+                        columns_to_test = list(df.columns)
                     except AttributeError:
                         # in case its an pd.Series
                         if isinstance(df, pd.Series):
-                            column_to_test = [df.name]
+                            columns_to_test = [df.name]
                         else:
                             raise ValueError("Can't extract "
                                              "the column to test")
@@ -238,13 +238,13 @@ def _check_sample(function):
                     # To avoid the conversion of the participant
                     # column where this is not the purpose
                     try:
-                        column_to_test.remove(kwargs["participant_column"])
+                        columns_to_test.remove(kwargs["participant_column"])
                     except:
                         pass
                 else:
-                    column_to_test = _process_column_to_test(df, pre_column)
-                missing = _convert_column_to_numeric(df, column_to_test)
-                new_kwargs[key] = column_to_test
+                    columns_to_test = _process_column_to_test(df, pre_column)
+                missing = _convert_column_to_numeric(df, columns_to_test)
+                new_kwargs[key] = columns_to_test
                 new_kwargs["missing"] = missing
 
             # check participant column
@@ -256,7 +256,7 @@ def _check_sample(function):
                 # avoid potential overlap between column
                 # to test and participant column
                 try:
-                    if participant_column in column_to_test:
+                    if participant_column in columns_to_test:
                         raise ValueError("The participant column can't "
                                          "be in the columns you want to test")
                 except UnboundLocalError:
@@ -429,15 +429,18 @@ def _content_add_false(obj):
     output_text = ""
     for column in obj.columns_to_test:
         output_text += f"The column {column} has " \
-            f"{obj.nb[column]} outlier{'s : ' if obj.nb[column] != 0 else '.'}"
-
+            f"{obj.nb[column]} outlier"
+        output_text += _s_if_needed(obj.nb[column])
         output_text += _outliers_index_presentation(obj, column)
-
         if obj.method == "Sn":
             output_text += "Threshold median distance to other " \
-                f"point is {round(obj.threshold[column], 2)} \n\n"
+                f"point is {round(obj.threshold[column], 2)}\n\n"
+        elif obj.method == "Cut-Off":
+            output_text += "All values "\
+                        f"{'above' if obj.filter == 'low-pass' else 'below'}"\
+                        f" {obj.threshold[column]} is flagged.\n\n"
         else:
-            output_text += "\nLow threshold : " \
+            output_text += "Low threshold : " \
                 f"{round(obj.threshold[column][0], 2)} / "\
                 f"High threshold : {round(obj.threshold[column][1], 2)}"\
                 "\n\n"
@@ -461,7 +464,7 @@ def _outliers_index_presentation(obj, column):
         output_text += str(obj.dict_col[column][0]) + ", " + \
             str(obj.dict_col[column][1]) \
             + "."*5 + ", " + \
-            str(obj.dict_col[column][-1])
+            str(obj.dict_col[column][-1])+ "\n"
 
     return output_text
 
@@ -471,4 +474,13 @@ def _title():
     output_text += "\nSummary of the outliers detection\n"
     output_text += "-"*33
     output_text += "\n\n"
+    return output_text
+
+def _s_if_needed(nb):
+    if nb == 0:
+        output_text = "."
+    elif nb == 1:
+        output_text =" : "
+    else:
+        output_text = "s : "
     return output_text

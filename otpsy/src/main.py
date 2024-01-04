@@ -11,16 +11,17 @@ class Sample:
     Contains the data you want to pass in the detection
     of outliers.
     Parameters
-        * df (pd.Dataframe) :
-            * Enter the dataframe you want to test
-        * column_to_test (str | list | int | pd.Series) :
-            * Enter either the name, a list of name,
-            the index of column, or directly the column
-        * participant_column: str | int | pd.Series
-            * Enter the participant refering participant.
-            If this column is directly your index, or you want
-            to see the line number of outliers, don't specify a
-            arguments.
+    ----------
+    df : pd.Dataframe
+        Enter the dataframe you want to test
+    column_to_test : (str | list | int | pd.Series)
+        Enter either the name, a list of name,
+        the index of column, or directly the column
+    participant_column : str | int | pd.Series
+        Enter the participant refering participant.
+        If this column is directly your index, or you want
+        to see the line number of outliers, don't specify a
+        arguments.
     """
     @utils._check_sample
     def __init__(
@@ -54,6 +55,23 @@ class Sample:
 
     @utils.check_number_entry
     def method_IQR(self, distance=2):
+        """ ## Interquartile Range
+        Method to create an outliers object via the **IQR-based** 
+        outlier detection method. Distance refers to the number of 
+        interquartile range above and below the median.
+
+        Parameters
+        ----------
+        distance : int, optional
+            The multiplier for the IQR to determine the 
+            outlier thresholds.
+            Default equals 2.
+
+        Return
+        -------
+        MethodIqr: An instance of the MethodIqr class 
+        containing the results of the outlier detection.
+        """
         return MethodIqr(
             self.df,
             self.columns_to_test,
@@ -63,6 +81,23 @@ class Sample:
 
     @utils.check_number_entry
     def method_SD(self, distance=2.5):
+        """## Standard Deviation
+        Method to create an outliers object via the **SD-based** 
+        outlier detection method. Distance refers to the number of 
+        standard deviation above and below the mean.
+
+        Parameters
+        ----------
+        distance : int, optional
+            The multiplier for the SD to determine the 
+            outlier thresholds.
+            Default equals 2.5.
+
+        Return
+        -------
+        MethodSd: An instance of the MethodSd class 
+        containing the results of the outlier detection.
+        """
         return MethodSd(
             self.df,
             self.columns_to_test,
@@ -72,6 +107,29 @@ class Sample:
 
     @utils.check_number_entry
     def method_rSD(self, distance=3, iteration=50):
+        """ ## Recursive Standard Deviation
+        Method to create an outliers object via the rSD-based outlier
+        detection. The 'distance' parameter refers to the number of
+        standard deviations above and below the mean at each iteration.
+        In each iteration, outliers are flagged and removed from the
+        column. Therefore, the detection of outliers is considered
+        finished when the number of iterations equals the inputted
+        number, or when no new outliers are found in an iteration.
+
+        Parameters
+        ----------
+        distance : int, optional
+            The multiplier for the IQR to determine the 
+            outlier thresholds.
+            Default equals 3.
+        iteration : int, optional
+            The number of maximum iteration.
+
+        Return
+        -------
+        MethodRSd: An instance of the MethodIqr class 
+        containing the results of the outlier detection.
+        """
         return MethodRSd(
             self.df,
             self.columns_to_test,
@@ -92,6 +150,25 @@ class Sample:
 
     @utils.check_number_entry
     def method_Tukey(self, distance=1.5):
+        """ ## Tukey
+        Method to create an outliers object via the Tukey-based outlier
+        detection. The 'distance' parameter refers to the number of
+        interquartile range below the first and above the third 
+        quartiles. 
+
+        Parameters
+        ----------
+        distance : int, optional
+            The multiplier for the IQR to determine the 
+            outlier thresholds.
+            Default equals 1.5.
+
+
+        Return
+        -------
+        MethodTukey: An instance of the MethodTukey class 
+        containing the results of the outlier detection.
+        """
         return MethodTukey(
             self.df,
             self.columns_to_test,

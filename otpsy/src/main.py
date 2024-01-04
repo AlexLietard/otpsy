@@ -338,9 +338,9 @@ class _Outliers:
 
         return None
 
-    def sub(
+    def remove(
             self, 
-            to_sub : str | list[str] | dict[str: str|list[str]]
+            to_remove : str | list[str] | dict[str: str|list[str]]
             ) -> None:
         """
         ## Remove outliers from the object.
@@ -351,28 +351,29 @@ class _Outliers:
         and remove him from the group of outliers. The function is 
         returning None, so you just have to apply the method without 
         assigning it to another object.   
-        Right way : obj.sub("participant1")
-        Wrong way : obj = obj.sub("participant1")
+        Right way : obj.remove("participant1")
+        Wrong way : obj = obj.remove("participant1")
 
         Parameters
         ----------
-        to_sub : str, list of str, or dict of str
-            Outliers to subtract are input via the keyword `to_sub`.
+        to_remove : str, list of str, or dict of str
+            Outliers to subtract are input via the keyword `to_remove`.
             * If you want to delete one index from all columns, 
             you can simply input a string 
-            (e.g., `obj.sub("participant1")`).
+            (e.g., `obj.remove("participant1")`).
             * If you want to delete multiple indices from all columns,
             you can input a list of strings
-            (e.g., `obj.sub(["participant1", "participant2"])`).
+            (e.g., `obj.remove(["participant1", "participant2"])`).
             * If you want to delete one or more indices from a 
             specific column, you can input a dictionary
-            (e.g., `obj.sub({"Col1": "participant1"})`) or 
+            (e.g., `obj.remove({"Col1": "participant1"})`) or 
             `{"Col1": ["P1", "P2"]}`.
 
         Raises
         ------
         KeyError
-            If the specified column is not present in the columns to test in the dataframe.
+            If the specified column is not present in the columns to 
+            test in the dataframe.
         TypeError
             If the type of the input value is not supported.
 
@@ -382,9 +383,9 @@ class _Outliers:
 
         Example usage:
         ```python
-        obj.sub("participant1")
-        obj.sub(["participant1", "participant2"])
-        obj.sub({"first_column": ["participant1", "participant2"]})
+        obj.remove("participant1")
+        obj.remove(["participant1", "participant2"])
+        obj.remove({"first_column": ["participant1", "participant2"]})
         ```
 
         Note: The method modifies the object in place and updates relevant parameters.
@@ -392,35 +393,35 @@ class _Outliers:
         try:
             # User inputed 
             # Out_obj.sub(["participant1", "participant2"])
-            if isinstance(to_sub, list):
+            if isinstance(to_remove, list):
                 for column in self.dict_col:
-                    o_str = [str(value) for value in to_sub]
+                    o_str = [str(value) for value in to_remove]
                     self.dict_col[column] = [value for value in 
                                              self.dict_col[column]
                                              if str(value) not in o_str]
             # User inputed something like
             # Out_obj.sub({"first_column": ["participant1", "participant2"]})
-            elif isinstance(to_sub, dict):
-                for column in to_sub:
+            elif isinstance(to_remove, dict):
+                for column in to_remove:
                     # transform to a list for allow iteration if user input :
                     # Out_obj.sub({"first_column": "participant1"})
-                    if isinstance(to_sub[column], (int, str)):
-                        to_sub[column] = [to_sub[column]]
+                    if isinstance(to_remove[column], (int, str)):
+                        to_remove[column] = [to_remove[column]]
 
-                    to_sub[column] = [str(value) for value in to_sub[column]]
+                    to_remove[column] = [str(value) for value in to_remove[column]]
 
                     self.dict_col[column] = [value for value in 
                                              self.dict_col[column]
                                              if str(value) not 
-                                             in to_sub[column]]
+                                             in to_remove[column]]
 
             # If there is just one participant index 
             # User inputed : Out_obj.sub("participant1")
-            elif isinstance(to_sub, (int, str)):
+            elif isinstance(to_remove, (int, str)):
                 for column in self.dict_col:
                     self.dict_col[column] = [value for value 
                                              in self.dict_col[column]
-                                            if str(value) != str(to_sub)]
+                                            if str(value) != str(to_remove)]
 
         except KeyError as key:
             raise KeyError(f'It seems that the column "{column}"'

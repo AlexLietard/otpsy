@@ -82,6 +82,7 @@ About outliers method :
 * Include the ability to set either a lower or upper threshold on the cut-off method
 * Find a "pythonic" way to make the threshold ">" or ">=" depending of an argument, not just ">".
 * Add self.position to multi and update parameters
+* Check output
 
 About the structure :
 

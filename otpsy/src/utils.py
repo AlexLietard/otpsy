@@ -401,8 +401,8 @@ def _content_add_true(obj):
         else:
             output_text += f"The column {column} has " \
                 f"{obj.nb[column]} outlier"\
-                f"{'s : ' if obj.nb[column] != 0 else '.'}"
 
+        output_text += _s_if_needed(obj.nb[column])
         output_text += _outliers_index_presentation(obj, column)
 
         output_text += "\n"

@@ -71,18 +71,18 @@ For a more exhaustive presentation of functionnality, check the example folder.
 
 ## TODO
 
-About visualisation :
-
-* Hover text on shape or annotation or legend to understand which color corresponds to which method.
-* Add summary to the left
-* Add all methods to the visualisation, with the possibility to add user-input value.
-
 About outliers method :
 
 * Include the ability to set either a lower or upper threshold on the cut-off method
 * Find a "pythonic" way to make the threshold ">" or ">=" depending of an argument, not just ">".
 * Add self.position to multi and update parameters
-* Check output
+* Check print output for each method
+
+About visualisation :
+
+* Hover text on shape or annotation or legend to understand which color corresponds to which method.
+* Add summary to the left
+* Add all methods to the visualisation, with the possibility to add user-input value.
 
 About the structure :
 

@@ -432,6 +432,7 @@ def _content_add_false(obj):
             f"{obj.nb[column]} outlier"
         output_text += _s_if_needed(obj.nb[column])
         output_text += _outliers_index_presentation(obj, column)
+        output_text += "\n"
         if obj.method == "Sn":
             output_text += "Threshold median distance to other " \
                 f"point is {round(obj.threshold[column], 2)}\n\n"

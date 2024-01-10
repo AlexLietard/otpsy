@@ -9,6 +9,7 @@ import pandas as pd
 import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+import plotly.offline as pyo
 from numpy import histogram, argmax, isnan
 
 # Dashboard
@@ -18,9 +19,10 @@ from dash import dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import load_figure_template
+from webbrowser import open_new
+from threading import Timer
 
 load_figure_template('darkly')
-
 SIDEBAR_STYLE = {
     "position": "fixed",
     "top": 0,
@@ -50,7 +52,6 @@ SIDEBAR_OPTION = {
     'font-size': 15, 
     'padding-right': "0.5rem"
 }
-
 def main(df, column_to_vis):
     app = dash.Dash(__name__, external_stylesheets=[
                     dbc.themes.DARKLY])  # set app layout
@@ -142,8 +143,7 @@ def main(df, column_to_vis):
         dcc.Graph(id='scatter', figure=fig)], style=CONTENT_STYLE)
     
     # Creation of the layout
-    app.layout = html.Div(children=[sidebar, content]) 
-    
+    app.layout = html.Div(children=[sidebar, content])
     
     # callbacks
     # https://dash.plotly.com/duplicate-callback-outputs
@@ -235,8 +235,7 @@ def main(df, column_to_vis):
             showlegend = False
         )
         return fig
-
-    app.run_server(debug=True)
+    app.run_server(debug = True)
 
 def get_max_occ_bin(df, column):
     """Get the maximum height of a bin in an histogram"""
@@ -301,3 +300,5 @@ def create_line_plotly(threshold, column, method, reference, graph_type, max_fre
     return line
 
 
+def open_browser():
+    open_new("http://localhost:8050")

@@ -13,9 +13,9 @@ class NewMissingValue:
 
     def __str__(self):
         final_text = f"""\
------------------------------
+----------------------------
 Summary of new missing value
------------------------------
+----------------------------
 
 {f'{", ".join(self.columns_converted)} has been converted to numeric.' 
     if len(self.columns_converted) > 0 
@@ -379,14 +379,15 @@ def _header_add_true(obj):
 
 
 def _header_add_false(obj):
-    output_text = ""
-    output_text += f"Method used : {obj.method}\n"
-    output_text += f"Distance used : {obj.distance}\n"
-    output_text += f"Column tested : {', '.join(obj.columns_to_test)}\n" 
-    output_text += f"Total number of outliers : {len(obj.all_index)}\n"
-    output_text += f"Total number of flagged values : " \
-        f"{sum(obj.nb.values())}\n" \
-        + "-"*30 + "\n\n"
+    output_text = f"""\
+Method used : {obj.method}
+Distance used : {obj.distance}
+Column tested : {', '.join(obj.columns_to_test)}
+Total number of outliers : {len(obj.all_index)}
+Total number of flagged values : {sum(obj.nb.values())}
+{'-'*30}
+
+"""
     return output_text
 
 
@@ -456,6 +457,17 @@ def _content_add_false(obj):
 
 
 def _outliers_index_presentation(obj, column):
+    """ ! Private method ! 
+    Allow to present a sample of index for the print output.
+
+    There are 3 cases:
+
+    * If there are no outliers, output_text = ""
+    * If there are less than or equal 5 outliers, output
+    text is composed of the index of all outliers
+    * If there are more than 5 outliers, the first two and
+    the last index are shown to the user.
+    """
     output_text = ""
     if obj.nb[column] > 0 and obj.nb[column] <= 5:
         output_text += ", ".join([str(val)
@@ -465,7 +477,7 @@ def _outliers_index_presentation(obj, column):
         output_text += str(obj.dict_col[column][0]) + ", " + \
             str(obj.dict_col[column][1]) \
             + "."*5 + ", " + \
-            str(obj.dict_col[column][-1])+ "\n"
+            str(obj.dict_col[column][-1])
 
     return output_text
 

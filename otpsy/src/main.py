@@ -8,29 +8,89 @@ import numpy as np
 
 class Sample:
     """
-    Contains the data you want to pass in the detection
-    of outliers.
+    Enter a sample of your data on which you want to detect outliers.
+
     Parameters
     ----------
-    df : pd.Dataframe
-        Enter the dataframe you want to test
-    column_to_test : (str | list | int | pd.Series)
-        Enter either the name, a list of name,
-        the index of column, or directly the column
-    participant_column : str | int | pd.Series
-        Enter the participant refering participant.
-        If this column is directly your index, or you want
-        to see the line number of outliers, don't specify a
-        arguments.
+    df : pd.DataFrame
+        The input DataFrame to be processed. If you want to only test
+        a series, you can enter a pd.Series. Other type of dataframe
+        is still not supported.
+
+    columns_to_test : str, list, int, or pd.Series, optional
+        Columns to test corresponds to all columns you want
+        to be considered for the outliers detection.
+        Default is an empty string. If columns to test is an empty
+        string or equals "all", then all thecolumns are considerer
+        to be relevant.
+        You can specify one column by specifying its name (str) or 
+        his position (int).
+        You can specify more than one column by enter a list of
+        names (list[str]) or a list of position (list[index]).
+        Using the name is preferable.
+        ** IMPORTANTLY **, all columns are converted to numeric.
+        If this conversion only led to missing values, it raises
+        an error.
+        If there is some missing values issued from this 
+        conversion but not all, you can access all information via 
+        `your_instance.missing`.
+
+    participant_column : str, int, optional
+        It corresponds to the column with the identifier of your 
+        participant.
+        This column is use as an index. Default is an empty 
+        string. If participant_column equals to an empty string
+        (default), the initial index of the dataframe will be keep.
+
+    **kwargs
+        Additional keyword arguments.
+
+    Attributes
+    ----------
+    df : pd.DataFrame
+        The processed DataFrame with the participant column set
+        as the index, if specified.
+    columns_to_test : str, list, int, or pd.Series
+        Columns to test.
+    participant_column : str, int
+        The column used as an index.
+    missing : str
+        Information about additional missing values, defaults to
+        "No additional missing values" if not provided.
+
+    Notes
+    -----
+    The decorator @utils._check_sample allow to standardise arguments.
+    As said before, access information about missing values with the
+    attribute missing.
+
+    Examples
+    --------
+    The fictitious dataframe is named "df". It includes notably the 3
+    columns A, B, C and the column refering to participant index "ID".
+    ```python
+    >>> import otpsy as ot
+    >>> # You want to test columns A, B, C
+    >>> sample = ot.Sample(df, columns_to_test=["A", "B", "C"], 
+    participant_column="ID")
+    >>> # You want to specify with index
+    >>> sample = ot.Sample(df, columns_to_test=[1, 2, 3], 
+    participant_column=4)
+    >>> # You only want to test one column
+    >>> sample = ot.Sample(df, columns_to_test="A", 
+    participant_column=4)
+    >>> # You only want to test a series
+    >>> sample = ot.Sample(df[["A"]])
+    ```
     """
     @utils._check_sample
     def __init__(
             self,
             df: pd.DataFrame,
-            columns_to_test: str | list | int | pd.Series = "",
+            columns_to_test: str | list[str] | int | list[int] | pd.Series = "",
             participant_column: str | int | pd.Series = "",
             **kwargs
-    ) -> None:
+        ) -> None:
 
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column
@@ -123,7 +183,8 @@ class Sample:
             outlier thresholds.
             Default equals 3.
         iteration : int, optional
-            The number of maximum iteration.
+            The number of maximum iteration. Default
+            equals 50.
 
         Return
         -------
@@ -140,6 +201,30 @@ class Sample:
 
     @utils.check_number_entry
     def method_MAD(self, distance=2.5, b=1.4826):
+        """ ## Median Absolute Distance
+        Method to create an outliers object via the median absolute
+        distance outlier detection method. 
+        The idea is that you realise calculate the difference between
+        each point and the median, and you realise the median on this
+        distance.
+        The 'distance' parameter refers to the number of median absolute
+        distance above and below the median.
+        For more information with b, see Leys et al. (2013).
+
+        Parameters
+        ----------
+        distance : int, optional
+            The multiplier for the MAD to determine the 
+            outlier thresholds.
+            Default equals 2.5.
+        b : int, optional
+            Default equals 1.4826.
+
+        Return
+        -------
+        MethodRSd: An instance of the MethodIqr class 
+        containing the results of the outlier detection.
+        """
         return MethodMad(
             self.df,
             self.columns_to_test,
@@ -178,6 +263,29 @@ class Sample:
 
     @utils.check_number_entry
     def method_Sn(self, distance=3):
+        """ ## Sn method
+        Method to create an outliers object via the Sn outlier
+        detection.
+        The idea of this method is :
+
+        * For each participant, calculate the median distance to
+        each other point.
+        * After that, calculate the median of all this median distance.
+
+        Distance refers to the multiplier of the median distance of 
+
+        Parameters
+        ----------
+        distance : int, optional
+            The multiplier for the Sn to determine the
+            outlier thresholds.
+            Default equals 3.
+
+        Return
+        ------
+        MethodSn: An instance of the MethodSn class 
+        containing the results of the outlier detection.
+        """
         return MethodSn(
             self.df,
             self.columns_to_test,
@@ -187,6 +295,24 @@ class Sample:
 
     @utils.check_number_entry
     def method_prctile(self, distance=0.95):
+        """ ## Percentile method
+        Method to create an outliers object via the percentile method
+        outlier detection.
+        TODO
+        Distance refers to the multiplier of the median distance of 
+
+        Parameters
+        ----------
+        distance : int, optional
+            The multiplier for the Sn to determine the
+            outlier thresholds.
+            Default equals 3.
+
+        Return
+        ------
+        MethodSn: An instance of the MethodSn class 
+        containing the results of the outlier detection.
+        """
         return MethodPrctile(
             self.df,
             self.columns_to_test,
@@ -233,7 +359,7 @@ class _Outliers:
             ) -> None :
         """
         Private method used to calculate outliers.
-        It iterates through the columns, 
+        It iterates through the columns,
         calculates threshold values using the chosen method, 
         identifies outliers, and stores relevant information 
         such as the list of outliers, threshold values, and 
@@ -289,8 +415,9 @@ class _Outliers:
 
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
+        return(0)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
         Overloading of the __str__ method to modify the output
         of the print function.

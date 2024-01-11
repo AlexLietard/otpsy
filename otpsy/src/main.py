@@ -381,15 +381,7 @@ class _Outliers:
         Returns
         -------
         None
-        """        
-        self.all_index = {}
-        self.dict_col = {}
-        self.threshold = {}
-        self.nb = {}
-        self.position = {}
-        # As there is no constructor, self.multi has the purpose
-        # to change the print() result
-        self.multi = False
+        """
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
@@ -853,6 +845,12 @@ class MethodIqr(_Outliers):
         self.distance = distance
         self.method = "Inter-quartile range"
         self.shortname = "iqr"
+        self.all_index = {}
+        self.dict_col = {}
+        self.threshold = {}
+        self.nb = {}
+        self.position = {}
+        self.multi = False
         self._calculate(self.shortname)
 
 
@@ -871,6 +869,12 @@ class MethodSd(_Outliers):
         self.distance = distance
         self.method = "Standard Deviation"
         self.shortname = "sd"
+        self.all_index = {}
+        self.dict_col = {}
+        self.threshold = {}
+        self.nb = {}
+        self.position = {}
+        self.multi = False
         self._calculate(self.shortname)
 
 
@@ -891,14 +895,15 @@ class MethodRSd(_Outliers):
         self.max_iteration = max_iteration
         self.method = "Recursive Standard Deviation"
         self.shortname = "rsd"
-        self._calculate(self.shortname)
-
-    def _calculate(self, method):
         self.all_index = {}
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
         self.position = {}
+        self.multi = False
+        self._calculate(self.shortname)
+
+    def _calculate(self, method):
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
 
@@ -954,6 +959,12 @@ class MethodMad(_Outliers):
         self.b = b
         self.method = "Median Absolute Distance"
         self.shortname = "mad"
+        self.all_index = {}
+        self.dict_col = {}
+        self.threshold = {}
+        self.nb = {}
+        self.position = {}
+        self.multi = False
         self._calculate(self.shortname)
 
 
@@ -972,6 +983,12 @@ class MethodTukey(_Outliers):
         self.distance = distance
         self.method = "Tukey"
         self.shortname = "tukey"
+        self.all_index = {}
+        self.dict_col = {}
+        self.threshold = {}
+        self.nb = {}
+        self.position = {}
+        self.multi = False
         self._calculate(self.shortname)
 
 
@@ -990,6 +1007,12 @@ class MethodSn(_Outliers):
         self.distance = distance
         self.method = "Sn"
         self.shortname = "sn"
+        self.all_index = {}
+        self.dict_col = {}
+        self.threshold = {}
+        self.nb = {}
+        self.position = {}
+        self.multi = False
         self._calculate(self.shortname)
 
     def _calculate(self, method):
@@ -1035,6 +1058,12 @@ class MethodPrctile(_Outliers):
         self.distance = distance
         self.method = "Percentile"
         self.shortname = "prctile"
+        self.all_index = {}
+        self.dict_col = {}
+        self.threshold = {}
+        self.nb = {}
+        self.position = {}
+        self.multi = False
         self._calculate(self.shortname)
 
 
@@ -1062,15 +1091,16 @@ class MethodCutOff(_Outliers):
         self.threshold_included = threshold_included
         self.method = "Cut-Off"
         self.shortname = "cut-off"
+        self.all_index = {}
+        self.dict_col = {}
+        self.threshold = {}
+        self.nb = {}
+        self.position = {}
         self.multi = False
         self._calculate()
 
     def _calculate(self):
         """ Private method used to calculate outliers """
-        self.all_index = {}
-        self.dict_col = {}
-        self.nb = {}
-        self.position = {}
         # get the function for calculate threshold
         for column in self.columns_to_test:
             # list of outliers by column
@@ -1111,6 +1141,10 @@ class MethodIdentical(_Outliers):
         self.multi = False
         self.method = "Identical"
         self.shortname = "id"
+        self.all_index = {}
+        self.dict_col = {}
+        self.nb = {}
+        self.position = {}
         self._calculate("identical")
 
     def _calculate(self, method):
@@ -1160,4 +1194,5 @@ class MethodMulti(_Outliers):
         self.position = {}
         self.multi = True
         self.shortname = []
+        
 

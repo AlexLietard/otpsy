@@ -104,7 +104,7 @@ class Sample:
         else:
             self.missing = "No additional missing values"
     
-    def visualise(self, column=""):
+    def visualise(self, column: str="") -> None:
         if column == "":
             column_to_vis = self.columns_to_test
         else:
@@ -113,8 +113,12 @@ class Sample:
 
         return None
 
-    @utils.check_number_entry
-    def method_IQR(self, distance=2):
+    @utils._check_number_entry
+    def method_IQR(
+        self, 
+        distance: float = 2,
+        threshold_included : bool = False
+        ):
         """ ## Interquartile Range
         Method to create an outliers object via the **IQR-based** 
         outlier detection method. Distance refers to the number of 
@@ -130,17 +134,22 @@ class Sample:
         Return
         -------
         MethodIqr: An instance of the MethodIqr class 
-        containing the results of the outlier detection.
+        containing the result of the outlier detection.
         """
         return MethodIqr(
             self.df,
             self.columns_to_test,
             self.participant_column,
-            distance
+            distance,
+            threshold_included
         )
 
-    @utils.check_number_entry
-    def method_SD(self, distance=2.5):
+    @utils._check_number_entry
+    def method_SD(
+        self, 
+        distance: float = 2.5,
+        threshold_included : bool = False
+        ):
         """## Standard Deviation
         Method to create an outliers object via the **SD-based** 
         outlier detection method. Distance refers to the number of 
@@ -156,17 +165,23 @@ class Sample:
         Return
         -------
         MethodSd: An instance of the MethodSd class 
-        containing the results of the outlier detection.
+        containing the result of the outlier detection.
         """
         return MethodSd(
             self.df,
             self.columns_to_test,
             self.participant_column,
-            distance
+            distance,
+            threshold_included
         )
 
-    @utils.check_number_entry
-    def method_rSD(self, distance=3, iteration=50):
+    @utils._check_number_entry
+    def method_rSD(
+        self, 
+        distance: float = 3, 
+        iteration: int = 50,
+        threshold_included : bool = False
+        ):
         """ ## Recursive Standard Deviation
         Method to create an outliers object via the rSD-based outlier
         detection. The 'distance' parameter refers to the number of
@@ -189,27 +204,33 @@ class Sample:
         Return
         -------
         MethodRSd: An instance of the MethodIqr class 
-        containing the results of the outlier detection.
+        containing the result of the outlier detection.
         """
         return MethodRSd(
             self.df,
             self.columns_to_test,
             self.participant_column,
             distance,
-            iteration
+            iteration,
+            threshold_included
         )
 
-    @utils.check_number_entry
-    def method_MAD(self, distance=2.5, b=1.4826):
+    @utils._check_number_entry
+    def method_MAD(
+        self, 
+        distance: float = 2.5, 
+        b: float = 1.4826,
+        threshold_included : bool = False
+        ):
         """ ## Median Absolute Distance
-        Method to create an outliers object via the median absolute
-        distance outlier detection method. 
-        The idea is that you realise calculate the difference between
-        each point and the median, and you realise the median on this
+        Method to create an outliers object via the Median Absolute
+        Distance (MAD) outlier detection method. 
+        The idea is that it calculates the absolute difference between
+        each point and the median. A median is applied on this
         distance.
         The 'distance' parameter refers to the number of median absolute
         distance above and below the median.
-        For more information with b, see Leys et al. (2013).
+        For more information concerning b, see Leys et al. (2013).
 
         Parameters
         ----------
@@ -223,18 +244,23 @@ class Sample:
         Return
         -------
         MethodRSd: An instance of the MethodIqr class 
-        containing the results of the outlier detection.
+        containing the result of the outlier detection.
         """
         return MethodMad(
             self.df,
             self.columns_to_test,
             self.participant_column,
             distance,
-            b
+            b,
+            threshold_included
         )
 
-    @utils.check_number_entry
-    def method_Tukey(self, distance=1.5):
+    @utils._check_number_entry
+    def method_Tukey(
+        self, 
+        distance: float = 1.5,
+        threshold_included : bool = False
+        ):
         """ ## Tukey
         Method to create an outliers object via the Tukey-based outlier
         detection. The 'distance' parameter refers to the number of
@@ -252,17 +278,22 @@ class Sample:
         Return
         -------
         MethodTukey: An instance of the MethodTukey class 
-        containing the results of the outlier detection.
+        containing the result of the outlier detection.
         """
         return MethodTukey(
             self.df,
             self.columns_to_test,
             self.participant_column,
-            distance
+            distance,
+            threshold_included
         )
 
-    @utils.check_number_entry
-    def method_Sn(self, distance=3):
+    @utils._check_number_entry
+    def method_Sn(
+        self, 
+        distance: float = 3,
+        threshold_included : bool = False
+        ):
         """ ## Sn method
         Method to create an outliers object via the Sn outlier
         detection.
@@ -272,7 +303,8 @@ class Sample:
         each other point.
         * After that, calculate the median of all this median distance.
 
-        Distance refers to the multiplier of the median distance of 
+        Distance refers to the multiplier of the latter median 
+        distance.
 
         Parameters
         ----------
@@ -284,21 +316,26 @@ class Sample:
         Return
         ------
         MethodSn: An instance of the MethodSn class 
-        containing the results of the outlier detection.
+        containing the result of the outlier detection.
         """
         return MethodSn(
             self.df,
             self.columns_to_test,
             self.participant_column,
-            distance
+            distance,
+            threshold_included
         )
 
-    @utils.check_number_entry
-    def method_prctile(self, distance=0.95):
+    @utils._check_number_entry
+    def method_prctile(
+        self, 
+        distance: float = 0.95,
+        threshold_included : bool = False
+        ):
         """ ## Percentile method
         Method to create an outliers object via the percentile method
         outlier detection.
-        TODO
+        Not finished yet.
         Distance refers to the multiplier of the median distance of 
 
         Parameters
@@ -311,22 +348,49 @@ class Sample:
         Return
         ------
         MethodSn: An instance of the MethodSn class 
-        containing the results of the outlier detection.
+        containing the result of the outlier detection.
         """
         return MethodPrctile(
             self.df,
             self.columns_to_test,
             self.participant_column,
-            distance
+            distance,
+            threshold_included
         )
 
-    @utils.check_number_entry
+    @utils._check_number_entry
     def method_cutoff(
         self, 
-        threshold, 
-        filter = 'low-pass',
-        threshold_included = True
+        threshold: float | int, 
+        filter: str = 'low-pass',
+        threshold_included: bool = True
         ):
+        """ !Not finished yet! 
+        ## Cut-off method
+        Method to create an outliers object via the cut-off method
+        outlier detection.
+        Contrary to other method, you need to input directly the
+        threshold that will be used to flagged aberrant values.
+
+        Parameters
+        ----------
+        threshold : int
+            Value used to detect outliers.
+            Default equals 3.
+        filter : {"low-pass", "high-pass"}
+            If you want to detect outliers above a specified value,
+            you want to keep all what is below this value. Thus,
+            you should specified "low-pass".
+            Conversely, if you want to detect outliers below a 
+            specified value, you want to keep all what is above this
+            value. Thus, you should specified high-pass.
+        threshold_included :
+
+        Return
+        ------
+        MethodSn: An instance of the MethodSn class 
+        containing the result of the outlier detection.
+        """
         return MethodCutOff(
             self.df,
             self.columns_to_test,
@@ -336,13 +400,18 @@ class Sample:
             threshold_included
         )
 
-    @utils.check_number_entry
-    def method_identical(self, frequency=0.98):
+    @utils._check_number_entry
+    def method_identical(
+        self, 
+        frequency: float = 0.98,
+        threshold_included : bool = False
+        ):
         return MethodIdentical(
             self.df,
             self.columns_to_test,
             self.participant_column,
-            frequency
+            frequency,
+            threshold_included
         )
 
 
@@ -381,6 +450,7 @@ class _Outliers:
         Returns
         -------
         None
+            The method modifies the object in place and updates relevant parameters.
         """
         # get the function for calculate threshold
         func = config.DICT_FUNCTION.get(method)
@@ -395,10 +465,16 @@ class _Outliers:
                     self.df, [column], self.distance)
 
             # list of outliers by column
-            list_outliers = self.df.index[
-                ((self.df[column] < low_threshold) |
-                 (self.df[column] > high_threshold))
-            ].tolist()
+            if self.threshold_included == False:
+                list_outliers = self.df.index[
+                    ((self.df[column] < low_threshold) |
+                    (self.df[column] > high_threshold))
+                ].tolist()
+            else:
+                list_outliers = self.df.index[
+                    ((self.df[column] <= low_threshold) |
+                    (self.df[column] >= high_threshold))
+                ].tolist()
             self.dict_col[column] = list_outliers
             self.threshold[column] = (low_threshold, high_threshold)
             self.nb[column] = len(list_outliers)
@@ -836,16 +912,18 @@ class MethodIqr(_Outliers):
         df: pd.DataFrame | np.ndarray | pd.Series,
         columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        distance: int | float
+        distance: int | float,
+        threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.threshold_included = threshold_included
         self.method = "Inter-quartile range"
         self.shortname = "iqr"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -860,16 +938,18 @@ class MethodSd(_Outliers):
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        distance: int | float
+        distance: int | float,
+        threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.threshold_included = threshold_included
         self.method = "Standard Deviation"
         self.shortname = "sd"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -886,6 +966,7 @@ class MethodRSd(_Outliers):
         participant_column: str | int | pd.Series,
         distance: int | float,
         max_iteration: int,
+        threshold_included : bool,
     ) -> None:
 
         self.df = df
@@ -893,9 +974,10 @@ class MethodRSd(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.max_iteration = max_iteration
+        self.threshold_included = threshold_included
         self.method = "Recursive Standard Deviation"
         self.shortname = "rsd"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -921,10 +1003,16 @@ class MethodRSd(_Outliers):
                 low_threshold, high_threshold = func(
                     df_to_operate_n_plus_1, [column], self.distance)
                 # list of outliers by column
-                list_outliers = self.df.index[
-                    ((self.df[column] < low_threshold) |
-                     (self.df[column] > high_threshold))
-                ].tolist()
+                if self.threshold_included == False:
+                    list_outliers = self.df.index[
+                        ((self.df[column] < low_threshold) |
+                        (self.df[column] > high_threshold))
+                    ].tolist()
+                else:
+                    list_outliers = self.df.index[
+                        ((self.df[column] <= low_threshold) |
+                        (self.df[column] >= high_threshold))
+                    ].tolist()       
 
                 self.dict_col[column] = list_outliers
 
@@ -949,7 +1037,8 @@ class MethodMad(_Outliers):
         columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
         distance: int | float,
-        b: int | float
+        b: int | float,
+        threshold_included : bool,
     ) -> None:
 
         self.df = df
@@ -957,9 +1046,10 @@ class MethodMad(_Outliers):
         self.participant_column = participant_column
         self.distance = distance
         self.b = b
+        self.threshold_included = threshold_included
         self.method = "Median Absolute Distance"
         self.shortname = "mad"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -974,16 +1064,18 @@ class MethodTukey(_Outliers):
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        distance: int | float
+        distance: int | float,
+        threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.threshold_included = threshold_included
         self.method = "Tukey"
         self.shortname = "tukey"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -998,16 +1090,18 @@ class MethodSn(_Outliers):
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        distance: int | float
+        distance: int | float,
+        threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.threshold_included = threshold_included
         self.method = "Sn"
         self.shortname = "sn"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -1016,11 +1110,6 @@ class MethodSn(_Outliers):
         self._calculate(self.shortname)
 
     def _calculate(self, method):
-        self.all_index = {}
-        self.dict_col = {}
-        self.threshold = {}
-        self.nb = {}
-        self.position = {}
         func = config.DICT_FUNCTION.get(method)
         for column in self.columns_to_test:
             # Calculate threshold
@@ -1030,9 +1119,15 @@ class MethodSn(_Outliers):
             # Contrary to the parent calculate method,
             # the identification is realised on the all_distance
             # which contains every median distance to other point
-            list_outliers = all_distance.index[
-                all_distance > threshold
-            ].tolist()
+            if self.threshold_included == False:
+                list_outliers = all_distance.index[
+                    all_distance > threshold
+                ].tolist()
+            else:
+                list_outliers = all_distance.index[
+                    all_distance >= threshold
+                ].tolist()
+
             self.dict_col[column] = list_outliers
             self.threshold[column] = threshold
             self.nb[column] = len(list_outliers)
@@ -1049,16 +1144,18 @@ class MethodPrctile(_Outliers):
         df: pd.DataFrame,
         column_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        distance: int | float
+        distance: int | float,
+        threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = column_to_test
         self.participant_column = participant_column
         self.distance = distance
+        self.threshold_included = threshold_included
         self.method = "Percentile"
         self.shortname = "prctile"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -1091,7 +1188,7 @@ class MethodCutOff(_Outliers):
         self.threshold_included = threshold_included
         self.method = "Cut-Off"
         self.shortname = "cut-off"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.threshold = {}
         self.nb = {}
@@ -1105,13 +1202,23 @@ class MethodCutOff(_Outliers):
         for column in self.columns_to_test:
             # list of outliers by column
             if self.filter == "high-pass":
-                list_outliers = self.df.index[
-                    self.df[column] < self.distance
-                ].tolist()
+                if self.threshold_included == False:
+                    list_outliers = self.df.index[
+                        self.df[column] < self.distance
+                    ].tolist()
+                else:
+                    list_outliers = self.df.index[
+                        self.df[column] <= self.distance
+                    ].tolist()          
             else:
-                list_outliers = self.df.index[
-                    self.df[column] > self.distance
-                ].tolist()
+                if self.threshold_included == False:
+                    list_outliers = self.df.index[
+                        self.df[column] > self.distance
+                    ].tolist()
+                else:
+                    list_outliers = self.df.index[
+                        self.df[column] >= self.distance
+                    ].tolist()
             # update parameters       
             self.dict_col[column] = list_outliers
             self.nb[column] = len(list_outliers)
@@ -1128,7 +1235,8 @@ class MethodIdentical(_Outliers):
         df: pd.DataFrame,
         column_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        frequency: int | float
+        frequency: int | float,
+        threshold_included : bool,
     ) -> None:
 
         self.df = df
@@ -1138,18 +1246,19 @@ class MethodIdentical(_Outliers):
         # Redundant but it is used for print output
         self.distance = frequency
         self.threshold = {"Identical": frequency}
-        self.multi = False
+        self.threshold_included = threshold_included
         self.method = "Identical"
         self.shortname = "id"
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.nb = {}
         self.position = {}
+        self.multi = False
         self._calculate("identical")
 
     def _calculate(self, method):
         """ Private method used to calculate outliers """
-        self.all_index = {}
+        self.all_index = []
         self.dict_col = {}
         self.nb = {}
         # get the function for calculate threshold
@@ -1158,9 +1267,14 @@ class MethodIdentical(_Outliers):
         max_frequency = func(
             self.df, self.columns_to_test)
         # list of outliers by column
-        list_outliers = self.df.index[
-            (max_frequency > self.frequency)
-        ].tolist()
+        if self.threshold_included == False:
+            list_outliers = self.df.index[
+                (max_frequency > self.frequency)
+            ].tolist()
+        else:
+            list_outliers = self.df.index[
+                (max_frequency >= self.frequency)
+            ].tolist()
         self.dict_col["Identical"] = list_outliers
         self.nb["Identical"] = len(list_outliers)
         self.all_index = list_outliers

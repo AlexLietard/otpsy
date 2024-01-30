@@ -263,12 +263,7 @@ def _check_sample(function):
                     pass
                 new_kwargs["participant_column"] = participant_column
 
-            # check distance
-            elif key == "distance":
-                new_kwargs["distance"] = _process_distance(value)
 
-            elif key == "threshold":
-                new_kwargs["threshold"] = _process_distance(value)
 
         # to pass self when its decorating class
         if "self" in kwargs:
@@ -280,7 +275,7 @@ def _check_sample(function):
     return verify_arguments
 
 
-def check_number_entry(function):
+def _check_number_entry(function):
     """ Check the argument pass for the detection of outliers """
     def verify_arguments(*args, **kwargs):
         new_kwargs = {}
@@ -291,25 +286,19 @@ def check_number_entry(function):
 
         for key, value in kwargs.items():
             # check dataframe enter
-            if key == "distance":
+            if key == "frequency":
+                frequency = _process_distance(value)
+                if frequency >= 1:
+                    raise ValueError("Frequency must be inferior to 1")
+                new_kwargs["frequency"] = frequency
+            # check distance
+            elif key == "distance":
                 new_kwargs["distance"] = _process_distance(value)
 
             elif key == "threshold":
                 new_kwargs["threshold"] = _process_distance(value)
 
-            elif key == "iteration":
-                new_kwargs["iteration"] = _process_distance(value)
-
-            elif key == "frequency":
-                frequency = _process_distance(value)
-                if frequency > 1:
-                    raise ValueError("Frequency must be inferior to 1")
-                new_kwargs["frequency"] = frequency
-
-            elif key == "b":
-                new_kwargs["b"] = _process_distance(value)
-
-        # to pass self when its decorating class
+        # to pass self when it's decorating class
         if "self" in kwargs:
             func = function(kwargs["self"], **new_kwargs)
         else:
@@ -488,6 +477,7 @@ def _title():
     output_text += "-"*33
     output_text += "\n\n"
     return output_text
+
 
 def _s_if_needed(nb):
     if nb == 0:

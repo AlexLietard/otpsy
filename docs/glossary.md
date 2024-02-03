@@ -1,4 +1,4 @@
-# Glossary in the package
+# Glossary for the package
 
 * Aberrant/Flagged Values: These are values that fall either above or below the threshold determined by the chosen method.
 

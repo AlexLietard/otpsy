@@ -72,19 +72,19 @@ For a more exhaustive presentation of functionnality, check the example folder.
 
 ## TODO
 
-About outliers method :
+About outliers methods :
 
-* Include the ability to set either a lower or upper threshold on the cut-off method
 * Add self.position to multi and update parameters
 * Check print output for each method
 * Allow to enter help for description of print output
+* Realise percentile method
 
 About visualisation :
 
 * Hover text on shape or annotation or legend to understand which color corresponds to which method.
 * Add summary to the left.
 * Add nice color :).
-* Add all methods to the visualisation, with the possibility to add user-input value.
+* Add the possibility to add user-input value.
 
 About the structure :
 

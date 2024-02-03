@@ -56,7 +56,9 @@ def main(df, column_to_vis):
     app = dash.Dash(__name__, external_stylesheets=[
                     dbc.themes.DARKLY])  # set app layout
     list_of_method = ["IQR", "MAD", "SD", "rSD"]
+    list_of_method_2 = ["Tukey", "Prctile", "Cut-off"]
     ls_method_with_html = []
+    ls_method_2_with_html = []
     ls_distance = [2, 2.5, 3]
     ls_distance_with_html = []
     ls_graph = ["Scatter", "Histogram"]
@@ -67,6 +69,10 @@ def main(df, column_to_vis):
         ls_method_with_html.append({'label': html.Div(
             method, style=SIDEBAR_OPTION), 
                            'value': method})
+    for method_2 in list_of_method_2:
+        ls_method_2_with_html.append({'label': html.Div(
+            method_2, style=SIDEBAR_OPTION), 
+                           'value': method_2})
     for num in ls_distance:
         ls_distance_with_html.append({'label': html.Div(
             str(num), style=SIDEBAR_OPTION), 
@@ -98,19 +104,35 @@ def main(df, column_to_vis):
                                         clearable=False, multi=True
                                 )])),
                                 # Method to use
+                                dbc.Row([
+                                    html.Div(
+                                            [
+                                                html.Hr(),
+                                                html.P("Select method")
+                                            ]
+                                            )
+                                        ]),
                                 dbc.Row(
-                                    html.Div([
-                                        html.Hr(),
-                                        html.P(
-                                            "Select method"
-                                        ),
-                                        dbc.Checklist(options=ls_method_with_html,
-                                            id="method",
-                                            label_checked_style={"color": "#FFFFFF"},
-                                            input_checked_style={
-                                                "backgroundColor": "#324c71",
-                                                "borderColor": "#324c71"}
-                                )])),
+                                        [
+                                        dbc.Col(
+                                            html.Div([
+                                                dbc.Checklist(options=ls_method_with_html,
+                                                    id="method",
+                                                    label_checked_style={"color": "#FFFFFF"},
+                                                    input_checked_style={
+                                                        "backgroundColor": "#324c71",
+                                                        "borderColor": "#324c71"})
+                                                ])),
+                                        dbc.Col(
+                                            html.Div([
+                                                dbc.Checklist(options=ls_method_2_with_html,
+                                                    id="method_2",
+                                                    label_checked_style={"color": "#FFFFFF"},
+                                                    input_checked_style={
+                                                        "backgroundColor": "#324c71",
+                                                        "borderColor": "#324c71"}) 
+                                            ]))
+                                        ]),
                                 # Distance to use
                                 dbc.Row(
                                     html.Div([
@@ -152,13 +174,22 @@ def main(df, column_to_vis):
         Output(component_id='scatter', component_property='figure'),
         Input(component_id='column', component_property='value'),
         Input(component_id='method', component_property='value'),
+        Input(component_id='method_2', component_property='value'),
         Input(component_id='distance', component_property='value'),
         Input(component_id="graph", component_property='value')
     )
-    def update_graph(y, method, distance, graph_type):
+    def update_graph(y, method, method_2, distance, graph_type):
         # allow to know which subplot corresponds to the method
         ref = {}
         max_frequency = {}
+
+        # deal with the fact that there are two checklist
+        if method == None:
+            method = list()
+        if method_2 == None:
+            method_2 = list()
+        method.extend(method_2)
+        
         if y == None or len(y) == 0:
             fig = px.scatter({'data': []})
             # number_of_subplots = 1 because the value of number_of_subplots 
@@ -192,6 +223,7 @@ def main(df, column_to_vis):
                 fig.update_yaxes(title=column)
                 ref[column] = i + 1
             # Update the threshold to see (2, 2.5 or 3)
+            
             fig = update_distance_show(df, fig, method, y, distance, ref, graph_type, "")
 
             # Used for the height of the figure
@@ -264,7 +296,7 @@ def update_distance_show(df, fig, pre_method, y, distance, ref, graph_type, max_
             for dis in distance:
                 if method == "mad":
                     low_threshold, high_threshold = func(
-                        df, [column], dis)
+                        df, [column], dis, 1.4826)
                 else:
                     low_threshold, high_threshold = func(
                         df, [column], dis)

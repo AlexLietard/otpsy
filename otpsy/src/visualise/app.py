@@ -209,7 +209,7 @@ def main(df, column_to_vis):
                 max_frequency_for_a_bin = get_max_occ_bin(df, column)
                 fig.add_trace(
                     go.Histogram(
-                        x=df[column], 
+                        x=df[column],
                         xaxis=f"x{i+1}",
                         yaxis=f"y{i+1}",
                         hovertemplate='<i>Bin-range</i>: %{x}'\

@@ -288,15 +288,17 @@ def _check_number_entry(function):
             # check dataframe enter
             if key == "frequency":
                 frequency = _process_distance(value)
-                if frequency >= 1:
+                if frequency > 1:
                     raise ValueError("Frequency must be inferior to 1")
                 new_kwargs["frequency"] = frequency
-            # check distance
-            elif key == "distance":
-                new_kwargs["distance"] = _process_distance(value)
 
-            elif key == "threshold":
-                new_kwargs["threshold"] = _process_distance(value)
+            # check distance and threshold
+            elif key == "distance" or key == "threshold":
+                new_kwargs[key] = _process_distance(value)
+
+            elif key == "threshold_included" or key == "filter" or key == "b":
+                new_kwargs[key] = value
+
 
         # to pass self when it's decorating class
         if "self" in kwargs:

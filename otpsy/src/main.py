@@ -406,6 +406,7 @@ class Sample:
         frequency: float = 0.98,
         threshold_included : bool = False
         ):
+        print(threshold_included)
         return MethodIdentical(
             self.df,
             self.columns_to_test,
@@ -1174,11 +1175,6 @@ class MethodCutOff(_Outliers):
         filter: str,
         threshold_included: bool
     ) -> None:
-        """
-        Parameters
-        ----------
-        Comparison : {'low-pass', 'high-pass'}
-        """
         self.df = df
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column

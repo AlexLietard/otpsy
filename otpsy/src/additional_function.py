@@ -199,6 +199,8 @@ def _change_format_of_attribute(obj):
     # method
     obj.method = [obj.method]
 
+    if obj.shortname == "cut-off":
+        obj.distance = tuple(obj.distance)
     # distance
     obj.distance = {obj.distance: [obj.shortname]}
 

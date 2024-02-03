@@ -361,9 +361,9 @@ class Sample:
     @utils._check_number_entry
     def method_cutoff(
         self, 
-        threshold: float | int, 
-        filter: str = 'low-pass',
-        threshold_included: bool = True
+        low_threshold: float | int = "",
+        high_threshold: float | int = "",
+        threshold_included: bool = False
         ):
         """ !Not finished yet! 
         ## Cut-off method
@@ -395,8 +395,8 @@ class Sample:
             self.df,
             self.columns_to_test,
             self.participant_column,
-            threshold,
-            filter,
+            low_threshold,
+            high_threshold,
             threshold_included
         )
 
@@ -1171,22 +1171,20 @@ class MethodCutOff(_Outliers):
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
         participant_column: str | int | pd.Series,
-        threshold: int | float,
-        filter: str,
+        low_threshold : int | float,
+        high_threshold : int | float, 
         threshold_included: bool
     ) -> None:
         self.df = df
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column
-        self.distance = threshold
+        self.distance = [low_threshold, high_threshold]
         self.threshold = {}
-        self.filter = filter
         self.threshold_included = threshold_included
         self.method = "Cut-Off"
         self.shortname = "cut-off"
         self.all_index = []
         self.dict_col = {}
-        self.threshold = {}
         self.nb = {}
         self.position = {}
         self.multi = False
@@ -1196,29 +1194,30 @@ class MethodCutOff(_Outliers):
         """ Private method used to calculate outliers """
         # get the function for calculate threshold
         for column in self.columns_to_test:
+
+            # Little trick to deal when user doesn't input value
+            # If there is no threshold specified, it takes the min
+            # (max) value of a series minus 1 to avoid detect outliers
+            if self.distance[0] == "":
+                self.distance[0] = self.df[column].min() -1
+            if self.distance[1] == "":
+                self.distance[1] = self.df[column].max() +1
+            self.threshold[column] = (self.distance[0], self.distance[1])
             # list of outliers by column
-            if self.filter == "high-pass":
-                if self.threshold_included == False:
-                    list_outliers = self.df.index[
-                        self.df[column] < self.distance
-                    ].tolist()
-                else:
-                    list_outliers = self.df.index[
-                        self.df[column] <= self.distance
-                    ].tolist()          
+            if self.threshold_included == False:
+                list_outliers = self.df.index[
+                    (self.df[column] < self.threshold[column][0])|
+                    (self.df[column] > self.threshold[column][1])
+                ].tolist()
             else:
-                if self.threshold_included == False:
-                    list_outliers = self.df.index[
-                        self.df[column] > self.distance
-                    ].tolist()
-                else:
-                    list_outliers = self.df.index[
-                        self.df[column] >= self.distance
-                    ].tolist()
+                list_outliers = self.df.index[
+                    (self.df[column] <= self.threshold[column][0])|
+                    (self.df[column] >= self.threshold[column][1])
+                ].tolist()
+
             # update parameters       
             self.dict_col[column] = list_outliers
             self.nb[column] = len(list_outliers)
-            self.threshold[column] = self.distance
             self.position[column] = utils._get_position(
                 self.df, self.dict_col)
         self.all_index = utils._select_index(

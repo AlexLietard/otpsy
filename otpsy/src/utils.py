@@ -293,7 +293,8 @@ def _check_number_entry(function):
                 new_kwargs["frequency"] = frequency
 
             # check distance and threshold
-            elif key == "distance" or key == "threshold":
+            elif key == "distance" or key == "threshold" \
+                or key == "low_threshold" or key == "high_threshold":
                 new_kwargs[key] = _process_distance(value)
 
             elif key == "threshold_included" or key == "filter" or key == "b":
@@ -401,7 +402,7 @@ def _content_add_true(obj):
 
         for shortname in obj.threshold[column]:
             # This is because Sn and cut-off have only one threshold value
-            if shortname == "sn" or shortname == "cut-off":
+            if shortname == "sn":
                 output_text += f"{shortname.upper()}: " \
                     f"{round(obj.threshold[column][shortname], 2)} ; "
             # The user already know the threshold
@@ -428,10 +429,6 @@ def _content_add_false(obj):
         if obj.method == "Sn":
             output_text += "Threshold median distance to other " \
                 f"point is {round(obj.threshold[column], 2)}\n\n"
-        elif obj.method == "Cut-Off":
-            output_text += "All values "\
-                        f"{'above' if obj.filter == 'low-pass' else 'below'}"\
-                        f" {obj.threshold[column]} is flagged.\n\n"
         else:
             output_text += "Low threshold : " \
                 f"{round(obj.threshold[column][0], 2)} / "\

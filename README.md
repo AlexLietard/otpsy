@@ -76,14 +76,13 @@ About outliers methods :
 
 * Add self.position to multi and update parameters
 * Check print output for each method
-* Allow to enter help for description of print output
 
 About visualisation :
 
 * Hover text on shape or annotation or legend to understand which color corresponds to which method.
 * Add summary to the left.
-* Add nice color :).
 * Add the possibility to add user-input value.
+* Add legend of the color
 
 About the structure :
 

@@ -480,7 +480,7 @@ class _Outliers:
             self.threshold[column] = (low_threshold, high_threshold)
             self.nb[column] = len(list_outliers)
             self.position[column] = utils._get_position(
-                self.df, self.dict_col)
+                self.df, self.dict_col[column])
 
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
@@ -600,7 +600,7 @@ class _Outliers:
             # Update other parameters
             self.nb["added_manually"] = len(self.dict_col["added_manually"])
             self.position["added_manually"] = utils._get_position(
-                self.df, self.dict_col)
+                self.df, self.dict_col["added_manually"])
             self.all_index = utils._select_index(
                 self.dict_col.keys(), self.dict_col)
         
@@ -708,7 +708,7 @@ class _Outliers:
         for column in self.columns_to_test:
             self.nb[column] = len(self.dict_col[column])
             self.position[column] = utils._get_position(
-                self.df, self.dict_col)
+                self.df, self.dict_col[column])
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
 
@@ -1026,7 +1026,7 @@ class MethodRSd(_Outliers):
             self.threshold[column] = (low_threshold, high_threshold)
             self.nb[column] = len(list_outliers)
             self.position[column] = utils._get_position(
-                self.df, self.dict_col)
+                self.df, self.dict_col[column])
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
 
@@ -1133,7 +1133,7 @@ class MethodSn(_Outliers):
             self.threshold[column] = threshold
             self.nb[column] = len(list_outliers)
             self.position[column] = utils._get_position(
-                self.df, self.dict_col)
+                self.df, self.dict_col[column])
 
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
@@ -1219,7 +1219,7 @@ class MethodCutOff(_Outliers):
             self.dict_col[column] = list_outliers
             self.nb[column] = len(list_outliers)
             self.position[column] = utils._get_position(
-                self.df, self.dict_col)
+                self.df, self.dict_col[column])
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
 
@@ -1274,7 +1274,7 @@ class MethodIdentical(_Outliers):
         self.nb["Identical"] = len(list_outliers)
         self.all_index = list_outliers
         self.position = utils._get_position(
-            self.df, self.dict_col, self.shortname)
+            self.df, self.dict_col["Identical"], self.shortname)
 
     def __str__(self):
         # I used this for avoid overiding columns to test at this 

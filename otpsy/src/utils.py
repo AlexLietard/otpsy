@@ -98,11 +98,10 @@ def _process_column_to_test(df_func, pre_column):
             # it is the index of column
             elif isinstance(pre_column, int):
                 columns_to_test.append(df_func.iloc[:, col].name)
-    # Avoid potential duplicates
     else:
         raise TypeError(f"The type of data {type(pre_column)} "
                         "is not supported to refer column.")
-    return list(set(columns_to_test))
+    return columns_to_test
 
 
 def _process_participant_column(df_func, pre_participant_column):
@@ -334,11 +333,9 @@ def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
     return final
 
 
-def _get_position(df, dict_col, shortname = ""):
+def _get_position(df, index_to_find, shortname = ""):
     if shortname == "id":
-        index_to_find = dict_col["Identical"]
-    else:       
-        index_to_find = _select_index(dict_col.keys(), dict_col)
+        index_to_find = index_to_find["Identical"]
     position_index = []
     for index in index_to_find:
         position_index.append(df.index.get_loc(index))
@@ -585,6 +582,8 @@ def _concat_both_object(new_obj, obj1, obj2):
         ))
     for column in new_obj.columns_to_test:
         new_obj.nb[column] = len(new_obj.dict_col[column])
+        new_obj.position[column] = _get_position(new_obj.df, 
+                                                 new_obj.dict_col[column])
 
     new_obj.all_index = _select_index(
         new_obj.dict_col.keys(), new_obj.dict_col)

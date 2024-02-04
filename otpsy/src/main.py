@@ -67,7 +67,7 @@ class Sample:
     Examples
     --------
     The fictitious dataframe is named "df". It includes notably the 3
-    columns A, B, C and the column refering to participant index "ID".
+    columns A, B, C and a column refering to participant index "ID".
     ```python
     >>> import otpsy as ot
     >>> # You want to test columns A, B, C

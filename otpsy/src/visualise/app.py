@@ -56,7 +56,7 @@ def main(df, column_to_vis):
     app = dash.Dash(__name__, external_stylesheets=[
                     dbc.themes.DARKLY])  # set app layout
     list_of_method = ["IQR", "MAD", "SD", "rSD"]
-    list_of_method_2 = ["Tukey", "Prctile", "Cut-off"]
+    list_of_method_2 = ["Tukey"]
     ls_method_with_html = []
     ls_method_2_with_html = []
     ls_distance = [2, 2.5, 3]

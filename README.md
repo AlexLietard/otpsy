@@ -77,7 +77,6 @@ About outliers methods :
 * Add self.position to multi and update parameters
 * Check print output for each method
 * Allow to enter help for description of print output
-* Realise percentile method
 
 About visualisation :
 

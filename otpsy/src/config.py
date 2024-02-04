@@ -13,10 +13,10 @@ DICT_FUNCTION = {
 
 HEXA_FOR_PLOTLY = {
     "iqr": "#D1F5BE",
-    "mad" : "#4B3B40",
+    "mad" : "#F39237",
     "sd": "#9DB17C",
-    "rsd" : "#4B3B40",
-    "tukey" : "#4B3B40",
-    "prctile" : "#4B3B40",
-    "cut-off" : "#4B3B40",
+    "rsd" : "#643A71",
+    "tukey" : "#FEC0CE",
+    # "prctile" : "#4B3B40",
+    # "cut-off" : "#4B3B40",
 }

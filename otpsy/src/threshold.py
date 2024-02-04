@@ -201,7 +201,10 @@ def threshold_prctile(
 
     This function allow the user to have the low threshold
     and the high threshold with the "Percentile" outliers method
-    with a specific distance.
+    with a specific distance. It flagged values above the value of 
+    the percentile (lambda) and below (100 - lambda). Thus, if you
+    input 90, values above the 90 percentile and below the 10 (100-90)
+    will be flag as outliers.
 
     Parameters
     ------------
@@ -212,12 +215,15 @@ def threshold_prctile(
         distance: float | int
             The distance used to calculate threshold
     """
+    if distance >= 100 or distance <= 50:
+        raise ValueError("Distance needs to be above 50"
+                         " and below 100. Check documentation for more"
+                         " information about percentile computation.")
     ret = {}
     for column in column_to_test:
         # threshold computation
-        low_threshold = np.percentile(df[column], distance)
-        high_threshold = np.percentile(df[column], 1 - distance)
-
+        low_threshold = np.nanpercentile(df[column], 100- distance)
+        high_threshold = np.nanpercentile(df[column], distance)
         ret[column] = (low_threshold, high_threshold)
 
     # avoid having a dictionnary for one column

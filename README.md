@@ -2,8 +2,8 @@
 
 ## Resume
 
-Otpsy is a toolkit for detecting and managing outliers in your dataset with ease. Outliers, those data points that deviate significantly from the majority, can have a substantial impact on statistical analyses. Our package gather various outlier detection methods, making it convenient for psychologists and data analysts to identify and handle outliers in a straightforward manner.
-[Click here](/docs/glossary.md) for a glossary.
+Otpsy is a toolkit for detecting and managing outliers in your dataset with ease. Outliers, those data points that deviate significantly from the majority, can have a substantial impact on statistical analyses. My package gather various outlier detection methods, making it convenient for psychologists and data analysts to identify and handle outliers in a straightforward manner.
+[Click here](/docs/glossary.md) for a glossary and [here](/docs/design.md) for a detailed explanation of the structure.
 
 ## Key Features
 
@@ -42,11 +42,7 @@ It is possible to concat outliers object `.concat()`, add manually specific inde
 
 ## Install and use otpsy
 
-Otpsy is a python package. You can install it with pip :
-
-```python
-pip install optsy
-```
+Otpsy is a python package. However, due to dependency issues, you still have to clone the package/
 
 For now, the package only support pandas Dataframe and numpy array.
 Imagine that you want to delete participants that have at least one
@@ -81,8 +77,7 @@ About visualisation :
 
 * Hover text on shape or annotation or legend to understand which color corresponds to which method.
 * Add summary to the left.
-* Add the possibility to add user-input value.
-* Add legend of the color
+* Add the possibility to add user-input value (and thus percentile method)
 
 About the structure :
 

@@ -329,7 +329,7 @@ class Sample:
     @utils._check_number_entry
     def method_prctile(
         self, 
-        distance: float = 0.95,
+        distance: float = 97.5,
         threshold_included : bool = False
         ):
         """ ## Percentile method

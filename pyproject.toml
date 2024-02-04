@@ -1,0 +1,18 @@
+[project]
+name = "otpsy"
+version = "0.0.1"
+authors = [
+  { name="Lietard", email="alex.lietard77@gmail.com" },
+]
+description = "Packages designed to detect outliers in Social and Human Sciences"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/AlexLietard/otpsy"
+Issues = "https://github.com/AlexLietard/otpsy/issues"

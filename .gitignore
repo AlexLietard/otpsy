@@ -7,3 +7,4 @@ build/
 .vscode/
 otpsy/__pycache__
 otpsy/src/__pycache__
+.pypirc

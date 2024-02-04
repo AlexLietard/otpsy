@@ -334,8 +334,6 @@ def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
 
 
 def _get_position(df, index_to_find, shortname = ""):
-    if shortname == "id":
-        index_to_find = index_to_find["Identical"]
     position_index = []
     for index in index_to_find:
         position_index.append(df.index.get_loc(index))

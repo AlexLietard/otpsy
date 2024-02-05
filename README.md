@@ -20,6 +20,8 @@ The package provides a range of outlier detection methods, allowing users to cho
 * Percentile
 * Cut-off (e.g., response time under 80 ms)
 * Identical response (for Likert scales or behavioral performance)
+
+For a mathematical description, see [Jones et al., (2019)](https://doi.org/10.3758/s13414-019-01726-3)
   
 ### 2. Visualisation
 

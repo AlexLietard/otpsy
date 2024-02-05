@@ -42,7 +42,7 @@ It is possible to concat outliers object `.concat()`, add manually specific inde
 
 ## Install and use otpsy
 
-Otpsy is a python package. However, due to dependency issues, you still have to clone the package/
+Otpsy is a python package. However, due to dependency issues, you still have to clone the package.
 
 For now, the package only support pandas Dataframe and numpy array.
 Imagine that you want to delete participants that have at least one

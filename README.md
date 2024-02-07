@@ -20,6 +20,8 @@ The package provides a range of outlier detection methods, allowing users to cho
 * Percentile
 * Cut-off (e.g., response time under 80 ms)
 * Identical response (for Likert scales or behavioral performance)
+
+For a mathematical description, see [Jones et al., (2019)](https://doi.org/10.3758/s13414-019-01726-3)
   
 ### 2. Visualisation
 
@@ -42,7 +44,7 @@ It is possible to concat outliers object `.concat()`, add manually specific inde
 
 ## Install and use otpsy
 
-Otpsy is a python package. However, due to dependency issues, you still have to clone the package/
+Otpsy is a python package. However, due to dependency issues, you still have to clone the package.
 
 For now, the package only support pandas Dataframe and numpy array.
 Imagine that you want to delete participants that have at least one

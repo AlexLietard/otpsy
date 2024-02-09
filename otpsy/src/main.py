@@ -104,7 +104,20 @@ class Sample:
         else:
             self.missing = "No additional missing values"
     
-    def visualise(self, column: str="") -> None:
+    def visualise(
+            self, 
+            column: str | list[str] | int | list[int] = "",
+            ) -> None:
+        """
+        Through the dash package, you can visualise the different method
+        with a specific distance.
+
+        Parameters
+        ----------
+        column : str | list[str] | int | list[int]
+            Column(s) that you want to visualise.
+            Default is all columns.
+        """
         if column == "":
             column_to_vis = self.columns_to_test
         else:
@@ -130,6 +143,10 @@ class Sample:
             The multiplier for the IQR to determine the 
             outlier thresholds.
             Default equals 2.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>= or <=), 
+            if False, it is exclusive (> or <). Default is False.
 
         Return
         -------
@@ -161,6 +178,10 @@ class Sample:
             The multiplier for the SD to determine the 
             outlier thresholds.
             Default equals 2.5.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>= or <=), 
+            if False, it is exclusive (> or <). Default is False.
 
         Return
         -------
@@ -200,6 +221,10 @@ class Sample:
         iteration : int, optional
             The number of maximum iteration. Default
             equals 50.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>= or <=), 
+            if False, it is exclusive (> or <). Default is False.
 
         Return
         -------
@@ -273,6 +298,10 @@ class Sample:
             The multiplier for the IQR to determine the 
             outlier thresholds.
             Default equals 1.5.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>= or <=), 
+            if False, it is exclusive (> or <). Default is False.
 
 
         Return
@@ -312,6 +341,10 @@ class Sample:
             The multiplier for the Sn to determine the
             outlier thresholds.
             Default equals 3.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>= or <=), 
+            if False, it is exclusive (> or <). Default is False.
 
         Return
         ------
@@ -344,6 +377,10 @@ class Sample:
             The multiplier for the Sn to determine the
             outlier thresholds.
             Default equals 3.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>= or <=), 
+            if False, it is exclusive (> or <). Default is False.
 
         Return
         ------
@@ -365,30 +402,36 @@ class Sample:
         high_threshold: float | int = "",
         threshold_included: bool = False
         ):
-        """ !Not finished yet! 
+        """
         ## Cut-off method
         Method to create an outliers object via the cut-off method
         outlier detection.
         Contrary to other method, you need to input directly the
         threshold that will be used to flagged aberrant values.
+        Importantly, if no threshold is specified, default corresponds
+        to the maximum (minimum) of you columns + (-) 1 to avoid
+        the detection of outliers.
 
         Parameters
         ----------
-        threshold : int
+        low_threshold : int, float
             Value used to detect outliers.
-            Default equals 3.
-        filter : {"low-pass", "high-pass"}
-            If you want to detect outliers above a specified value,
-            you want to keep all what is below this value. Thus,
-            you should specified "low-pass".
-            Conversely, if you want to detect outliers below a 
-            specified value, you want to keep all what is above this
-            value. Thus, you should specified high-pass.
-        threshold_included :
+            Default value corresponds to "", and will be replaced by
+            the minimum value of your columns - 1
+            to avoid the detection of outliers if no threshold is specified.
+        high_threshold : int, float
+            Value used to detect outliers.
+            Default value corresponds to "", and will be replaced by
+            the maximum value of your columns + 1
+            to avoid the detection of outliers if no threshold is specified.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>= or <=), 
+            if False, it is exclusive (> or <). Default is False.
 
         Return
         ------
-        MethodSn: An instance of the MethodSn class 
+        MethodSn: An instance of the MethodCutOff class 
         containing the result of the outlier detection.
         """
         return MethodCutOff(
@@ -406,7 +449,32 @@ class Sample:
         frequency: float = 0.98,
         threshold_included : bool = False
         ):
-        print(threshold_included)
+        """
+        ## Identical method
+        The identical method computes the frequency of identical
+        responses among a set of columns. Each column represents 
+        a response for a trial, and each row corresponds to a 
+        participant. If a participant's response is the same for more
+        than a specific frequency (default: 0.98, or 98%) 
+        of the trials, they are considered to not be performing
+        the task seriously. For example, if a participant always 
+        responds "NO", they will be flagged.
+
+        Parameters
+        ----------
+        frequency : float, optional
+            The frequency above which a participant is detected as an outlier.
+            Default is 0.98.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>=), 
+            if False, it is exclusive (>). Default is False.
+
+        Returns
+        -------
+        MethodIdentical
+            An instance of the MethodIdentical class with the specified parameters.
+        """
         return MethodIdentical(
             self.df,
             self.columns_to_test,

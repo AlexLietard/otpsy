@@ -25,7 +25,7 @@ For a mathematical description, see [Jones et al., (2019)](https://doi.org/10.37
   
 ### 2. Visualisation
 
-The Otpsy package enables users to effortlessly visualize outliers across multiple columns and methods simultaneously. This feature facilitates a comprehensive understanding of data distribution and threshold through histograms or scatter plots. The visualisation is running on plotly.
+The Otpsy package enables users to effortlessly and dynamically visualize outliers across multiple columns and methods simultaneously. This feature facilitates a comprehensive understanding of data distribution and threshold through histograms or scatter plots. The visualisation is running on plotly and. To do that, use the method visualise() on the sample object (see below or the docs for more details).
 
 ### 3. Easy Computation for Multiple Columns Testing
 
@@ -33,7 +33,7 @@ One of the major features of this package is its ability to efficiently compute 
 
 ### 4. Simple Implementation
 
-To get started, create a `sample` object by specifying the DataFrame, the columns to test, and the participant reference column. After the visualisation of the distribution, you can apply the desired outlier detection method using a method call, such as `sample.methodIQR()`. This will generate an outliers object containing the identified outliers.
+To get started, create a `sample` object by specifying the DataFrame, the columns to test, and the participant reference column. After the visualisation of the distribution (if wanted), you can apply the desired outlier detection method using a method call, such as `sample.methodIQR()`. You apply to you "sample" the method IQR. This will generate an outliers object containing the identified outliers.
 
 ### 5. Inspection and Management
 
@@ -64,7 +64,7 @@ sample = ot.Sample(dataframe, ["Col1", "Col2", "Col3"], "participant_name")
 clean_df = sample.methodMAD(distance = 2.5).manage("delete")
 ```
 
-For a more exhaustive presentation of functionnality, check the example folder.
+For a more exhaustive presentation of functionnality, check the jupyter file exhaustive_example.ipynb and the folder docs.
 
 ---
 

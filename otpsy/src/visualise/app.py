@@ -264,7 +264,9 @@ def main(df, column_to_vis):
             height = height_of_one_plot*number_of_subplots,
             width = 900,
             margin=dict(l=30, r=30, t=30, b=20),
-            showlegend = False
+            showlegend = False,
+            paper_bgcolor = 'rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
         return fig
     app.run_server(debug = True)

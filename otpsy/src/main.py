@@ -200,7 +200,7 @@ class Sample:
     def method_rSD(
         self, 
         distance: float = 3, 
-        iteration: int = 50,
+        iteration: int = 3,
         threshold_included : bool = False
         ):
         """ ## Recursive Standard Deviation
@@ -220,7 +220,7 @@ class Sample:
             Default equals 3.
         iteration : int, optional
             The number of maximum iteration. Default
-            equals 50.
+            equals 3.
         threshold_included : bool, optional
             Specifies whether the detection threshold is inclusive. 
             If True, the detection is inclusive (>= or <=), 
@@ -281,7 +281,7 @@ class Sample:
         )
 
     @utils._check_number_entry
-    def method_Tukey(
+    def method_tukey(
         self, 
         distance: float = 1.5,
         threshold_included : bool = False

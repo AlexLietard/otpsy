@@ -1,5 +1,5 @@
-import src.otpsy.main as main
-import src.otpsy.utils as utils
+import otpsy.main as main
+import otpsy.utils as utils
 
 def concat(
         to_concat: list, 

@@ -2,7 +2,7 @@
 
 """
 
-from src.otpsy import config
+from otpsy import config
 
 # Data visualisation
 import pandas as pd

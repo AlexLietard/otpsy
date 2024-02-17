@@ -1,5 +1,5 @@
 import pandas as pd
-import otpsy as ot
+import src.otpsy as ot
 
 df = pd.read_csv("tests/data.csv", sep=";", index_col="index_participant")
 

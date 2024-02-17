@@ -1,8 +1,8 @@
 [project]
 name = "otpsy"
-version = "0.0.1"
+version = "0.0.3"
 authors = [
-  { name="Lietard", email="alex.lietard77@gmail.com" },
+  { name="Alexandre Lietard", email="alex.lietard77@gmail.com" },
 ]
 description = "Packages designed to detect outliers in Social and Human Sciences"
 readme = "README.md"
@@ -12,11 +12,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dynamic = ["dependencies"]
 
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
 Homepage = "https://github.com/AlexLietard/otpsy"
 Issues = "https://github.com/AlexLietard/otpsy/issues"
 
-[tool.setuptools]
-include-package-data = true
+[tool.hatch.build.targets.sdist]
+include = ["otpsy/visualise/assets/style.css"]

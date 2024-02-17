@@ -1,4 +1,4 @@
-# Outliers Toolkit for Psychology, OTPsy
+# Outliers Toolkit for Psychology, Otpsy
 
 ## Resume
 
@@ -44,7 +44,10 @@ It is possible to concat outliers object `.concat()`, add manually specific inde
 
 ## Install and use otpsy
 
-Otpsy is a python package. However, due to dependency issues, you still have to clone the package.
+Otpsy is a python package. To install it, you should use pip :
+```bash
+pip install otpsy
+```
 
 For now, the package only support pandas Dataframe and numpy array.
 Imagine that you want to delete participants that have at least one

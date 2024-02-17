@@ -1,6 +1,6 @@
-from src.otpsy import utils
-from src.otpsy import config
-from src.otpsy.visualise import app
+from otpsy import utils
+from otpsy import config
+from otpsy.visualise import app
 
 import pandas as pd
 import numpy as np

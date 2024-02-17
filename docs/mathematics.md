@@ -1,10 +1,10 @@
 # Mathematical description
 
-This file is used to present mathematically what each method is computing.
+This document serves the purpose of mathematically detailing the computations performed by each method.
 
 ## Interquartile range (IQR)
 
-The interquartile range method (IQR, `.method_IQR()`) computes threshold as a specified number of interquartile range from the median. Formally,
+The interquartile range method (IQR, `.method_IQR()`) determines the threshold by considering a specified number of interquartile ranges from the median. Formally,
 $$
 \left\{
     \begin{array}{ll}
@@ -13,7 +13,7 @@ $$
     \end{array}
 \right.
 $$, where $t_l$ corresponds to the low threshold, $t_h$ the high threshold, $med$ corresponds to the median, $IQR$ corresponds to $Q3-Q1$, and $\lambda is the distance inputted by user (default: 2).
-A value is outlier if it lies below or above the low threshold or the high threshold respectively.
+An aberrant value is identified when it falls below the low threshold or exceeds the high threshold.
 
 ---
 
@@ -27,7 +27,7 @@ $$
         t_h = Q3 + IQR \cdot \lambda
     \end{array}
 \right.
-$$, where $t_l$ corresponds to the low threshold, $t_h$ the high threshold, $Q1$ the first quartile, $Q3$ the third quartile, $\lambda$ the distance inputted (default: 1.5). A value is outlier if it lies below or above the low threshold or the high threshold respectively.
+$$, where $t_l$ corresponds to the low threshold, $t_h$ the high threshold, $Q1$ the first quartile, $Q3$ the third quartile, $\lambda$ the distance inputted (default: 1.5). An aberrant value is identified when it falls below the low threshold or exceeds the high threshold.
 
 ---
 
@@ -41,7 +41,7 @@ $$
         t_h = \overline{x} + SD \cdot \lambda
     \end{array}
 \right.
-$$, where $t_l$ corresponds to the low threshold, $t_h$ the high threshold,$\overline{x}$ the mean, $SD$ the standard deviation, $\lambda$ the distance inputted (default: 2.5). A value is outlier if it lies below or above the low threshold or the high threshold respectively.
+$$, where $t_l$ corresponds to the low threshold, $t_h$ the high threshold,$\overline{x}$ the mean, $SD$ the standard deviation, $\lambda$ the distance inputted (default: 2.5). An aberrant value is identified when it falls below the low threshold or exceeds the high threshold.
 
 ---
 
@@ -71,25 +71,25 @@ $$
         t_h = med + MAD \cdot \lambda
     \end{array}
 \right.
-$$, where $t_l$ corresponds to the low threshold, $t_h$ the high threshold, $med$ the median, $MAD$ the median absolute distance, $\lambda$ the distance inputted (default: 2.5). A value is outlier if it lies below or above the low threshold or the high threshold respectively.
+$$, where $t_l$ corresponds to the low threshold, $t_h$ the high threshold, $med$ the median, $MAD$ the median absolute distance, $\lambda$ the distance inputted (default: 2.5). An aberrant value is identified when it falls below the low threshold or exceeds the high threshold.
 
 ### What is MAD
-MAD corresponds the median of the absolute distance from the median, multiplied by b. Algorithmically, you compute the absolute difference between each value and the median. Then, you compute the median of all this distance. You multiply by b = 1.4826, and you obtain the MAD. Formally,
+The Median Absolute Deviation (MAD) is calculated as the median of the absolute distances from the overall median, multiplied by the scaling factor, b. Algorithmically, this involves computing the absolute difference between each value and the median, then determining the median of these absolute distances. The result is obtained by multiplying this median by the scaling factor, b = 1.4826, yielding the MAD. Formally,
 $$MAD = b \cdot med(|x_i- med({x_j})|)$$, where $x_i$ corresponds to each value, $x_j$ the initial value, and b = 1.4826 if the distribution underlying value is normal.
 
 ---
 
 ## Method S~n~
 
-The $S_n$ method (`.method_Sn()`) computes a single threshold, corresponding to a specific distance from all the other value. Formally,
+The $S_n$ method (`.method_Sn()`) calculates a singular threshold corresponding to a specific distance from all other values. Formally,
 $$t = S_n \cdot \lambda$$,  where $t$ corresponds to the threshold, and $\lambda$ the distance inputted (default: 2.5).
 
-### What is Sn
-Sn corresponds to the median of all median distance for each point from each other point. Algorithmically, for each point, you compute the absolute difference from all other points. Then, you realise the median of all this distance, that you multiplied by a constant c which depends of your participant number. You obtain the $S_n$. Formally,
+### What is S~n~
+The $S_n$ method corresponds to the median of the distances between each point and every other point. Algorithmically, for each point, the absolute difference is computed from all other points and the median is realised on these distances. Subsequently, the median of these median distances is determined and multiplied by a constant, denoted as c, which is dependent on the participant number. You obtain the $S_n$. Formally,
 $$S_n = c \cdot med_i\{med_j(x_i-x_j)\}$$, where $med_i$ corresponds to the median of each value distance, $med_j$ represents the median of distance between $x_i$ and $x_j$.
 
 ## Percentile
-The percentile method (prctile, `.method_prctile()`) computes the threshold as the value representing the percentile and 1 - percentile. More formally,
+The percentile method (prctile, `.method_prctile()`) calculates the threshold as the value corresponding to both the specified percentile and its complement, 1 - percentile. More formally,
 $$
 \left\{
     \begin{array}{ll}

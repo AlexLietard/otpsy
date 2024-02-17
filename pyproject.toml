@@ -13,6 +13,10 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+
 [project.urls]
 Homepage = "https://github.com/AlexLietard/otpsy"
 Issues = "https://github.com/AlexLietard/otpsy/issues"
+
+[tool.setuptools]
+include-package-data = true

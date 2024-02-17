@@ -15,7 +15,7 @@ The package provides a range of outlier detection methods, allowing users to cho
 * Tukey
 * Standard Deviation (SD)
 * Recursive Standard Deviation (rSD)
-* Median Absolute Distance (MAD)
+* Median Absolute Deviation (MAD)
 * $S_n$ Method
 * Percentile
 * Cut-off (e.g., response time under 80 ms)

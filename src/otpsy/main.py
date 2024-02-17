@@ -1,6 +1,6 @@
-from otpsy.src import utils
-from otpsy.src import config
-from otpsy.src.visualise import app
+from src.otpsy import utils
+from src.otpsy import config
+from src.otpsy.visualise import app
 
 import pandas as pd
 import numpy as np
@@ -228,7 +228,7 @@ class Sample:
 
         Return
         -------
-        MethodRSd: An instance of the MethodIqr class 
+        MethodRSd: An instance of the MethodRSd class 
         containing the result of the outlier detection.
         """
         return MethodRSd(
@@ -247,9 +247,9 @@ class Sample:
         b: float = 1.4826,
         threshold_included : bool = False
         ):
-        """ ## Median Absolute Distance
+        """ ## Median Absolute Deviation
         Method to create an outliers object via the Median Absolute
-        Distance (MAD) outlier detection method. 
+        Deviation (MAD) outlier detection method. 
         The idea is that it calculates the absolute difference between
         each point and the median. A median is applied on this
         distance.
@@ -268,7 +268,7 @@ class Sample:
 
         Return
         -------
-        MethodRSd: An instance of the MethodIqr class 
+        MethodMad: An instance of the MethodMad class 
         containing the result of the outlier detection.
         """
         return MethodMad(
@@ -368,8 +368,9 @@ class Sample:
         """ ## Percentile method
         Method to create an outliers object via the percentile method
         outlier detection.
-        Not finished yet.
-        Distance refers to the multiplier of the median distance of 
+        Distance refers to the percentile that will be used. It detects
+        outliers above the distance^th^ percentile and below
+        the 1 - distance^th^ percentile
 
         Parameters
         ----------
@@ -384,7 +385,7 @@ class Sample:
 
         Return
         ------
-        MethodSn: An instance of the MethodSn class 
+        MethodPrctile: An instance of the MethodPrctile class 
         containing the result of the outlier detection.
         """
         return MethodPrctile(
@@ -473,7 +474,12 @@ class Sample:
         Returns
         -------
         MethodIdentical
-            An instance of the MethodIdentical class with the specified parameters.
+            An instance of the MethodIdentical class with the specified
+            parameters.
+        
+        Notes
+        -----
+        Value has to be numeric.
         """
         return MethodIdentical(
             self.df,

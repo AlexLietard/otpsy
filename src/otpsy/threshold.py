@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from otpsy.src import mathematics
+from src.otpsy import mathematics
 
 
 def threshold_iqr(

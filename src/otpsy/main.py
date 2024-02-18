@@ -5,7 +5,6 @@ from otpsy.visualise import app
 import pandas as pd
 import numpy as np
 
-
 class Sample:
     """
     Enter a sample of your data on which you want to detect outliers.
@@ -184,7 +183,7 @@ class Sample:
             if False, it is exclusive (> or <). Default is False.
 
         Return
-        -------
+        ------
         MethodSd: An instance of the MethodSd class 
         containing the result of the outlier detection.
         """

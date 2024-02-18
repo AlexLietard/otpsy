@@ -316,12 +316,14 @@ def _select_index(column_to_keep, dict_col) -> list:
     """
     # remove list in the list
     # column to keep is for a specific function
-    index_to_delete = [
+    index_to_select = [
         index for key, value in dict_col.items()
         for index in value if key in column_to_keep
     ]
     # avoid duplicate
-    return list(set(index_to_delete))
+    index_to_select_clean = list(set(index_to_select))
+    index_to_select_clean.sort()
+    return index_to_select_clean
 
 
 def _parameters_of_the_table(x, aberrant, other_value, outliers, column):

@@ -653,7 +653,7 @@ class _Outliers:
         Notes
         -----
         You can't add an outlier object with this method. 
-        Use `ot.concat(out1, out2)` to concatenate outlier objects.
+        Use `ot.concat([out1, out2])` to concatenate outlier objects.
         """
         # If User input : out_obj.add("participant1")
         if isinstance(to_add, (str)):
@@ -669,7 +669,7 @@ class _Outliers:
             self.dict_col.setdefault("added_manually", []).extend(
                 list(set([elem for elem in to_add 
                  if elem not in self.dict_col["added_manually"]])))
-            
+            self.dict_col["added_manually"].sort()
             # Update other parameters
             self.nb["added_manually"] = len(self.dict_col["added_manually"])
             self.position["added_manually"] = utils._get_position(

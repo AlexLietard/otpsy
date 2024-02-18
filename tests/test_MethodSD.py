@@ -35,3 +35,23 @@ class TestClass:
     def test_verify_position(self):
         position = {'art_looking_time': [9, 10], 'discrimination_performance': [36]}
         assert(self.outliers.position == position)
+    
+    def test_threshold_value(self):
+        threshold = {'art_looking_time': (780.35, 2975.097), 'discrimination_performance': (0.717, 1.064)}
+        assert(self.outliers.threshold)
+    
+    def test_add_method(self):
+        self.outliers.add("P8")
+        assert(self.outliers.dict_col == 
+                {'art_looking_time': ['P10', 'P11'], 
+                 'discrimination_performance': ['P37'],
+                 "added_manually": ["P8"]}
+                 )
+        assert(self.outliers.position == 
+               {'art_looking_time': [9, 10], 
+                'discrimination_performance': [36],
+                "added_manually":[7]}
+                )
+        assert(self.outliers.nb ==
+               {'art_looking_time': 2, 'discrimination_performance': 1, "added_manually":1})
+        assert(self.outliers.all_index == ["P10", "P11", "P37", "P8"])

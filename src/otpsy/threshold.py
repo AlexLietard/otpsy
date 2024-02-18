@@ -32,8 +32,8 @@ def threshold_iqr(
         med = np.nanmedian(df[column])
 
         # threshold
-        low_threshold = med - (distance * iqr)
-        high_threshold = med + (distance * iqr)
+        low_threshold = round(med - (distance * iqr), 3)
+        high_threshold = round(med + (distance * iqr), 3)
 
         ret[column] = (low_threshold, high_threshold)
 
@@ -71,8 +71,8 @@ def threshold_sd(
         # Pareil que IQR
         moy = np.nanmean(df[column])
         # définition des bornes
-        low_threshold = moy - distance * sd
-        high_threshold = moy + distance * sd
+        low_threshold = round(moy - distance * sd, 3)
+        high_threshold = round(moy + distance * sd, 3)
 
         ret[column] = (low_threshold, high_threshold)
 

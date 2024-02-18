@@ -337,8 +337,12 @@ def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
 
 def _get_position(df, index_to_find, shortname = ""):
     position_index = []
-    for index in index_to_find:
-        position_index.append(df.index.get_loc(index))
+    try:
+        for index in index_to_find:
+            position_index.append(df.index.get_loc(index))
+    except KeyError as e:
+        raise KeyError(f"The index \"{index}\" seems to not"
+                       " be in the column refering to participant.")
     position_index.sort()
     return position_index
 

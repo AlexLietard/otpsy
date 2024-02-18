@@ -1,10 +1,10 @@
 import pandas as pd
 import os 
 import pytest
-df = pd.read_csv("data.csv", sep=";")
+df = pd.read_csv("./tests/data.csv", sep=";")
 
 # Allow to have the local copy of package
-os.chdir("../src")
+os.chdir("./src")
 import otpsy as ot
 
 @pytest.mark.parametrize("df", [df])
@@ -30,3 +30,18 @@ class TestClass:
 
         sample_columns_to_test_p_col = \
             ot.Sample(df, columns_to_test=["age", "random_col"], participant_column=1)
+    
+"""    def test_MethodrSD(self, df):
+        sample_columns_to_test_p_col = \
+            ot.Sample(df, 
+                      columns_to_test=["art_looking_time"], 
+                      participant_column="index_participant")
+        sample_columns_to_test_p_col.method_tukey()
+        sample_columns_to_test_p_col.method_Sn()
+        sample_columns_to_test_p_col.method_rSD(2.5, iteration = 4)
+        sample_columns_to_test_p_col.method_cutoff(low_threshold=800, high_threshold=2600)
+        sample_columns_to_test_p_col.method_MAD()
+        sample_columns_to_test_p_col.method_IQR()
+        sample_columns_to_test_p_col.method_prctile()"""
+
+os.chdir("..")

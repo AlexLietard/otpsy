@@ -45,6 +45,7 @@ It is possible to concat outliers object `.concat()`, add manually specific inde
 ## Install and use otpsy
 
 Otpsy is a python package. To install it, you should use pip :
+
 ```bash
 pip install otpsy
 ```
@@ -77,6 +78,7 @@ About outliers methods :
 
 * Add self.position to multi and update parameters
 * Check print output for each method
+* Deactivate the conversion to numeric if user wants
 
 About visualisation :
 

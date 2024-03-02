@@ -5,7 +5,6 @@ from otpsy.visualise import app
 import pandas as pd
 import numpy as np
 
-
 class Sample:
     """
     Enter a sample of your data on which you want to detect outliers.
@@ -184,7 +183,7 @@ class Sample:
             if False, it is exclusive (> or <). Default is False.
 
         Return
-        -------
+        ------
         MethodSd: An instance of the MethodSd class 
         containing the result of the outlier detection.
         """
@@ -654,7 +653,7 @@ class _Outliers:
         Notes
         -----
         You can't add an outlier object with this method. 
-        Use `ot.concat(out1, out2)` to concatenate outlier objects.
+        Use `ot.concat([out1, out2])` to concatenate outlier objects.
         """
         # If User input : out_obj.add("participant1")
         if isinstance(to_add, (str)):
@@ -670,7 +669,7 @@ class _Outliers:
             self.dict_col.setdefault("added_manually", []).extend(
                 list(set([elem for elem in to_add 
                  if elem not in self.dict_col["added_manually"]])))
-            
+            self.dict_col["added_manually"].sort()
             # Update other parameters
             self.nb["added_manually"] = len(self.dict_col["added_manually"])
             self.position["added_manually"] = utils._get_position(
@@ -830,16 +829,19 @@ class _Outliers:
         column = utils._process_column_to_test(self.df, column)
         
         # to allow modification of the dataframe without changing the
-        # attribute of the object, a new dataframe is created
+        # attribute "df" of the object, a new dataframe is created
         new_df = self.df
-        column_to_keep = [col for col in self.columns_to_test if col in column]
-
+        column_to_keep = [col for col in self.dict_col if col in column]
         if method == "delete":
+            if 'added_manually' in self.dict_col:
+                column_to_keep.append("added_manually")
             index_to_delete_clean = utils._select_index(
                 column_to_keep, self.dict_col)
             final_df = new_df.drop(index_to_delete_clean)
 
         elif method == "na":
+            if 'added_manually' in self.dict_col:
+                print("Warning : Participant added manually can't be managed.")
             for column in column_to_keep:
                 new_df.loc[self.dict_col[column], column] = np.nan
             final_df = new_df
@@ -848,10 +850,12 @@ class _Outliers:
             if self.method == "Sn" or self.method == "Identical":
                 raise ValueError('No winsorisation is '
                                  f'possible with the "{self.method}" method')
+            if 'added_manually' in self.dict_col:
+                print("Warning : Participant added manually can't be managed.")
             for column in column_to_keep:
                 low_threshold, high_threshold = self.threshold[column]
-                new_df.loc[new_df[column] <
-                           low_threshold, column] = low_threshold
+                new_df.loc[new_df[column] < low_threshold,
+                            column] = low_threshold
                 new_df.loc[new_df[column] > high_threshold,
                            column] = high_threshold
             final_df = new_df

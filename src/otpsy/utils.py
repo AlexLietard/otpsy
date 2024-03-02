@@ -316,12 +316,14 @@ def _select_index(column_to_keep, dict_col) -> list:
     """
     # remove list in the list
     # column to keep is for a specific function
-    index_to_delete = [
+    index_to_select = [
         index for key, value in dict_col.items()
         for index in value if key in column_to_keep
     ]
     # avoid duplicate
-    return list(set(index_to_delete))
+    index_to_select_clean = list(set(index_to_select))
+    index_to_select_clean.sort()
+    return index_to_select_clean
 
 
 def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
@@ -335,8 +337,12 @@ def _parameters_of_the_table(x, aberrant, other_value, outliers, column):
 
 def _get_position(df, index_to_find, shortname = ""):
     position_index = []
-    for index in index_to_find:
-        position_index.append(df.index.get_loc(index))
+    try:
+        for index in index_to_find:
+            position_index.append(df.index.get_loc(index))
+    except KeyError as e:
+        raise KeyError(f"The index \"{index}\" seems to not"
+                       " be in the column refering to participant.")
     position_index.sort()
     return position_index
 

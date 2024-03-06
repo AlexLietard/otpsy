@@ -62,7 +62,7 @@ import pandas as pd
 df = pd.read_csv("example.csv")
 
 # Select what has to be tested
-sample = ot.Sample(dataframe, ["Col1", "Col2", "Col3"], "participant_name")
+sample = ot.Sample(df, ["Col1", "Col2", "Col3"], "participant_name")
 
 # Apply a specific method (mad) and remove outliers 
 clean_df = sample.methodMAD(distance = 2.5).manage("delete")

@@ -208,11 +208,11 @@ def _check_sample(function):
             # check dataframe enter
             if key == "df":
                 if not isinstance(value, (
-                        pd.DataFrame, pd.Series, np.ndarray)):
+                        pd.DataFrame, pd.Series, np.ndarray, list)):
                     raise TypeError("The argument entered for df "
                                     "is not supported.")
 
-                if isinstance(value, np.ndarray):
+                if isinstance(value, np.ndarray) or isinstance(value, list):
                     value = pd.DataFrame(value, columns=["Tested"])
 
                 elif isinstance(value, pd.Series):
@@ -297,7 +297,8 @@ def _check_number_entry(function):
                 or key == "low_threshold" or key == "high_threshold":
                 new_kwargs[key] = _process_distance(value)
 
-            elif key == "threshold_included" or key == "filter" or key == "b":
+            elif key == "threshold_included" or key == "filter" or key == "b"\
+                or key == "iteration":
                 new_kwargs[key] = value
 
 

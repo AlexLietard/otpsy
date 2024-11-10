@@ -1398,7 +1398,5 @@ class MethodMulti(_Outliers):
 
 # if __name__=="__main__":
 #     df = pd.read_csv("./tests/data.csv", sep = ";")
-#     oSD = Sample(df["art_looking_time"]).method_SD(2.5)
-#     orSD = Sample(df["art_looking_time"]).method_rSD(iteration=1, distance=2.5)
-#     print(oSD.threshold)
-#     print(orSD.threshold)
+#     oSD = Sample(df["art_looking_time"])
+#     oSD.visualise()

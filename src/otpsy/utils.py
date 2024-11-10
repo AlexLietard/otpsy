@@ -117,7 +117,8 @@ def _process_participant_column(df_func, pre_participant_column):
     elif isinstance(pre_participant_column, str):
         if pre_participant_column not in df_func.columns \
                 and pre_participant_column != "":
-            raise NameError("The column you enter is not in the dataframe")
+            raise NameError(f"The column you enter (\"{pre_participant_column}\")"
+                            " is not in the dataframe")
         participant_column = pre_participant_column
     else:
         raise TypeError(f"The type of data {type(pre_participant_column)} "

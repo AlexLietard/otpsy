@@ -33,12 +33,12 @@ One of the major features of this package is its ability to efficiently compute 
 
 ### 4. Simple Implementation
 
-To get started, create a `sample` object by specifying the DataFrame, the columns to test, and the participant reference column. After the visualisation of the distribution (if wanted), you can apply the desired outlier detection method using a method call, such as `sample.methodIQR()`. You apply to your "sample" the method IQR. This will generate an outlier object containing the identified outliers.
+To get started, create a `Sample` object by specifying the DataFrame, the columns to test, and the participant reference column. After the visualisation of the distribution (if wanted), you can apply the desired outlier detection method using a method call, such as `sample.methodIQR()`. You apply to your "sample" the method IQR. This will generate an outlier object containing the identified outliers.
 
 ### 5. Inspection and Management
 
 After detection, the package allows for comprehensive inspection of the outliers using `print(outliers)`. It prints detailed information as we can usually see in R summary. Furthermore, with `outliers.inspect()` method, you obtains a DataFrame to inspect the value of outliers.  
-It is possible to concat outliers object `.concat()`, add manually specific index `outliers.add()` or to remove an index `outliers.sub()`. Finally, outliers can be managed using the `outliers.manage()` method, providing options to remove, winsorize, or replace them with NaN values.
+It is possible to concat outliers object `.concat()`, add manually specific index `outliers.add()` or to remove an index `outliers.remove()`. Finally, outliers can be managed using the `outliers.manage()` method, providing options to remove, winsorize, or replace them with NaN values.
 
 ---
 
@@ -88,7 +88,7 @@ About visualisation :
 
 About the structure :
 
-* Create automated test
+* Create automated test (in progress)
 * Create tutorial
 * Create data simulation
 * Create a clear documentation (in progress)

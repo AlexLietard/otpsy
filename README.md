@@ -1,5 +1,7 @@
 # Outliers Toolkit for Psychology, Otpsy
 
+![Logo of the package](./Logo.png)
+
 ## Resume
 
 Otpsy is a toolkit for detecting and managing outliers in your dataset with ease. Outliers, those data points that deviate significantly from the majority, can have a substantial impact on statistical analyses. My package gather various outlier detection methods, making it convenient for psychologists and data analysts to identify and handle outliers in a straightforward manner.

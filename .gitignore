@@ -1,6 +1,7 @@
 run.py
 .pylintrc
 otpsy.egg-info/
+presentation.pptx
 dist/
 build/
 .eggs/

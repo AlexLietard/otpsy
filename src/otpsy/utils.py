@@ -205,7 +205,7 @@ def _check_sample(function):
         kwargs["columns_to_test"] = kwargs.get("columns_to_test", "")
         for key, value in kwargs.items():
             # check dataframe enter
-            if key == "df":
+            if key == "data":
                 if not isinstance(value, (
                         pd.DataFrame, pd.Series, np.ndarray, list)):
                     raise TypeError("The argument entered for df "
@@ -217,7 +217,7 @@ def _check_sample(function):
                 elif isinstance(value, pd.Series):
                     value = value.to_frame()
 
-                new_kwargs["df"] = value
+                new_kwargs["data"] = value
                 df = value
 
             # check column to test

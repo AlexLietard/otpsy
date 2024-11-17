@@ -86,7 +86,7 @@ class Sample:
     @utils._check_sample
     def __init__(
             self,
-            df: pd.DataFrame|pd.Series|np.ndarray|list,
+            data: pd.DataFrame|pd.Series|np.ndarray|list,
             columns_to_test: str | list[str] | int | list[int] | pd.Series = "",
             participant_column: str | int | pd.Series = "",
             **kwargs
@@ -95,9 +95,9 @@ class Sample:
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         if self.participant_column == "":
-            self.df = df
+            self.df = data
         else:
-            self.df = df.set_index(self.participant_column)
+            self.df = data.set_index(self.participant_column)
 
         if "missing" in kwargs:
             self.missing = kwargs["missing"]
@@ -243,7 +243,7 @@ class Sample:
     @utils._check_number_entry
     def method_MAD(
         self, 
-        distance: float = 2.5, 
+        distance: float = 3, 
         b: float = 1.4826,
         threshold_included : bool = False
         ):

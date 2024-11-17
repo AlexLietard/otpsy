@@ -95,7 +95,7 @@ def _process_column_to_test(df_func, pre_column):
                 columns_to_test.append(col)
 
             # it is the index of column
-            elif isinstance(pre_column, int):
+            elif isinstance(col, int):
                 columns_to_test.append(df_func.iloc[:, col].name)
     else:
         raise TypeError(f"The type of data {type(pre_column)} "

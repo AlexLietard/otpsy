@@ -1397,8 +1397,8 @@ class MethodMulti(_Outliers):
         
 
 if __name__=="__main__":
-    df = pd.read_csv("../../tests/data.csv", sep = ";")
+    df = pd.read_csv("./tests/data.csv", sep = ";")
     sample = Sample(df=df,
-                    columns_to_test=5,
+                    columns_to_test=[5, 6, 7],
                     participant_column="index_participant")
     print(sample.method_MAD(3))

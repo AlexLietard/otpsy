@@ -1,6 +1,6 @@
-# Outliers Toolkit for Psychology, Otpsy
-
 ![Logo of the package](./logo.svg)
+
+# Outlier detection Toolkit for Psychology, otpsy
 
 ## Resume
 

@@ -221,8 +221,8 @@ def main(df, column_to_vis):
                 fig.update_xaxes(title="Row Number")
                 fig.update_yaxes(title=column)
                 ref[column] = i + 1
-            # Update the threshold to see (2, 2.5 or 3)
             
+            # Update the threshold to see (2, 2.5 or 3)
             fig = update_distance_show(df, fig, method, y, distance, ref, graph_type, "")
 
             # Used for the height of the figure
@@ -280,7 +280,7 @@ def get_max_occ_bin(df, column):
 
 
 def update_distance_show(df, fig, pre_method, y, distance, ref, graph_type, max_frequency):
-    """Update the distance shown to the user. 
+    """ Update the distance shown to the user. 
     It could be 2, 2.5 or 3.
     It has to be realise for every column, every method and every distance.
     """

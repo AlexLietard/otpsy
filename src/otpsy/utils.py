@@ -56,7 +56,6 @@ def _process_column_to_test(df_func, pre_column):
     # The name of column is stored in the attribute self.columns_to_test.
     # We want to obtain the name of each column in a list of column name.
     columns_to_test = []
-
     # if the user enters the Series
     if isinstance(pre_column, pd.Series):
         columns_to_test.append(pre_column.name)
@@ -204,7 +203,6 @@ def _check_sample(function):
         # keyword to have only kwargs
         kwargs = signature(function).bind(*args, **kwargs).arguments
         kwargs["columns_to_test"] = kwargs.get("columns_to_test", "")
-
         for key, value in kwargs.items():
             # check dataframe enter
             if key == "df":

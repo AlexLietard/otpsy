@@ -366,7 +366,7 @@ class Sample:
     @utils._check_number_entry
     def method_prctile(
         self, 
-        distance: float = 97.5,
+        distance: float = 98,
         threshold_included : bool = False
         ):
         """ ## Percentile method
@@ -381,7 +381,7 @@ class Sample:
         distance : int, optional
             The multiplier for the Sn to determine the
             outlier thresholds.
-            Default equals 3.
+            Default equals 98.
         threshold_included : bool, optional
             Specifies whether the detection threshold is inclusive. 
             If True, the detection is inclusive (>= or <=), 
@@ -1396,7 +1396,9 @@ class MethodMulti(_Outliers):
         self.shortname = []
         
 
-# if __name__=="__main__":
-#     df = pd.read_csv("./tests/data.csv", sep = ";")
-#     oSD = Sample(df["art_looking_time"])
-#     oSD.visualise()
+if __name__=="__main__":
+    df = pd.read_csv("../../tests/data.csv", sep = ";")
+    sample = Sample(df=df,
+                    columns_to_test=5,
+                    participant_column="index_participant")
+    print(sample.method_MAD(3))

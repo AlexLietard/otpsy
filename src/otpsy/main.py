@@ -4,6 +4,7 @@ from otpsy.visualise import app
 
 import pandas as pd
 import numpy as np
+import copy
 
 class Sample:
     """
@@ -11,7 +12,7 @@ class Sample:
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pd.DataFrame, pd.Series, list, np.array
         The input DataFrame to be processed. If you want to only test
         a series, you can enter a pd.Series. Other type of dataframe
         is still not supported.
@@ -85,7 +86,7 @@ class Sample:
     @utils._check_sample
     def __init__(
             self,
-            df: pd.DataFrame,
+            data: pd.DataFrame|pd.Series|np.ndarray|list,
             columns_to_test: str | list[str] | int | list[int] | pd.Series = "",
             participant_column: str | int | pd.Series = "",
             **kwargs
@@ -94,9 +95,9 @@ class Sample:
         self.columns_to_test = columns_to_test
         self.participant_column = participant_column
         if self.participant_column == "":
-            self.df = df
+            self.df = data
         else:
-            self.df = df.set_index(self.participant_column)
+            self.df = data.set_index(self.participant_column)
 
         if "missing" in kwargs:
             self.missing = kwargs["missing"]
@@ -242,7 +243,7 @@ class Sample:
     @utils._check_number_entry
     def method_MAD(
         self, 
-        distance: float = 2.5, 
+        distance: float = 3, 
         b: float = 1.4826,
         threshold_included : bool = False
         ):
@@ -264,6 +265,10 @@ class Sample:
             Default equals 2.5.
         b : int, optional
             Default equals 1.4826.
+        threshold_included : bool, optional
+            Specifies whether the detection threshold is inclusive. 
+            If True, the detection is inclusive (>= or <=), 
+            if False, it is exclusive (> or <). Default is False.
 
         Return
         -------
@@ -361,7 +366,7 @@ class Sample:
     @utils._check_number_entry
     def method_prctile(
         self, 
-        distance: float = 97.5,
+        distance: float = 98,
         threshold_included : bool = False
         ):
         """ ## Percentile method
@@ -376,7 +381,7 @@ class Sample:
         distance : int, optional
             The multiplier for the Sn to determine the
             outlier thresholds.
-            Default equals 3.
+            Default equals 98.
         threshold_included : bool, optional
             Specifies whether the detection threshold is inclusive. 
             If True, the detection is inclusive (>= or <=), 
@@ -496,6 +501,42 @@ class _Outliers:
     Children classes are all outliers class (SD, IQR,...).
     """
 
+    def __str__(self) -> str:
+        """
+        Overloading of the __str__ method to modify the output
+        of the print function.
+        
+        Format
+        ------
+
+        Title
+
+        Headers :
+        * Method used
+        * Distance used
+        * Column tested
+        * Total number of outliers : number of participants that have
+        at least one aberrant values
+        * Total number of flagged values : number of values that are
+        aberrant.
+
+        Content :
+        The column 1 has x outlier.
+        Low threshold / High threshold
+        
+        ...
+
+        """
+        output_text = utils._title()
+
+        if self.multi == True:
+            output_text += utils._header_add_true(self)
+            output_text += utils._content_add_true(self)
+        else:
+            output_text += utils._header_add_false(self)
+            output_text += utils._content_add_false(self)
+        return output_text[0:-2]
+
     def _calculate(
             self, 
             method
@@ -558,43 +599,6 @@ class _Outliers:
         self.all_index = utils._select_index(
             self.dict_col.keys(), self.dict_col)
         return(0)
-
-    def __str__(self) -> str:
-        """
-        Overloading of the __str__ method to modify the output
-        of the print function.
-        
-        Format
-        ------
-
-        Title
-
-        Headers :
-        * Method used
-        * Distance used
-        * Column tested
-        * Total number of outliers : number of participants that have
-        at least one aberrant values
-        * Total number of flagged values : number of values that are
-        aberrant.
-
-        Content :
-        The column 1 has x outlier.
-        Low threshold / High threshold
-        
-        ...
-
-        """
-        output_text = utils._title()
-
-        if self.multi == True:
-            output_text += utils._header_add_true(self)
-            output_text += utils._content_add_true(self)
-
-        else:
-            output_text += utils._header_add_false(self)
-            output_text += utils._content_add_false(self)
-        return output_text[0:-2]
 
     def add(
             self, 
@@ -670,6 +674,7 @@ class _Outliers:
                 list(set([elem for elem in to_add 
                  if elem not in self.dict_col["added_manually"]])))
             self.dict_col["added_manually"].sort()
+
             # Update other parameters
             self.nb["added_manually"] = len(self.dict_col["added_manually"])
             self.position["added_manually"] = utils._get_position(
@@ -735,39 +740,34 @@ class _Outliers:
         ```
 
         Note: The method modifies the object in place and updates relevant parameters.
-        """ 
+        """
+        out = {} # same as to_remove, but formatted
         try:
             # User inputed 
             # Out_obj.sub(["participant1", "participant2"])
             if isinstance(to_remove, list):
                 for column in self.dict_col:
-                    o_str = [str(value) for value in to_remove]
-                    self.dict_col[column] = [value for value in 
-                                             self.dict_col[column]
-                                             if str(value) not in o_str]
-            # User inputed something like
-            # Out_obj.sub({"first_column": ["participant1", "participant2"]})
-            elif isinstance(to_remove, dict):
-                for column in to_remove:
-                    # transform to a list for allow iteration if user input :
-                    # Out_obj.sub({"first_column": "participant1"})
-                    if isinstance(to_remove[column], (int, str)):
-                        to_remove[column] = [to_remove[column]]
-
-                    to_remove[column] = [str(value) for value in to_remove[column]]
-
-                    self.dict_col[column] = [value for value in 
-                                             self.dict_col[column]
-                                             if str(value) not 
-                                             in to_remove[column]]
-
+                    out[column] = [value for value in to_remove]
             # If there is just one participant index 
             # User inputed : Out_obj.sub("participant1")
             elif isinstance(to_remove, (int, str)):
                 for column in self.dict_col:
-                    self.dict_col[column] = [value for value 
-                                             in self.dict_col[column]
-                                            if str(value) != str(to_remove)]
+                    out[column] = [to_remove]
+            elif isinstance(to_remove, (dict)):
+                out = to_remove
+                # transform to a list for allow iteration if user input :
+                # Out_obj.sub({"first_column": "participant1"})
+                if isinstance(out[column], (int, str)):
+                    out[column] = [out[column]]
+            
+            for column in out:
+                out[column] = [str(value) for value in out[column]]
+                self.dict_col[column] = [value for value in 
+                                            self.dict_col[column]
+                                            if str(value) not 
+                                            in out[column]]
+
+
 
         except KeyError as key:
             raise KeyError(f'It seems that the column "{column}"'
@@ -778,7 +778,7 @@ class _Outliers:
                             "supported.") from type
 
         # Update parameters needed
-        for column in self.columns_to_test:
+        for column in self.dict_col:
             self.nb[column] = len(self.dict_col[column])
             self.position[column] = utils._get_position(
                 self.df, self.dict_col[column])
@@ -830,20 +830,32 @@ class _Outliers:
         
         # to allow modification of the dataframe without changing the
         # attribute "df" of the object, a new dataframe is created
-        new_df = self.df
-        column_to_keep = [col for col in self.dict_col if col in column]
+        obj1 = copy.deepcopy(self)
+        new_df = obj1.df
+        column_to_delete = [col for col in self.dict_col if col in column]
         if method == "delete":
             if 'added_manually' in self.dict_col:
-                column_to_keep.append("added_manually")
+                column_to_delete.append("added_manually")
             index_to_delete_clean = utils._select_index(
-                column_to_keep, self.dict_col)
+                column_to_delete, self.dict_col)
             final_df = new_df.drop(index_to_delete_clean)
 
         elif method == "na":
             if 'added_manually' in self.dict_col:
-                print("Warning : Participant added manually can't be managed.")
-            for column in column_to_keep:
-                new_df.loc[self.dict_col[column], column] = np.nan
+                print("Warning: Participant added manually can't be managed "
+                      "by \"na\" method.")
+            if self.shortname == "id":
+                # In the dict_col of Identical, there is only one column
+                # "Identical", but this column is not in the column of
+                # the dataframe.
+                column_to_delete = [col for col in self.columns_to_test 
+                                    if col in column]
+                for column in column_to_delete:
+                    new_df.loc[self.dict_col["Identical"], column] = np.nan
+            else:
+                for column in column_to_delete:
+                    new_df.loc[self.dict_col[column], column] = np.nan
+            
             final_df = new_df
 
         elif method == "winsorise":
@@ -851,8 +863,8 @@ class _Outliers:
                 raise ValueError('No winsorisation is '
                                  f'possible with the "{self.method}" method')
             if 'added_manually' in self.dict_col:
-                print("Warning : Participant added manually can't be managed.")
-            for column in column_to_keep:
+                print("Warning: Participant added manually can't be managed.")
+            for column in column_to_delete:
                 low_threshold, high_threshold = self.threshold[column]
                 new_df.loc[new_df[column] < low_threshold,
                             column] = low_threshold
@@ -868,7 +880,7 @@ class _Outliers:
             other_value: str = "bool",
             all_participants: bool = False,
             all_columns: bool = False,
-    ):
+        ):
         """ ## Inspect in more details your outlier
         Inspect the dataframe for outliers and generate a 
         detailed table about them.
@@ -1066,10 +1078,11 @@ class MethodRSd(_Outliers):
 
     def _calculate(self, method):
         func = config.DICT_FUNCTION.get(method)
+        obj1 = copy.deepcopy(self)
         for column in self.columns_to_test:
 
             df_to_operate_n = pd.DataFrame()
-            df_to_operate_n_plus_1 = self.df
+            df_to_operate_n_plus_1 = obj1.df
             self.iteration = 0
 
             while len(df_to_operate_n.index) \
@@ -1080,10 +1093,10 @@ class MethodRSd(_Outliers):
 
                 # Calculate threshold
                 low_threshold, high_threshold = func(
-                    df_to_operate_n_plus_1, [column], self.distance)
+                    df_to_operate_n, [column], self.distance)
                 # list of outliers by column
                 if self.threshold_included == False:
-                    list_outliers = self.df.index[
+                    list_outliers = self.df.index[ # CHECK IF NO MISTAKE DUE TO THE USE OF DF AND NOT DF_TO_OPERATE
                         ((self.df[column] < low_threshold) |
                         (self.df[column] > high_threshold))
                     ].tolist()
@@ -1351,11 +1364,11 @@ class MethodIdentical(_Outliers):
         self.dict_col["Identical"] = list_outliers
         self.nb["Identical"] = len(list_outliers)
         self.all_index = list_outliers
-        self.position = utils._get_position(
+        self.position["Identical"] = utils._get_position(
             self.df, self.dict_col["Identical"], self.shortname)
 
     def __str__(self):
-        # I used this for avoid overiding columns to test at this 
+        # I used this to avoid overiding columns to test at this 
         # moment. It overrides only when this identical method
         # is added to another object
         output_text = utils._title()
@@ -1383,3 +1396,9 @@ class MethodMulti(_Outliers):
         self.shortname = []
         
 
+if __name__=="__main__":
+    df = pd.read_csv("./tests/data.csv", sep = ";")
+    sample = Sample(df=df,
+                    columns_to_test=[5, 6, 7],
+                    participant_column="index_participant")
+    print(sample.method_MAD(3))

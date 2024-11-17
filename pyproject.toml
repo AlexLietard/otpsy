@@ -1,6 +1,6 @@
 [project]
 name = "otpsy"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
   { name="Alexandre Lietard", email="alex.lietard77@gmail.com" },
 ]

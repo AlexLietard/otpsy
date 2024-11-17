@@ -56,7 +56,6 @@ def _process_column_to_test(df_func, pre_column):
     # The name of column is stored in the attribute self.columns_to_test.
     # We want to obtain the name of each column in a list of column name.
     columns_to_test = []
-
     # if the user enters the Series
     if isinstance(pre_column, pd.Series):
         columns_to_test.append(pre_column.name)
@@ -96,7 +95,7 @@ def _process_column_to_test(df_func, pre_column):
                 columns_to_test.append(col)
 
             # it is the index of column
-            elif isinstance(pre_column, int):
+            elif isinstance(col, int):
                 columns_to_test.append(df_func.iloc[:, col].name)
     else:
         raise TypeError(f"The type of data {type(pre_column)} "
@@ -117,7 +116,8 @@ def _process_participant_column(df_func, pre_participant_column):
     elif isinstance(pre_participant_column, str):
         if pre_participant_column not in df_func.columns \
                 and pre_participant_column != "":
-            raise NameError("The column you enter is not in the dataframe")
+            raise NameError(f"The column you enter (\"{pre_participant_column}\")"
+                            " is not in the dataframe")
         participant_column = pre_participant_column
     else:
         raise TypeError(f"The type of data {type(pre_participant_column)} "
@@ -203,22 +203,21 @@ def _check_sample(function):
         # keyword to have only kwargs
         kwargs = signature(function).bind(*args, **kwargs).arguments
         kwargs["columns_to_test"] = kwargs.get("columns_to_test", "")
-
         for key, value in kwargs.items():
             # check dataframe enter
-            if key == "df":
+            if key == "data":
                 if not isinstance(value, (
-                        pd.DataFrame, pd.Series, np.ndarray)):
+                        pd.DataFrame, pd.Series, np.ndarray, list)):
                     raise TypeError("The argument entered for df "
                                     "is not supported.")
 
-                if isinstance(value, np.ndarray):
+                if isinstance(value, np.ndarray) or isinstance(value, list):
                     value = pd.DataFrame(value, columns=["Tested"])
 
                 elif isinstance(value, pd.Series):
                     value = value.to_frame()
 
-                new_kwargs["df"] = value
+                new_kwargs["data"] = value
                 df = value
 
             # check column to test
@@ -297,7 +296,8 @@ def _check_number_entry(function):
                 or key == "low_threshold" or key == "high_threshold":
                 new_kwargs[key] = _process_distance(value)
 
-            elif key == "threshold_included" or key == "filter" or key == "b":
+            elif key == "threshold_included" or key == "filter" or key == "b"\
+                or key == "iteration":
                 new_kwargs[key] = value
 
 

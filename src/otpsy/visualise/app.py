@@ -19,8 +19,7 @@ from dash import dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
 from dash_bootstrap_templates import load_figure_template
-from webbrowser import open_new
-from threading import Timer
+# from webbrowser import open_new
 
 load_figure_template('darkly')
 SIDEBAR_STYLE = {
@@ -222,8 +221,8 @@ def main(df, column_to_vis):
                 fig.update_xaxes(title="Row Number")
                 fig.update_yaxes(title=column)
                 ref[column] = i + 1
-            # Update the threshold to see (2, 2.5 or 3)
             
+            # Update the threshold to see (2, 2.5 or 3)
             fig = update_distance_show(df, fig, method, y, distance, ref, graph_type, "")
 
             # Used for the height of the figure
@@ -269,7 +268,8 @@ def main(df, column_to_vis):
             plot_bgcolor='rgba(0,0,0,0)'
         )
         return fig
-    app.run_server(debug = True)
+    app.run(jupyter_mode="external") # avoid to open in non user friendly way in jupyter
+    
 
 def get_max_occ_bin(df, column):
     """Get the maximum height of a bin in an histogram"""
@@ -280,7 +280,7 @@ def get_max_occ_bin(df, column):
 
 
 def update_distance_show(df, fig, pre_method, y, distance, ref, graph_type, max_frequency):
-    """Update the distance shown to the user. 
+    """ Update the distance shown to the user. 
     It could be 2, 2.5 or 3.
     It has to be realise for every column, every method and every distance.
     """
@@ -333,6 +333,3 @@ def create_line_plotly(threshold, column, method, reference, graph_type, max_fre
     }
     return line
 
-
-def open_browser():
-    open_new("http://localhost:8050")

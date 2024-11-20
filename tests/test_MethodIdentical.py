@@ -11,7 +11,7 @@ class TestClass:
     sample_columns_to_test_p_col = \
             ot.Sample(df, 
                         columns_to_test=['likert1', 'likert2', 'likert3', 'likert4'], 
-                        participant_column="index_participant")
+                        id_column="index_participant")
     outliers = sample_columns_to_test_p_col.method_identical(frequency=0.95, threshold_included=True)
 
     def test_Instantiation(self):

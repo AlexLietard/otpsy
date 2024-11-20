@@ -103,26 +103,26 @@ def _process_column_to_test(df_func, pre_column):
     return columns_to_test
 
 
-def _process_participant_column(df_func, pre_participant_column):
+def _process_id_column(df_func, pre_id_column):
     """ Process the participant column to obtain the name
     """
-    if isinstance(pre_participant_column, pd.Series):
-        participant_column = pre_participant_column.name
+    if isinstance(pre_id_column, pd.Series):
+        id_column = pre_id_column.name
 
-    elif isinstance(pre_participant_column, int):
-        participant_column = \
-            df_func.iloc[:, pre_participant_column].name
+    elif isinstance(pre_id_column, int):
+        id_column = \
+            df_func.iloc[:, pre_id_column].name
 
-    elif isinstance(pre_participant_column, str):
-        if pre_participant_column not in df_func.columns \
-                and pre_participant_column != "":
-            raise NameError(f"The column you enter (\"{pre_participant_column}\")"
+    elif isinstance(pre_id_column, str):
+        if pre_id_column not in df_func.columns \
+                and pre_id_column != "":
+            raise NameError(f"The column you enter (\"{pre_id_column}\")"
                             " is not in the dataframe")
-        participant_column = pre_participant_column
+        id_column = pre_id_column
     else:
-        raise TypeError(f"The type of data {type(pre_participant_column)} "
+        raise TypeError(f"The type of data {type(pre_id_column)} "
                         "is not supported to refer column.")
-    return participant_column
+    return id_column
 
 
 def _process_distance(value):
@@ -205,10 +205,10 @@ def _check_sample(function):
         kwargs["columns_to_test"] = kwargs.get("columns_to_test", "")
         for key, value in kwargs.items():
             # check dataframe enter
-            if key == "df":
+            if key == "data":
                 if not isinstance(value, (
                         pd.DataFrame, pd.Series, np.ndarray, list)):
-                    raise TypeError("The argument entered for df "
+                    raise TypeError("The argument entered for data "
                                     "is not supported.")
 
                 if isinstance(value, np.ndarray) or isinstance(value, list):
@@ -217,7 +217,7 @@ def _check_sample(function):
                 elif isinstance(value, pd.Series):
                     value = value.to_frame()
 
-                new_kwargs["df"] = value
+                new_kwargs["data"] = value
                 df = value
 
             # check column to test
@@ -237,7 +237,7 @@ def _check_sample(function):
                     # To avoid the conversion of the participant
                     # column where this is not the purpose
                     try:
-                        columns_to_test.remove(kwargs["participant_column"])
+                        columns_to_test.remove(kwargs["id_column"])
                     except:
                         pass
                 else:
@@ -247,20 +247,20 @@ def _check_sample(function):
                 new_kwargs["missing"] = missing
 
             # check participant column
-            elif key == "participant_column":
-                pre_participant_column = value
-                participant_column = _process_participant_column(
-                    df, pre_participant_column)
+            elif key == "id_column":
+                pre_id_column = value
+                id_column = _process_id_column(
+                    df, pre_id_column)
 
                 # avoid potential overlap between column
                 # to test and participant column
                 try:
-                    if participant_column in columns_to_test:
+                    if id_column in columns_to_test:
                         raise ValueError("The participant column can't "
                                          "be in the columns you want to test")
                 except UnboundLocalError:
                     pass
-                new_kwargs["participant_column"] = participant_column
+                new_kwargs["id_column"] = id_column
 
 
 

@@ -1,4 +1,4 @@
-![Logo of the package](./logo.svg)
+![Logo of the package](./images/logo.svg)
 
 # Outlier detection Toolkit for Psychology, otpsy
 
@@ -28,6 +28,8 @@ For a mathematical description, see [Jones et al., (2019)](https://doi.org/10.37
 ### 2. Visualisation
 
 The Otpsy package enables users to effortlessly and dynamically visualize outliers across multiple columns and methods simultaneously. This feature facilitates a comprehensive understanding of data distribution and threshold through histograms or scatter plots. The visualisation is running on plotly and dash. To do that, use the method visualise() on the sample object (see below or the docs for more details).
+![Logo of the package](./images/dashboard.png)
+
 
 ### 3. Easy Computation for Multiple Columns Testing
 

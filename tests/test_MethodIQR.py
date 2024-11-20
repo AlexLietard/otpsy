@@ -11,7 +11,7 @@ class TestClass:
     sample_columns_to_test_p_col = \
             ot.Sample(df, 
                         columns_to_test=["art_looking_time", "discrimination_performance"], 
-                        participant_column="index_participant")
+                        id_column="index_participant")
     outliers = sample_columns_to_test_p_col.method_IQR(distance=2.4, threshold_included=True)
 
     def test_Instantiation(self):

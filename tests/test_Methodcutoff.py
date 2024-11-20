@@ -8,9 +8,9 @@ import otpsy as ot
 df = pd.read_csv("./tests/data.csv", sep=";")
 class TestClass:
     sample_columns_to_test_p_col = \
-            ot.Sample(df, 
+            ot.Sample(data = df, 
                         columns_to_test=["art_looking_time"], 
-                        participant_column="index_participant")
+                        id_column="index_participant")
     outliers = sample_columns_to_test_p_col.method_cutoff(low_threshold=780.35, 
                                                           high_threshold=2975.097, 
                                                           threshold_included=True)

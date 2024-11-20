@@ -35,11 +35,11 @@ class Sample:
         conversion but not all, you can access all information via 
         `your_instance.missing`.
 
-    participant_column : str, int, optional
+    id_column : str, int, optional
         It corresponds to the column with the identifier of your 
         participant.
         This column is use as an index. Default is an empty 
-        string. If participant_column equals to an empty string
+        string. If id_column equals to an empty string
         (default), the initial index of the dataframe will be keep.
 
     **kwargs
@@ -52,7 +52,7 @@ class Sample:
         as the index, if specified.
     columns_to_test : str, list, int, or pd.Series
         Columns to test.
-    participant_column : str, int
+    id_column : str, int
         The column used as an index.
     missing : str
         Information about additional missing values, defaults to
@@ -72,13 +72,13 @@ class Sample:
     >>> import otpsy as ot
     >>> # You want to test columns A, B, C
     >>> sample = ot.Sample(df, columns_to_test=["A", "B", "C"], 
-    participant_column="ID")
+    id_column="ID")
     >>> # You want to specify with index
     >>> sample = ot.Sample(df, columns_to_test=[1, 2, 3], 
-    participant_column=4)
+    id_column=4)
     >>> # You only want to test one column
     >>> sample = ot.Sample(df, columns_to_test="A", 
-    participant_column=4)
+    id_column=4)
     >>> # You only want to test a series
     >>> sample = ot.Sample(df[["A"]])
     ```
@@ -86,18 +86,18 @@ class Sample:
     @utils._check_sample
     def __init__(
             self,
-            df: pd.DataFrame|pd.Series|np.ndarray|list,
+            data: pd.DataFrame|pd.Series|np.ndarray|list,
             columns_to_test: str | list[str] | int | list[int] | pd.Series = "",
-            participant_column: str | int | pd.Series = "",
+            id_column: str | int | pd.Series = "",
             **kwargs
         ) -> None:
 
         self.columns_to_test = columns_to_test
-        self.participant_column = participant_column
-        if self.participant_column == "":
-            self.df = df
+        self.id_column = id_column
+        if self.id_column == "":
+            self.df = data
         else:
-            self.df = df.set_index(self.participant_column)
+            self.df = data.set_index(self.id_column)
 
         if "missing" in kwargs:
             self.missing = kwargs["missing"]
@@ -156,7 +156,7 @@ class Sample:
         return MethodIqr(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             distance,
             threshold_included
         )
@@ -191,7 +191,7 @@ class Sample:
         return MethodSd(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             distance,
             threshold_included
         )
@@ -234,7 +234,7 @@ class Sample:
         return MethodRSd(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             distance,
             iteration,
             threshold_included
@@ -278,7 +278,7 @@ class Sample:
         return MethodMad(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             distance,
             b,
             threshold_included
@@ -316,7 +316,7 @@ class Sample:
         return MethodTukey(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             distance,
             threshold_included
         )
@@ -358,7 +358,7 @@ class Sample:
         return MethodSn(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             distance,
             threshold_included
         )
@@ -395,7 +395,7 @@ class Sample:
         return MethodPrctile(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             distance,
             threshold_included
         )
@@ -442,7 +442,7 @@ class Sample:
         return MethodCutOff(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             low_threshold,
             high_threshold,
             threshold_included
@@ -488,7 +488,7 @@ class Sample:
         return MethodIdentical(
             self.df,
             self.columns_to_test,
-            self.participant_column,
+            self.id_column,
             frequency,
             threshold_included
         )
@@ -1002,14 +1002,14 @@ class MethodIqr(_Outliers):
         self,
         df: pd.DataFrame | np.ndarray | pd.Series,
         columns_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         distance: int | float,
         threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = columns_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.distance = distance
         self.threshold_included = threshold_included
         self.method = "Inter-quartile range"
@@ -1028,14 +1028,14 @@ class MethodSd(_Outliers):
         self,
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         distance: int | float,
         threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = columns_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.distance = distance
         self.threshold_included = threshold_included
         self.method = "Standard Deviation"
@@ -1054,7 +1054,7 @@ class MethodRSd(_Outliers):
         self,
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         distance: int | float,
         max_iteration: int,
         threshold_included : bool,
@@ -1062,7 +1062,7 @@ class MethodRSd(_Outliers):
 
         self.df = df
         self.columns_to_test = columns_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.distance = distance
         self.max_iteration = max_iteration
         self.threshold_included = threshold_included
@@ -1127,7 +1127,7 @@ class MethodMad(_Outliers):
         self,
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         distance: int | float,
         b: int | float,
         threshold_included : bool,
@@ -1135,7 +1135,7 @@ class MethodMad(_Outliers):
 
         self.df = df
         self.columns_to_test = columns_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.distance = distance
         self.b = b
         self.threshold_included = threshold_included
@@ -1155,14 +1155,14 @@ class MethodTukey(_Outliers):
         self,
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         distance: int | float,
         threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = columns_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.distance = distance
         self.threshold_included = threshold_included
         self.method = "Tukey"
@@ -1181,14 +1181,14 @@ class MethodSn(_Outliers):
         self,
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         distance: int | float,
         threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = columns_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.distance = distance
         self.threshold_included = threshold_included
         self.method = "Sn"
@@ -1235,14 +1235,14 @@ class MethodPrctile(_Outliers):
         self,
         df: pd.DataFrame,
         column_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         distance: int | float,
         threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = column_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.distance = distance
         self.threshold_included = threshold_included
         self.method = "Percentile"
@@ -1261,14 +1261,14 @@ class MethodCutOff(_Outliers):
         self,
         df: pd.DataFrame,
         columns_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         low_threshold : int | float,
         high_threshold : int | float, 
         threshold_included: bool
     ) -> None:
         self.df = df
         self.columns_to_test = columns_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.distance = [low_threshold, high_threshold]
         self.threshold = {}
         self.threshold_included = threshold_included
@@ -1320,14 +1320,14 @@ class MethodIdentical(_Outliers):
         self,
         df: pd.DataFrame,
         column_to_test: str | list | int | pd.Series,
-        participant_column: str | int | pd.Series,
+        id_column: str | int | pd.Series,
         frequency: int | float,
         threshold_included : bool,
     ) -> None:
 
         self.df = df
         self.columns_to_test = column_to_test
-        self.participant_column = participant_column
+        self.id_column = id_column
         self.frequency = frequency
         # Redundant but it is used for print output
         self.distance = frequency
@@ -1400,5 +1400,5 @@ if __name__=="__main__":
     df = pd.read_csv("./tests/data.csv", sep = ";")
     sample = Sample(df=df,
                     columns_to_test=[5, 6, 7],
-                    participant_column="index_participant")
+                    id_column="index_participant")
     print(sample.method_MAD(3))

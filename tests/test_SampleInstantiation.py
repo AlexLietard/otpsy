@@ -26,9 +26,9 @@ class TestClass:
             ot.Sample(df, columns_to_test=[3, 4])         
         
         sample_columns_to_test_p_col = \
-            ot.Sample(df, columns_to_test=["age", "random_col"], participant_column="index_participant")
+            ot.Sample(df, columns_to_test=["age", "random_col"], id_column="index_participant")
 
         sample_columns_to_test_p_col = \
-            ot.Sample(df, columns_to_test=["age", "random_col"], participant_column=1)
+            ot.Sample(df, columns_to_test=["age", "random_col"], id_column=1)
 
 os.chdir("..")

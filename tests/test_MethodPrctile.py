@@ -75,8 +75,15 @@ class TestClass:
         df1 = self.outliers.manage(method="delete")
         assert(len(df1.index) == 55)
 
-        df2 = self.outliers.manage(method = "winsorise")
+        df2 = self.outliers.manage(method = "threshold")
         assert(df2.loc["P11", "art_looking_time"] == self.outliers.threshold["art_looking_time"][0])
 
         df3 = self.outliers.manage(method = "na")
         assert(np.isnan(df3.loc["P11", "art_looking_time"]))
+    
+        df4 = self.outliers.manage(method="winsorise", value = 98)
+        # self.outliers.df to compare to the percentile before the winsorisation
+        assert(df4.loc["P11", "art_looking_time"] == np.percentile(self.outliers.df["art_looking_time"], (100-98)/2))
+
+        df5 = self.outliers.manage(method="log")
+        assert(df5["art_looking_time"].equals(np.log(self.outliers.df["art_looking_time"])))

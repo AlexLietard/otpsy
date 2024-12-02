@@ -72,7 +72,7 @@ class TestClass:
         df1 = self.outliers.manage(method="delete")
         assert(len(df1.index) == 58)
 
-        df2 = self.outliers.manage(method = "winsorise")
+        df2 = self.outliers.manage(method = "threshold")
         assert(df2.loc["P11", "art_looking_time"] == self.outliers.threshold["art_looking_time"][0])
 
         df3 = self.outliers.manage(method = "na")

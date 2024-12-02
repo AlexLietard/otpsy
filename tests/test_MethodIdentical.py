@@ -72,7 +72,13 @@ class TestClass:
         assert(len(df1.index) == 59)
 
         with pytest.raises(ValueError):
-            df2 = self.outliers.manage(method = "winsorise")
+            df2 = self.outliers.manage(method = "threshold")
 
         df3 = self.outliers.manage(method = "na")
         assert(np.isnan(df3.loc["P6", "likert1"]))
+
+        with pytest.raises(ValueError):
+            df4 = self.outliers.manage(method= "winsorise")
+        
+        with pytest.raises(ValueError):
+            df5 = self.outliers.manage(method = "log")

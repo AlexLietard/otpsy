@@ -75,9 +75,14 @@ class TestClass:
         df1 = self.outliers.manage(method="delete")
         assert(len(df1.index) == 57)
 
-        # Winsorisation not possible with Sn
-        # df2 = self.outliers.manage(method = "winsorise")
-        # assert(df2.loc["P11", "art_looking_time"] == self.outliers.threshold["art_looking_time"][0])
+        with pytest.raises(ValueError):
+            df2 = self.outliers.manage(method = "threshold")
 
         df3 = self.outliers.manage(method = "na")
         assert(np.isnan(df3.loc["P11", "art_looking_time"]))
+
+        with pytest.raises(ValueError):
+            df4 = self.outliers.manage(method="winsorise", value = 98)
+
+        df5 = self.outliers.manage(method="log")
+        assert(df5["art_looking_time"].equals(np.log(self.outliers.df["art_looking_time"])))

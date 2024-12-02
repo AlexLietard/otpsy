@@ -790,7 +790,8 @@ class _Outliers:
     def manage(
             self, 
             method: str = "delete" ,
-            column: str | int | list[str] | list[int] = 'all'
+            column: str | int | list[str] | list[int] = 'all',
+            value: int | float = 90,
             ) -> pd.DataFrame:
         """
         Manage outliers in the dataframe using specified method.
@@ -801,18 +802,28 @@ class _Outliers:
 
         Parameters
         ----------
-        method : {"delete", "na", "winsorise"}, optional   
+        method : {"delete", "na", "winsorise", "log"}, optional   
             Method to manage outliers. Default is "delete".
             - 'delete': Delete the row if it contains 1 or more
             abberant values. Also known as truncation.
             - 'na': Replace all outliers with missing value NaN.
-            - 'winsorise': Replace outliers with threshold values
+            - 'threshold': Replace outliers with threshold values
             obtained through the outlier method used.
+            - 'winsorise': Replace outliers with the value calculated
+            on the percentile. A winsorisation at the 90th percentile
+            would set all values below the 5th percentile to the value
+            associated with the 5th percentile, and conversely for 
+            upper percentile at 95th.
+            - 'log': Transform the variables using a log transformation
 
         column : str or int or list, optional
             Reference specific columns if you want to apply the manage
             method only on them. Default value take into account
             all columns.
+        
+        value : int or float, optionnal
+            Used for the winsorisation to determine which percentile
+            the user wants to winsorise.
 
         Returns
         -------
@@ -832,12 +843,12 @@ class _Outliers:
         # attribute "df" of the object, a new dataframe is created
         obj1 = copy.deepcopy(self)
         new_df = obj1.df
-        column_to_delete = [col for col in self.dict_col if col in column]
+        column_to_manage = [col for col in self.dict_col if col in column]
         if method == "delete":
             if 'added_manually' in self.dict_col:
-                column_to_delete.append("added_manually")
+                column_to_manage.append("added_manually")
             index_to_delete_clean = utils._select_index(
-                column_to_delete, self.dict_col)
+                column_to_manage, self.dict_col)
             final_df = new_df.drop(index_to_delete_clean)
 
         elif method == "na":
@@ -848,30 +859,55 @@ class _Outliers:
                 # In the dict_col of Identical, there is only one column
                 # "Identical", but this column is not in the column of
                 # the dataframe.
-                column_to_delete = [col for col in self.columns_to_test 
+                column_to_manage = [col for col in self.columns_to_test 
                                     if col in column]
-                for column in column_to_delete:
+                for column in column_to_manage:
                     new_df.loc[self.dict_col["Identical"], column] = np.nan
             else:
-                for column in column_to_delete:
+                for column in column_to_manage:
                     new_df.loc[self.dict_col[column], column] = np.nan
             
             final_df = new_df
 
-        elif method == "winsorise":
+        elif method == "threshold":
             if self.method == "Sn" or self.method == "Identical":
-                raise ValueError('No winsorisation is '
+                raise ValueError('No threshold setting value is '
                                  f'possible with the "{self.method}" method')
             if 'added_manually' in self.dict_col:
                 print("Warning: Participant added manually can't be managed.")
-            for column in column_to_delete:
+            for column in column_to_manage:
                 low_threshold, high_threshold = self.threshold[column]
                 new_df.loc[new_df[column] < low_threshold,
                             column] = low_threshold
                 new_df.loc[new_df[column] > high_threshold,
                            column] = high_threshold
             final_df = new_df
-
+        
+        # Deal with the two orthographs
+        elif method == "winsorise" or method == "winsorize":
+            if self.method == "Sn" or self.method == "Identical":
+                raise ValueError('No winsorisation is '
+                                 f'possible with the "{self.method}" method')
+            if 'added_manually' in self.dict_col:
+                print("Warning: Participant added manually can't be managed.")
+            for column in column_to_manage:
+                # Follow Aiguinis et al., 2013 definition
+                percentile = (100-value)/2
+                low_percentile = np.percentile(new_df[column], q = percentile)
+                high_percentile = np.percentile(new_df[column], q = 100-percentile)
+                new_df.loc[new_df[column] < low_percentile,
+                            column] = low_percentile
+                new_df.loc[new_df[column] > high_percentile,
+                           column] = high_percentile
+            final_df = new_df
+    
+        elif method == "log":
+            if self.method == "Identical":
+                raise ValueError('No log transformation is possible '
+                                 f'with the identical method')
+            for column in column_to_manage:
+                new_df[column] = np.log(new_df[column])
+            final_df = new_df
         return final_df
 
     def inspect(

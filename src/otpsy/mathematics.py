@@ -47,5 +47,5 @@ def S_n(df, column):
         abs(x[column] - df.loc[df.index != x.name, column]))
         if not np.isnan(x[column]) else None, axis=1)
 
-    Sn = np.nanmedian(all_median) * c
+    Sn = np.nanmedian(all_median) * c * 1.1926
     return Sn, all_median
